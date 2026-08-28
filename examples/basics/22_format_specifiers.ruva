@@ -1,0 +1,8 @@
+fn main() {
+    let x = 42
+    let pi = 3.14159
+    println!("decimal: {}", x)
+    println!("float: {:.2}", pi)
+    println!("padded: {:>10}", x)
+    println!("zero-padded: {:05}", x)
+}

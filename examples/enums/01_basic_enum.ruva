@@ -1,0 +1,16 @@
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
+fn main() {
+    let dir = Direction::North
+    match dir {
+        Direction::North => println!("Going North"),
+        Direction::South => println!("Going South"),
+        Direction::East => println!("Going East"),
+        Direction::West => println!("Going West"),
+    }
+}

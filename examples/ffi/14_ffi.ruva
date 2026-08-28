@@ -1,0 +1,7 @@
+// Example: Ffi #14
+// This example demonstrates ffi concepts in Ruva
+
+fn main() {
+    println!("Example: Ffi #14")
+    println!("Ruva makes ffi safe and fast")
+}

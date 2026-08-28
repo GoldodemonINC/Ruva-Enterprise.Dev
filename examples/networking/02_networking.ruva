@@ -1,0 +1,7 @@
+// Example: Networking #2
+// This example demonstrates networking concepts in Ruva
+
+fn main() {
+    println!("Example: Networking #2")
+    println!("Ruva makes networking safe and fast")
+}

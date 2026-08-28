@@ -1,0 +1,8 @@
+fn main() {
+    let x: f64 = 3.14
+    let y: f64 = 2.718
+    println!("add: {}", x + y)
+    println!("sub: {}", x - y)
+    println!("mul: {}", x * y)
+    println!("div: {}", x / y)
+}

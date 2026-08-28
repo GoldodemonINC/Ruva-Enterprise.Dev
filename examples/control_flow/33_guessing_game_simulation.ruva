@@ -1,0 +1,15 @@
+fn main() {
+    let secret = 42
+    let guesses = [10, 25, 42]
+    for i in 0..3 {
+        let guess = guesses[i]
+        if guess == secret {
+            println!("Correct! You guessed {}", guess)
+            break
+        } else if guess < secret {
+            println!("{} is too low", guess)
+        } else {
+            println!("{} is too high", guess)
+        }
+    }
+}

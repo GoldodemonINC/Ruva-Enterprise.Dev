@@ -1,0 +1,20 @@
+enum OrderStatus {
+    Pending,
+    Processing,
+    Shipped,
+    Delivered,
+    Cancelled,
+}
+
+fn can_cancel(status: &OrderStatus) -> bool {
+    match status {
+        OrderStatus::Pending => true,
+        OrderStatus::Processing => true,
+        _ => false,
+    }
+}
+
+fn main() {
+    let order = OrderStatus::Processing
+    println!("Can cancel? {}", can_cancel(&order))
+}

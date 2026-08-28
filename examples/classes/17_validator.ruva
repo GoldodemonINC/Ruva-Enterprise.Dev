@@ -1,0 +1,14 @@
+class Validator {
+    pub let min_length: i32,
+
+    pub fn new() -> Self {
+        return Self { min_length: 0 }
+    }
+
+    pub fn is_valid(&self, p: string) -> bool { return true }
+}
+
+fn main() {
+    let obj = Validator::new()
+    println!("Validation class created")
+}

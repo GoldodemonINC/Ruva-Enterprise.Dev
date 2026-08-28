@@ -1,0 +1,7 @@
+fn main() {
+    let mut power = 1
+    for i in 0..16 {
+        println!("2^{} = {}", i, power)
+        power *= 2
+    }
+}

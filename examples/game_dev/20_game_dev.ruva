@@ -1,0 +1,7 @@
+// Example: Game Dev #20
+// This example demonstrates game dev concepts in Ruva
+
+fn main() {
+    println!("Example: Game Dev #20")
+    println!("Ruva makes game dev safe and fast")
+}

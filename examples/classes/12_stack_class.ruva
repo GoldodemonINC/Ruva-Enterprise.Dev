@@ -1,0 +1,42 @@
+class Stack {
+    let mut items: [i32; 100],
+    let mut top: i32,
+
+    pub fn new() -> Self {
+        return Self { items: [0; 100], top: -1 }
+    }
+
+    pub fn push(&mut self, value: i32) {
+        self.top += 1
+        self.items[self.top as usize] = value
+    }
+
+    pub fn pop(&mut self) -> i32 {
+        let value = self.items[self.top as usize]
+        self.top -= 1
+        return value
+    }
+
+    pub fn peek(&self) -> i32 {
+        return self.items[self.top as usize]
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.top < 0
+    }
+
+    pub fn size(&self) -> i32 {
+        return self.top + 1
+    }
+}
+
+fn main() {
+    let mut stack = Stack::new()
+    stack.push(10)
+    stack.push(20)
+    stack.push(30)
+    println!("top = {}", stack.peek())
+    println!("size = {}", stack.size())
+    println!("popped = {}", stack.pop())
+    println!("size = {}", stack.size())
+}

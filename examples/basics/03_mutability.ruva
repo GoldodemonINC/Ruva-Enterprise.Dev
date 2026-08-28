@@ -1,0 +1,6 @@
+fn main() {
+    let immutable = 42
+    let mut mutable = 100
+    mutable += 1
+    println!("immutable={}, mutable={}", immutable, mutable)
+}

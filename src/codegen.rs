@@ -890,6 +890,79 @@ edition = "2021"
                 write!(self.output, "std::ptr::null_mut()").unwrap();
             }
 
+            Expr::FString(parts) => {
+                // Generate format!("...", args) macro call
+                let mut fmt_str = String::new();
+                let mut fargs: Vec<&Expr> = Vec::new();
+                for part in parts {
+                    match part {
+                        crate::ast::FStringPart::Text(text) => {
+                            fmt_str.push_str(&text.replace('{', "{{").replace('}', "}}"));
+                        }
+                        crate::ast::FStringPart::Expr(expr) => {
+                            fmt_str.push_str("{}" );
+                            fargs.push(expr);
+                        }
+                    }
+                }
+                self.output.push_str("format!(\"");
+                self.output.push_str(&fmt_str);
+                self.output.push_str("\"");
+                for arg in &fargs {
+                    self.output.push_str(", ");
+                    self.gen_expr(arg);
+                }
+                self.output.push(')');
+            }
+
+            Expr::OptionalChaining { object, field } => {
+                // Generate: object.as_ref().map(|o| o.field.clone())
+                self.gen_expr(object);
+                write!(self.output, ".as_ref().map(|o| o.{}.clone())", field).unwrap();
+            }
+
+            Expr::NullCoalesce { left, right } => {
+                // Generate: left.unwrap_or_else(|| right)
+                self.gen_expr(left);
+                self.output.push_str(".unwrap_or_else(|| ");
+                self.gen_expr(right);
+                self.output.push(')');
+            }
+
+            Expr::Assert { condition, message } => {
+                self.output.push_str("assert!(");
+                self.gen_expr(condition);
+                if let Some(ref msg) = message {
+                    self.output.push_str(", ");
+                    self.gen_expr(msg);
+                }
+                self.output.push(')');
+            }
+
+            Expr::AssertEq { left, right, message } => {
+                self.output.push_str("assert_eq!(");
+                self.gen_expr(left);
+                self.output.push_str(", ");
+                self.gen_expr(right);
+                if let Some(ref msg) = message {
+                    self.output.push_str(", ");
+                    self.gen_expr(msg);
+                }
+                self.output.push(')');
+            }
+
+            Expr::AssertNe { left, right, message } => {
+                self.output.push_str("assert_ne!(");
+                self.gen_expr(left);
+                self.output.push_str(", ");
+                self.gen_expr(right);
+                if let Some(ref msg) = message {
+                    self.output.push_str(", ");
+                    self.gen_expr(msg);
+                }
+                self.output.push(')');
+            }
+
             Expr::If { condition, then_body, else_body } => {
                 self.output.push_str("if ");
                 self.gen_expr(condition);

@@ -108,7 +108,15 @@ pub enum Token {
     Hash,       // #
     At,         // @
     Question,   // ?
+    QuestionDot, // ?.
+    NullCoalesce, // ??
     Underscore, // _
+
+    // FString interpolation
+    FStringStart, // f"
+    FStringPart(String), // text between braces
+    FStringExpr, // {expr} inside f-string
+    FStringEnd, // closing "
 
     // Special
     Eof,
@@ -627,6 +635,35 @@ pub enum Expr {
     },
     // Null pointer literal: null_mut()
     NullPtr,
+    // FString interpolation: f"Hello {name}"
+    FString(Vec<FStringPart>),
+    // Optional chaining: expr?.field
+    OptionalChaining {
+        object: Box<Expr>,
+        field: String,
+    },
+    // Null coalescing: expr ?? default
+    NullCoalesce {
+        left: Box<Expr>,
+        right: Box<Expr>,
+    },
+    // Assert: assert!(condition, msg)
+    Assert {
+        condition: Box<Expr>,
+        message: Option<Box<Expr>>,
+    },
+    // AssertEq: assert_eq!(a, b, msg)
+    AssertEq {
+        left: Box<Expr>,
+        right: Box<Expr>,
+        message: Option<Box<Expr>>,
+    },
+    // AssertNe: assert_ne!(a, b, msg)
+    AssertNe {
+        left: Box<Expr>,
+        right: Box<Expr>,
+        message: Option<Box<Expr>>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -635,6 +672,12 @@ pub struct ClosureParam {
     pub ty: Option<Type>,
     pub is_ref: bool,
     pub is_mut: bool,
+}
+
+#[derive(Debug, Clone)]
+pub enum FStringPart {
+    Text(String),
+    Expr(Expr),
 }
 
 #[derive(Debug, Clone)]

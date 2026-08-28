@@ -1,0 +1,14 @@
+class ScoreTracker {
+    pub let count: i32,
+
+    pub fn new() -> Self {
+        return Self { count: 0 }
+    }
+
+    pub fn add(&mut self, s: i32) { self.count += 1 }
+}
+
+fn main() {
+    let obj = ScoreTracker::new()
+    println!("Score tracking class created")
+}

@@ -1,0 +1,19 @@
+class Animal {
+    pub let name: string,
+    pub let sound: string,
+
+    pub fn new(name: string, sound: string) -> Self {
+        return Self { name, sound }
+    }
+
+    pub fn speak(&self) {
+        println!("{} says {}!", self.name, self.sound)
+    }
+}
+
+fn main() {
+    let dog = Animal::new("Rex".into(), "Woof".into())
+    let cat = Animal::new("Whiskers".into(), "Meow".into())
+    dog.speak()
+    cat.speak()
+}

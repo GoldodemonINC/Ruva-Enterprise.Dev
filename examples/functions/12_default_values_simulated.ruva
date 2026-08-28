@@ -1,0 +1,8 @@
+fn greet(name: string, greeting: string) {
+    println!("{}, {}!", greeting, name)
+}
+
+fn main() {
+    greet("Alice", "Hello")
+    greet("Bob", "Hi")
+}

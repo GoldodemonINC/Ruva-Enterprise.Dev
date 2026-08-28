@@ -1,0 +1,13 @@
+fn reverse_number(mut n: i64) -> i64 {
+    let mut reversed = 0
+    while n > 0 {
+        reversed = reversed * 10 + n % 10
+        n = n / 10
+    }
+    return reversed
+}
+
+fn main() {
+    println!("reverse(12345) = {}", reverse_number(12345))
+    println!("reverse(9876) = {}", reverse_number(9876))
+}

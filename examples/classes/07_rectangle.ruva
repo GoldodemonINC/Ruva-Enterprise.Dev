@@ -1,0 +1,27 @@
+class Rectangle {
+    pub let width: f64,
+    pub let height: f64,
+
+    pub fn new(width: f64, height: f64) -> Self {
+        return Self { width, height }
+    }
+
+    pub fn area(&self) -> f64 {
+        return self.width * self.height
+    }
+
+    pub fn perimeter(&self) -> f64 {
+        return 2.0 * (self.width + self.height)
+    }
+
+    pub fn is_square(&self) -> bool {
+        return self.width == self.height
+    }
+}
+
+fn main() {
+    let rect = Rectangle::new(10.0, 5.0)
+    println!("area = {}", rect.area())
+    println!("perimeter = {}", rect.perimeter())
+    println!("is square? {}", rect.is_square())
+}

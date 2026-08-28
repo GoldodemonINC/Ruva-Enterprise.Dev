@@ -1,0 +1,20 @@
+enum Season {
+    Spring,
+    Summer,
+    Autumn,
+    Winter,
+}
+
+fn describe(s: &Season) -> string {
+    match s {
+        Season::Spring => "Flowers bloom".into(),
+        Season::Summer => "Hot and sunny".into(),
+        Season::Autumn => "Leaves fall".into(),
+        Season::Winter => "Cold and snowy".into(),
+    }
+}
+
+fn main() {
+    let season = Season::Autumn
+    println!("Season: {}", describe(&season))
+}

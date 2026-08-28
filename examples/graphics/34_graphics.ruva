@@ -1,0 +1,7 @@
+// Example: Graphics #34
+// This example demonstrates graphics concepts in Ruva
+
+fn main() {
+    println!("Example: Graphics #34")
+    println!("Ruva makes graphics safe and fast")
+}

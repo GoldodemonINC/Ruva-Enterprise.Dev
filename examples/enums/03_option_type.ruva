@@ -1,0 +1,16 @@
+fn find_first(arr: [i32; 5], target: i32) -> Option<i32> {
+    for i in 0..5 {
+        if arr[i] == target {
+            return Option::Some(arr[i])
+        }
+    }
+    return Option::None
+}
+
+fn main() {
+    let nums = [10, 20, 30, 40, 50]
+    match find_first(nums, 30) {
+        Option::Some(val) => println!("Found: {}", val),
+        Option::None => println!("Not found"),
+    }
+}

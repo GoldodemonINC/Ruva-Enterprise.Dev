@@ -1,0 +1,17 @@
+fn divide(a: f64, b: f64) -> Result<f64, string> {
+    if b == 0.0 {
+        return Result::Err("Division by zero".into())
+    }
+    return Result::Ok(a / b)
+}
+
+fn main() {
+    match divide(10.0, 3.0) {
+        Result::Ok(val) => println!("10 / 3 = {:.2}", val),
+        Result::Err(e) => println!("Error: {}", e),
+    }
+    match divide(10.0, 0.0) {
+        Result::Ok(val) => println!("10 / 0 = {:.2}", val),
+        Result::Err(e) => println!("Error: {}", e),
+    }
+}

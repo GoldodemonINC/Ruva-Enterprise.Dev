@@ -1,0 +1,14 @@
+class TodoItem {
+    pub let done: bool,
+
+    pub fn new() -> Self {
+        return Self { done: false }
+    }
+
+    pub fn complete(&mut self) { self.done = true }
+}
+
+fn main() {
+    let obj = TodoItem::new()
+    println!("Todo list class created")
+}

@@ -1,0 +1,9 @@
+fn main() {
+    let mut items = [10, 20, 30, 40, 50]
+    let mut idx = 0
+    while idx < 5 {
+        print!("{} ", items[idx])
+        idx += 1
+    }
+    println!("")
+}

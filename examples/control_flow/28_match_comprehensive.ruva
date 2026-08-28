@@ -1,0 +1,10 @@
+fn main() {
+    let cmd = "quit"
+    match cmd {
+        "start" => println!("Starting..."),
+        "stop" => println!("Stopping..."),
+        "quit" => println!("Goodbye!"),
+        "help" => println!("Available commands: start, stop, quit"),
+        _ => println!("Unknown command: {}", cmd),
+    }
+}

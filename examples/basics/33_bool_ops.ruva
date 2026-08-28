@@ -1,0 +1,8 @@
+fn main() {
+    let is_active = true
+    let count = 5
+    let result = is_active && count > 0
+    println!("result: {}", result)
+    let fallback = false || is_active
+    println!("fallback: {}", fallback)
+}

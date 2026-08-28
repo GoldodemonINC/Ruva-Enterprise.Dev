@@ -1,0 +1,6 @@
+fn main() {
+    let arr = [1, 2, 3, 4, 5]
+    println!("array length: {}", 5)
+    println!("first: {}", arr[0])
+    println!("last: {}", arr[4])
+}

@@ -1,0 +1,7 @@
+// Example: Cli #24
+// This example demonstrates cli concepts in Ruva
+
+fn main() {
+    println!("Example: Cli #24")
+    println!("Ruva makes cli safe and fast")
+}

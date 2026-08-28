@@ -1,0 +1,7 @@
+const MAX_SIZE: i32 = 1024
+const PI: f64 = 3.14159
+const APP_NAME: string = "Ruva"
+
+fn main() {
+    println!("MAX={}, PI={}, APP={}", MAX_SIZE, PI, APP_NAME)
+}

@@ -1,0 +1,14 @@
+fn power(base: i64, exp: i64) -> i64 {
+    let mut result = 1
+    let mut i = 0
+    while i < exp {
+        result *= base
+        i += 1
+    }
+    return result
+}
+
+fn main() {
+    println!("2^10 = {}", power(2, 10))
+    println!("3^5 = {}", power(3, 5))
+}

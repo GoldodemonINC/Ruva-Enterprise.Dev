@@ -1,0 +1,14 @@
+class Book {
+    pub let title: string,
+
+    pub fn new() -> Self {
+        return Self { title: "" }
+    }
+
+    pub fn is_read(&self) -> bool { return false }
+}
+
+fn main() {
+    let obj = Book::new()
+    println!("Reading class created")
+}

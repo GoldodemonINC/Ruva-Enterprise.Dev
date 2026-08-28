@@ -1,0 +1,18 @@
+enum IdleEnum {
+    Idle,
+    Running,
+    Overheated,
+}
+
+fn describe(v: &IdleEnum) -> string {
+    match v {
+        IdleEnum::Idle => "Idle".into(),
+        IdleEnum::Running => "Running".into(),
+        IdleEnum::Overheated => "Overheated".into(),
+    }
+}
+
+fn main() {
+    let v = IdleEnum::Idle
+    println!("{}", describe(&v))
+}

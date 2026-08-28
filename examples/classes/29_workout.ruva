@@ -1,0 +1,14 @@
+class Workout {
+    pub let steps: i32,
+
+    pub fn new() -> Self {
+        return Self { steps: 0 }
+    }
+
+    pub fn add_steps(&mut self, n: i32) { self.steps += n }
+}
+
+fn main() {
+    let obj = Workout::new()
+    println!("Fitness class created")
+}

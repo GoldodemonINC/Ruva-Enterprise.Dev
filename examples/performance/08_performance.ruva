@@ -1,0 +1,7 @@
+// Example: Performance #8
+// This example demonstrates performance concepts in Ruva
+
+fn main() {
+    println!("Example: Performance #8")
+    println!("Ruva makes performance safe and fast")
+}

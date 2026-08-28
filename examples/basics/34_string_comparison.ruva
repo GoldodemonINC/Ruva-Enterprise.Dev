@@ -1,0 +1,6 @@
+fn main() {
+    let a = "apple"
+    let b = "banana"
+    println!("a == b: {}", a == b)
+    println!("a != b: {}", a != b)
+}

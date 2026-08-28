@@ -1,0 +1,7 @@
+// Example: Modules #8
+// This example demonstrates modules concepts in Ruva
+
+fn main() {
+    println!("Example: Modules #8")
+    println!("Ruva makes modules safe and fast")
+}

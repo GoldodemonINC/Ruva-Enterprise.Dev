@@ -1,0 +1,18 @@
+enum Status {
+    Active,
+    Inactive,
+    Banned,
+}
+
+fn status_text(s: &Status) -> string {
+    match s {
+        Status::Active => "Active".into(),
+        Status::Inactive => "Inactive".into(),
+        Status::Banned => "Banned".into(),
+    }
+}
+
+fn main() {
+    let user_status = Status::Active
+    println!("User status: {}", status_text(&user_status))
+}

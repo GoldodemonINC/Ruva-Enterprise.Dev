@@ -1,0 +1,7 @@
+fn main() {
+    let name = "Ruva"
+    let version = 10
+    println!("Welcome to {} v{}", name, version)
+    let msg = f"Language: {name}, Version: {version}"
+    println!("{}", msg)
+}

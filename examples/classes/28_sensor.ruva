@@ -1,0 +1,14 @@
+class Sensor {
+    pub let reading: f64,
+
+    pub fn new() -> Self {
+        return Self { reading: 0.0 }
+    }
+
+    pub fn get_reading(&self) -> f64 { return self.reading }
+}
+
+fn main() {
+    let obj = Sensor::new()
+    println!("Sensors class created")
+}

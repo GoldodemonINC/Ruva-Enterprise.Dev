@@ -1,0 +1,27 @@
+class Student {
+    pub let name: string,
+    pub let mut grade: f64,
+
+    pub fn new(name: string, grade: f64) -> Self {
+        return Self { name, grade }
+    }
+
+    pub fn is_passing(&self) -> bool {
+        return self.grade >= 60.0
+    }
+
+    pub fn letter_grade(&self) -> string {
+        if self.grade >= 90.0 { return "A".into() }
+        if self.grade >= 80.0 { return "B".into() }
+        if self.grade >= 70.0 { return "C".into() }
+        if self.grade >= 60.0 { return "D".into() }
+        return "F".into()
+    }
+}
+
+fn main() {
+    let alice = Student::new("Alice".into(), 95.0)
+    let bob = Student::new("Bob".into(), 72.0)
+    println!("{}: {} ({})", alice.name, alice.letter_grade(), alice.is_passing())
+    println!("{}: {} ({})", bob.name, bob.letter_grade(), bob.is_passing())
+}

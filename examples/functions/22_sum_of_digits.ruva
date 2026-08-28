@@ -1,0 +1,14 @@
+fn digit_sum(n: i64) -> i64 {
+    let mut num = n
+    let mut sum = 0
+    while num > 0 {
+        sum += num % 10
+        num = num / 10
+    }
+    return sum
+}
+
+fn main() {
+    println!("digit_sum(12345) = {}", digit_sum(12345))
+    println!("digit_sum(999) = {}", digit_sum(999))
+}

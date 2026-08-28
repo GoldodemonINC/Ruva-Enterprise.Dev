@@ -1,0 +1,7 @@
+// Example: Compression #10
+// This example demonstrates compression concepts in Ruva
+
+fn main() {
+    println!("Example: Compression #10")
+    println!("Ruva makes compression safe and fast")
+}

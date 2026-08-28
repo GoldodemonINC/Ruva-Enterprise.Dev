@@ -1,0 +1,20 @@
+enum DayPeriod {
+    Morning,
+    Afternoon,
+    Evening,
+    Night,
+}
+
+fn greeting(period: &DayPeriod) -> string {
+    match period {
+        DayPeriod::Morning => "Good morning!".into(),
+        DayPeriod::Afternoon => "Good afternoon!".into(),
+        DayPeriod::Evening => "Good evening!".into(),
+        DayPeriod::Night => "Good night!".into(),
+    }
+}
+
+fn main() {
+    let period = DayPeriod::Evening
+    println!("{}", greeting(&period))
+}

@@ -1,0 +1,8 @@
+fn main() {
+    let x = 10
+    {
+        let y = 20
+        println!("inner: x={}, y={}", x, y)
+    }
+    println!("outer: x={}", x)
+}

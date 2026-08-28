@@ -1,0 +1,9 @@
+fn main() {
+    let a = 10
+    let b = 3
+    println!("add={}", a + b)
+    println!("sub={}", a - b)
+    println!("mul={}", a * b)
+    println!("div={}", a / b)
+    println!("mod={}", a % b)
+}

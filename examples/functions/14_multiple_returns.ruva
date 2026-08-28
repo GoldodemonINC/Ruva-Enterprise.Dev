@@ -1,0 +1,11 @@
+fn min_max(a: i32, b: i32) -> (i32, i32) {
+    if a < b {
+        return (a, b)
+    }
+    return (b, a)
+}
+
+fn main() {
+    let (min, max) = min_max(10, 5)
+    println!("min={}, max={}", min, max)
+}

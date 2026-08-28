@@ -1,0 +1,18 @@
+enum AscendingEnum {
+    Ascending,
+    Descending,
+    Random,
+}
+
+fn describe(v: &AscendingEnum) -> string {
+    match v {
+        AscendingEnum::Ascending => "Ascending".into(),
+        AscendingEnum::Descending => "Descending".into(),
+        AscendingEnum::Random => "Random".into(),
+    }
+}
+
+fn main() {
+    let v = AscendingEnum::Ascending
+    println!("{}", describe(&v))
+}

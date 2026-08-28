@@ -1,0 +1,18 @@
+enum BrownEnum {
+    Brown,
+    Blue,
+    Green,
+}
+
+fn describe(v: &BrownEnum) -> string {
+    match v {
+        BrownEnum::Brown => "Brown".into(),
+        BrownEnum::Blue => "Blue".into(),
+        BrownEnum::Green => "Green".into(),
+    }
+}
+
+fn main() {
+    let v = BrownEnum::Brown
+    println!("{}", describe(&v))
+}
