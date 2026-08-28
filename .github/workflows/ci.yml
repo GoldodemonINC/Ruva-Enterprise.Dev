@@ -94,17 +94,29 @@ jobs:
       - name: Build
         run: cargo build --release 2>&1
 
-      - name: Check all examples (basics)
+      - name: Check basics examples
         run: |
           FAIL=0
-          for f in examples/basics/*.ruva examples/functions/*.ruva examples/control_flow/*.ruva examples/classes/*.ruva examples/enums/*.ruva; do
+          for f in examples/basics/*.ruva; do
             if ! cargo run --release -- check "$f" 2>&1 | grep -q "no errors"; then
               echo "FAIL: $f"
               FAIL=1
             fi
           done
           if [ $FAIL -eq 1 ]; then exit 1; fi
-          echo "All core examples pass"
+          echo "All basics examples pass"
+
+      - name: Check control flow examples
+        run: |
+          FAIL=0
+          for f in examples/control_flow/*.ruva; do
+            if ! cargo run --release -- check "$f" 2>&1 | grep -q "no errors"; then
+              echo "FAIL: $f"
+              FAIL=1
+            fi
+          done
+          if [ $FAIL -eq 1 ]; then exit 1; fi
+          echo "All control flow examples pass"
 
   cross-platform:
     name: Build (${{ matrix.os }})

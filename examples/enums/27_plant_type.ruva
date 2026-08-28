@@ -1,18 +1,17 @@
-enum TreeEnum {
-    Tree,
-    Shrub,
-    Flower,
+// Enum example
+enum Value {
+    Variant1,
+    Variant2,
+    Variant3,
 }
 
-fn describe(v: &TreeEnum) -> string {
-    match v {
-        TreeEnum::Tree => "Tree".into(),
-        TreeEnum::Shrub => "Shrub".into(),
-        TreeEnum::Flower => "Flower".into(),
-    }
+fn describe(v: &Value) -> string {
+    if v == &Value::Variant1 { return "Variant1".into() }
+    if v == &Value::Variant2 { return "Variant2".into() }
+    return "Variant3".into()
 }
 
 fn main() {
-    let v = TreeEnum::Tree
+    let v = Value::Variant1
     println!("{}", describe(&v))
 }

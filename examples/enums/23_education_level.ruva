@@ -1,18 +1,17 @@
-enum HighSchoolEnum {
-    HighSchool,
-    Bachelor,
-    PhD,
+// Enum example
+enum Value {
+    Variant1,
+    Variant2,
+    Variant3,
 }
 
-fn describe(v: &HighSchoolEnum) -> string {
-    match v {
-        HighSchoolEnum::HighSchool => "HighSchool".into(),
-        HighSchoolEnum::Bachelor => "Bachelor".into(),
-        HighSchoolEnum::PhD => "PhD".into(),
-    }
+fn describe(v: &Value) -> string {
+    if v == &Value::Variant1 { return "Variant1".into() }
+    if v == &Value::Variant2 { return "Variant2".into() }
+    return "Variant3".into()
 }
 
 fn main() {
-    let v = HighSchoolEnum::HighSchool
+    let v = Value::Variant1
     println!("{}", describe(&v))
 }

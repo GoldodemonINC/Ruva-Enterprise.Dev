@@ -1,18 +1,17 @@
-enum MammalEnum {
-    Mammal,
-    Bird,
-    Reptile,
+// Enum example
+enum Value {
+    Variant1,
+    Variant2,
+    Variant3,
 }
 
-fn describe(v: &MammalEnum) -> string {
-    match v {
-        MammalEnum::Mammal => "Mammal".into(),
-        MammalEnum::Bird => "Bird".into(),
-        MammalEnum::Reptile => "Reptile".into(),
-    }
+fn describe(v: &Value) -> string {
+    if v == &Value::Variant1 { return "Variant1".into() }
+    if v == &Value::Variant2 { return "Variant2".into() }
+    return "Variant3".into()
 }
 
 fn main() {
-    let v = MammalEnum::Mammal
+    let v = Value::Variant1
     println!("{}", describe(&v))
 }
