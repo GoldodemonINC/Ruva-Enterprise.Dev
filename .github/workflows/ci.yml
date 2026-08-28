@@ -92,13 +92,13 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
-        run: cargo build --release 2>&1
+        run: cargo build 2>&1
 
       - name: Check basics examples
         run: |
           FAIL=0
           for f in examples/basics/*.ruva; do
-            if ! cargo run --release -- check "$f" 2>&1 | grep -q "no errors"; then
+            if ! cargo run -- check "$f" 2>&1 | grep -q "no errors"; then
               echo "FAIL: $f"
               FAIL=1
             fi
@@ -110,7 +110,7 @@ jobs:
         run: |
           FAIL=0
           for f in examples/control_flow/*.ruva; do
-            if ! cargo run --release -- check "$f" 2>&1 | grep -q "no errors"; then
+            if ! cargo run -- check "$f" 2>&1 | grep -q "no errors"; then
               echo "FAIL: $f"
               FAIL=1
             fi
