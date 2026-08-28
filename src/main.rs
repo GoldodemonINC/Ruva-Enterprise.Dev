@@ -1,10 +1,14 @@
 mod ast;
 mod backend;
 mod codegen;
+mod codegen_c;
+mod codegen_cpp;
 mod codegen_python;
+mod codegen_wasm;
 mod codegen_zig;
 mod colors;
 mod debug;
+mod features;
 mod json_protocol;
 mod lexer;
 mod lsp;
@@ -36,6 +40,9 @@ enum CliTarget {
     Rust,
     Zig,
     Python,
+    C,
+    Cpp,
+    Wasm,
 }
 
 impl From<CliTarget> for Target {
@@ -44,6 +51,9 @@ impl From<CliTarget> for Target {
             CliTarget::Rust => Target::Rust,
             CliTarget::Zig => Target::Zig,
             CliTarget::Python => Target::Python,
+            CliTarget::C => Target::C,
+            CliTarget::Cpp => Target::Cpp,
+            CliTarget::Wasm => Target::Wasm,
         }
     }
 }
@@ -373,6 +383,7 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
             fs::write(&out_path, &code)?;
             eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Python)", input.display(), out_path.display())));
         }
+        _ => bail!("Target {:?} not yet implemented", target),
     }
 
     Ok(())

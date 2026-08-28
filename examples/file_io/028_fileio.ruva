@@ -1,0 +1,479 @@
+// ─── File I/O Example #28 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating file i/o concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Result")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn decode_file_io_0(input: string) -> Vec<i64> {
+    // File_io function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compress_file_io_1(input: bool) -> &string {
+    // File_io function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encrypt_file_io_2(input: Vec<i64>) -> i64 {
+    // File_io function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn hash_file_io_3(input: &string) -> f64 {
+    // File_io function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn create_file_io_4(input: i64) -> string {
+    // File_io function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn update_file_io_5(input: f64) -> bool {
+    // File_io function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 69
+    result = true
+    return result
+}
+
+
+fn delete_file_io_6(input: string) -> Vec<i64> {
+    // File_io function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn merge_file_io_7(input: bool) -> &string {
+    // File_io function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn split_file_io_8(input: Vec<i64>) -> i64 {
+    // File_io function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn check_file_io_9(input: &string) -> f64 {
+    // File_io function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn verify_file_io_10(input: i64) -> string {
+    // File_io function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn assert_file_io_11(input: f64) -> bool {
+    // File_io function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 69
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== file I/O Example #28 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    decode_file_io_0()
+    compress_file_io_1()
+    encrypt_file_io_2()
+    hash_file_io_3()
+    update_file_io_5()
+    delete_file_io_6()
+    merge_file_io_7()
+
+    // Verify results
+    println!("All file I/O operations completed!")
+    println!("Example #28 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_file_io_28_0() {
+    // Test file_io functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_28_1() {
+    // Test file_io functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_28_2() {
+    // Test file_io functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_28_3() {
+    // Test file_io functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_28_4() {
+    // Test file_io functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

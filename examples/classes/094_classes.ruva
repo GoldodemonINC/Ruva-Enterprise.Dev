@@ -1,0 +1,486 @@
+// ─── Classes Example #94 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Logger class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Logger {
+    pub let level:u32;
+    pub let prefix:string;
+    pub let output:string;
+    pub let mut created_at: i64,
+
+    pub fn new(level: u32, prefix: string, output: string) -> Self {
+        return Self {
+            level,
+            prefix,
+            output,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn info(&mut self) {
+        println!("Calling info on Logger")
+    }
+
+    pub fn warn(&mut self) {
+        println!("Calling warn on Logger")
+    }
+
+    pub fn error(&mut self) {
+        println!("Calling error on Logger")
+    }
+
+    pub fn debug(&mut self) {
+        println!("Calling debug on Logger")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Logger object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Logger {
+    pub fn default() -> Logger {
+        return Logger::new(0, "default".into(), "default".into())
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Logger")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Logger::new(95, "test_94".into(), "test_94".into())
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Logger::default())
+    objects.push(Logger::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Logger::default())
+    registry.insert("secondary", Logger::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Logger demo complete!")
+}
+
+// Additional Logger examples and patterns
+
+fn extra_logger_0() {
+    // Demonstrate Logger in scenario 1
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_1() {
+    // Demonstrate Logger in scenario 2
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_2() {
+    // Demonstrate Logger in scenario 3
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_3() {
+    // Demonstrate Logger in scenario 4
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_4() {
+    // Demonstrate Logger in scenario 5
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_5() {
+    // Demonstrate Logger in scenario 6
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_6() {
+    // Demonstrate Logger in scenario 7
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_7() {
+    // Demonstrate Logger in scenario 8
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_8() {
+    // Demonstrate Logger in scenario 9
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_9() {
+    // Demonstrate Logger in scenario 10
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_10() {
+    // Demonstrate Logger in scenario 11
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_11() {
+    // Demonstrate Logger in scenario 12
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_12() {
+    // Demonstrate Logger in scenario 13
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_13() {
+    // Demonstrate Logger in scenario 14
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_14() {
+    // Demonstrate Logger in scenario 15
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_15() {
+    // Demonstrate Logger in scenario 16
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_16() {
+    // Demonstrate Logger in scenario 17
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_17() {
+    // Demonstrate Logger in scenario 18
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_18() {
+    // Demonstrate Logger in scenario 19
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_19() {
+    // Demonstrate Logger in scenario 20
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_20() {
+    // Demonstrate Logger in scenario 21
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_21() {
+    // Demonstrate Logger in scenario 22
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_22() {
+    // Demonstrate Logger in scenario 23
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_23() {
+    // Demonstrate Logger in scenario 24
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_24() {
+    // Demonstrate Logger in scenario 25
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_25() {
+    // Demonstrate Logger in scenario 26
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_26() {
+    // Demonstrate Logger in scenario 27
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_27() {
+    // Demonstrate Logger in scenario 28
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_28() {
+    // Demonstrate Logger in scenario 29
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_logger_29() {
+    // Demonstrate Logger in scenario 30
+    let mut obj = Logger::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

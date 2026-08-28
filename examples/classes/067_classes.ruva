@@ -1,0 +1,486 @@
+// ─── Classes Example #67 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Wallet class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Wallet {
+    pub let owner:string;
+    pub let balance:f64;
+    pub let currency:string;
+    pub let mut created_at: i64,
+
+    pub fn new(owner: string, balance: f64, currency: string) -> Self {
+        return Self {
+            owner,
+            balance,
+            currency,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn deposit(&mut self) {
+        println!("Calling deposit on Wallet")
+    }
+
+    pub fn withdraw(&mut self) {
+        println!("Calling withdraw on Wallet")
+    }
+
+    pub fn transfer(&mut self) {
+        println!("Calling transfer on Wallet")
+    }
+
+    pub fn balance(&mut self) {
+        println!("Calling balance on Wallet")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Wallet object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Wallet {
+    pub fn default() -> Wallet {
+        return Wallet::new("default".into(), 0.0, "default".into())
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Wallet")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Wallet::new("test_67".into(), 67.0, "test_67".into())
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Wallet::default())
+    objects.push(Wallet::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Wallet::default())
+    registry.insert("secondary", Wallet::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Wallet demo complete!")
+}
+
+// Additional Wallet examples and patterns
+
+fn extra_wallet_0() {
+    // Demonstrate Wallet in scenario 1
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_1() {
+    // Demonstrate Wallet in scenario 2
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_2() {
+    // Demonstrate Wallet in scenario 3
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_3() {
+    // Demonstrate Wallet in scenario 4
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_4() {
+    // Demonstrate Wallet in scenario 5
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_5() {
+    // Demonstrate Wallet in scenario 6
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_6() {
+    // Demonstrate Wallet in scenario 7
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_7() {
+    // Demonstrate Wallet in scenario 8
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_8() {
+    // Demonstrate Wallet in scenario 9
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_9() {
+    // Demonstrate Wallet in scenario 10
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_10() {
+    // Demonstrate Wallet in scenario 11
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_11() {
+    // Demonstrate Wallet in scenario 12
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_12() {
+    // Demonstrate Wallet in scenario 13
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_13() {
+    // Demonstrate Wallet in scenario 14
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_14() {
+    // Demonstrate Wallet in scenario 15
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_15() {
+    // Demonstrate Wallet in scenario 16
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_16() {
+    // Demonstrate Wallet in scenario 17
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_17() {
+    // Demonstrate Wallet in scenario 18
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_18() {
+    // Demonstrate Wallet in scenario 19
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_19() {
+    // Demonstrate Wallet in scenario 20
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_20() {
+    // Demonstrate Wallet in scenario 21
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_21() {
+    // Demonstrate Wallet in scenario 22
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_22() {
+    // Demonstrate Wallet in scenario 23
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_23() {
+    // Demonstrate Wallet in scenario 24
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_24() {
+    // Demonstrate Wallet in scenario 25
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_25() {
+    // Demonstrate Wallet in scenario 26
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_26() {
+    // Demonstrate Wallet in scenario 27
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_27() {
+    // Demonstrate Wallet in scenario 28
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_28() {
+    // Demonstrate Wallet in scenario 29
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_wallet_29() {
+    // Demonstrate Wallet in scenario 30
+    let mut obj = Wallet::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

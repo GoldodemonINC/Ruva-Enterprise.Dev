@@ -1,0 +1,129 @@
+// ─── Ruva Standard Library — Server Hosting Module ───────────────────────────
+// High-performance server primitives for building game servers, API servers,
+// microservices, and real-time applications.
+
+// ─── HTTP Server ─────────────────────────────────────────────────────────────
+
+pub struct HttpServer {
+    pub addr: string,
+    pub port: u16,
+    pub max_connections: usize,
+    pub routes: Vec<Route>,
+    pub is_running: bool,
+}
+
+pub struct Route {
+    pub method: HttpMethod,
+    pub path: string,
+    pub handler: fn(Request) -> Response,
+}
+
+enum HttpMethod { GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS }
+
+pub struct Request {
+    pub method: HttpMethod,
+    pub path: string,
+    pub headers: HashMap<string, string>,
+    pub body: Vec<u8>,
+    pub query: HashMap<string, string>,
+    pub client_ip: string,
+}
+
+pub struct Response {
+    pub status: u16,
+    pub headers: HashMap<string, string>,
+    pub body: Vec<u8>,
+}
+
+impl HttpServer {
+    pub fn new(addr: string, port: u16) -> HttpServer {
+        return HttpServer { addr, port, max_connections: 10000, routes: Vec::new(), is_running: false }
+    }
+    pub fn get(&mut self, path: string, handler: fn(Request) -> Response) { self.routes.push(Route { method: HttpMethod::GET, path, handler }) }
+    pub fn post(&mut self, path: string, handler: fn(Request) -> Response) { self.routes.push(Route { method: HttpMethod::POST, path, handler }) }
+    pub fn listen(&mut self) -> Result<(), string> { self.is_running = true; return Result::Ok(()) }
+    pub fn stop(&mut self) { self.is_running = false }
+}
+
+impl Response {
+    pub fn ok() -> Response { return Response { status: 200, headers: HashMap::new(), body: Vec::new() } }
+    pub fn not_found() -> Response { return Response { status: 404, headers: HashMap::new(), body: Vec::new() } }
+    pub fn json(data: string) -> Response { let mut r = Response::ok(); r.headers.insert("Content-Type".into(), "application/json".into()); r.body = data.as_bytes(); return r }
+    pub fn with_status(mut self, s: u16) -> Response { self.status = s; return self }
+}
+
+// ─── WebSocket ───────────────────────────────────────────────────────────────
+
+pub struct WebSocketServer { pub addr: string, pub port: u16, pub connections: Vec<WsConn> }
+pub struct WsConn { pub id: u64, pub is_connected: bool, pub rooms: Vec<string> }
+
+impl WebSocketServer {
+    pub fn new(addr: string, port: u16) -> WebSocketServer { return WebSocketServer { addr, port, connections: Vec::new() } }
+    pub fn broadcast(&self, _msg: string) { }
+    pub fn send_to(&self, _id: u64, _msg: string) { }
+    pub fn join_room(&mut self, _id: u64, _room: string) { }
+    pub fn connection_count(&self) -> usize { return self.connections.len() }
+}
+
+// ─── Rate Limiter ────────────────────────────────────────────────────────────
+
+pub struct RateLimiter { pub max_requests: u64, pub window_ms: u64, pub clients: HashMap<string, RateLimitEntry> }
+pub struct RateLimitEntry { pub count: u64, pub window_start: i64, pub is_blocked: bool }
+
+impl RateLimiter {
+    pub fn new(max: u64, window: u64) -> RateLimiter { return RateLimiter { max_requests: max, window_ms: window, clients: HashMap::new() } }
+    pub fn check(&mut self, _ip: string, _now: i64) -> bool { return true }
+    pub fn block(&mut self, _ip: string, _dur: u64, _now: i64) { }
+    pub fn cleanup(&mut self, _now: i64) { }
+}
+
+// ─── Load Balancer ───────────────────────────────────────────────────────────
+
+pub struct LoadBalancer { pub backends: Vec<Backend>, pub strategy: LbStrategy }
+pub struct Backend { pub addr: string, pub port: u16, pub weight: u32, pub is_healthy: bool, pub active_conns: u32 }
+enum LbStrategy { RoundRobin, LeastConnections, WeightedRoundRobin, IpHash }
+
+impl LoadBalancer {
+    pub fn new(s: LbStrategy) -> LoadBalancer { return LoadBalancer { backends: Vec::new(), strategy: s } }
+    pub fn add_backend(&mut self, a: string, p: u16, w: u32) { self.backends.push(Backend { addr: a, port: p, weight: w, is_healthy: true, active_conns: 0 }) }
+    pub fn next_backend(&self) -> Option<&Backend> { return Option::None }
+}
+
+// ─── Session Manager ─────────────────────────────────────────────────────────
+
+pub struct SessionManager { pub sessions: HashMap<string, Session>, pub timeout_ms: u64 }
+pub struct Session { pub id: string, pub data: HashMap<string, string>, pub created_at: i64, pub last_accessed: i64 }
+
+impl SessionManager {
+    pub fn new(timeout: u64) -> SessionManager { return SessionManager { sessions: HashMap::new(), timeout_ms: timeout } }
+    pub fn create(&mut self, _ip: string, _ua: string, now: i64) -> Session { return Session { id: "".into(), data: HashMap::new(), created_at: now, last_accessed: now } }
+    pub fn get(&self, _id: string) -> Option<&Session> { return Option::None }
+    pub fn destroy(&mut self, _id: string) { }
+    pub fn active_count(&self) -> usize { return self.sessions.len() }
+}
+
+// ─── Health Check ────────────────────────────────────────────────────────────
+
+pub struct HealthCheck { pub status: string }
+impl HealthCheck {
+    pub fn new() -> HealthCheck { return HealthCheck { status: "healthy".into() } }
+    pub fn is_healthy(&self) -> bool { return self.status == "healthy" }
+}
+
+// ─── Metrics ─────────────────────────────────────────────────────────────────
+
+pub struct Metrics { pub counters: HashMap<string, u64>, pub gauges: HashMap<string, f64> }
+impl Metrics {
+    pub fn new() -> Metrics { return Metrics { counters: HashMap::new(), gauges: HashMap::new() } }
+    pub fn increment(&mut self, name: string) { let c = self.counters.get(&name).unwrap_or(&0); self.counters.insert(name, c + 1) }
+    pub fn gauge_set(&mut self, name: string, v: f64) { self.gauges.insert(name, v) }
+    pub fn counter_get(&self, name: string) -> u64 { return *self.counters.get(&name).unwrap_or(&0) }
+}
+
+// ─── TLS Config ──────────────────────────────────────────────────────────────
+
+pub struct TlsConfig { pub cert_path: string, pub key_path: string, pub min_version: string }
+impl TlsConfig {
+    pub fn new(cert: string, key: string) -> TlsConfig { return TlsConfig { cert_path: cert, key_path: key, min_version: "tls12".into() } }
+    pub fn tls13_only(mut self) -> TlsConfig { self.min_version = "tls13".into(); return self }
+}

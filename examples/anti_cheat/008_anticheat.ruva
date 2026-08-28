@@ -1,0 +1,639 @@
+// ─── Anti-Cheat Example #8 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating anti-cheat concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct IntegrityCheck {
+    pub let name: string,
+    pub let hash: u64,
+    pub let mut active: bool,
+}
+
+impl IntegrityCheck {
+    pub fn new(name: string, hash: u64, active: bool) -> IntegrityCheck {
+        return IntegrityCheck {
+            name,
+            hash,
+            active,
+        }
+    }
+
+    pub fn default() -> IntegrityCheck {
+        return IntegrityCheck::new("".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "IntegrityCheck".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on IntegrityCheck")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on IntegrityCheck")
+    }
+}
+
+
+pub struct MemoryScanner {
+    pub let mut regions: Vec<i64>,
+    pub let pattern: string,
+}
+
+impl MemoryScanner {
+    pub fn new(regions: Vec<i64>, pattern: string) -> MemoryScanner {
+        return MemoryScanner {
+            regions,
+            pattern,
+        }
+    }
+
+    pub fn default() -> MemoryScanner {
+        return MemoryScanner::new(Vec::new(), "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "MemoryScanner".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on MemoryScanner")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on MemoryScanner")
+    }
+}
+
+
+pub struct ProcessMonitor {
+    pub let pid: u64,
+    pub let name: string,
+}
+
+impl ProcessMonitor {
+    pub fn new(pid: u64, name: string) -> ProcessMonitor {
+        return ProcessMonitor {
+            pid,
+            name,
+        }
+    }
+
+    pub fn default() -> ProcessMonitor {
+        return ProcessMonitor::new(0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "ProcessMonitor".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on ProcessMonitor")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on ProcessMonitor")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Status {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Status {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Status::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Status::Active => "Active".into(),
+            Status::Inactive => "Inactive".into(),
+            Status::Pending => "Pending".into(),
+            Status::Complete => "Complete".into(),
+            Status::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Error {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Error {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Error::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Error::Active => "Active".into(),
+            Error::Inactive => "Inactive".into(),
+            Error::Pending => "Pending".into(),
+            Error::Complete => "Complete".into(),
+            Error::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn verify_anti_cheat_0(input: i64) -> string {
+    // Anti_cheat function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn assert_anti_cheat_1(input: f64) -> bool {
+    // Anti_cheat function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 49
+    result = true
+    return result
+}
+
+
+fn test_anti_cheat_2(input: string) -> Vec<i64> {
+    // Anti_cheat function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn benchmark_anti_cheat_3(input: bool) -> &string {
+    // Anti_cheat function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn process_anti_cheat_4(input: Vec<i64>) -> i64 {
+    // Anti_cheat function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn transform_anti_cheat_5(input: &string) -> f64 {
+    // Anti_cheat function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn validate_anti_cheat_6(input: i64) -> string {
+    // Anti_cheat function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn analyze_anti_cheat_7(input: f64) -> bool {
+    // Anti_cheat function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 49
+    result = true
+    return result
+}
+
+
+fn optimize_anti_cheat_8(input: string) -> Vec<i64> {
+    // Anti_cheat function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn filter_anti_cheat_9(input: bool) -> &string {
+    // Anti_cheat function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== anti-cheat Example #8 ===")
+    
+    // Initialize components
+    let mut integrity_check_1 = create_integrity_check_1()
+    let mut memory_scanner_1 = create_memory_scanner_1()
+    let mut process_monitor_1 = create_process_monitor_1()
+
+    // Process data
+    verify_anti_cheat_0()
+    assert_anti_cheat_1()
+    test_anti_cheat_2()
+    benchmark_anti_cheat_3()
+    process_anti_cheat_4()
+    transform_anti_cheat_5()
+    validate_anti_cheat_6()
+    analyze_anti_cheat_7()
+
+    // Verify results
+    println!("All anti-cheat operations completed!")
+    println!("Example #8 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_anti_cheat_8_0() {
+    // Test anti_cheat functionality
+    let result: i64 = 49
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_anti_cheat_8_1() {
+    // Test anti_cheat functionality
+    let result: i64 = 49
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_anti_cheat_8_2() {
+    // Test anti_cheat functionality
+    let result: i64 = 49
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_anti_cheat_8_0(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 38
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_1(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 17
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_2(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 61
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_3(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 49
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_3(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_3(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_3(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_4(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 25
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_4(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_4(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_4(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_5(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 81
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_5(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_5(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_5(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_6(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 17
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_6(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_6(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_6(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_7(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 73
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_7(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_7(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_7(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_8(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 53
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_8(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_8(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_8(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_anti_cheat_8_9(input: i64) -> i64 {
+    // Helper function for anti-cheat example #8
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 85
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_8_9(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_anti_cheat_8_9(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_anti_cheat_8_9(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

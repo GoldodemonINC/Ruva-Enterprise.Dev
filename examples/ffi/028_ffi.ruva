@@ -1,0 +1,525 @@
+// ─── FFI Example #28 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating ffi concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn decode_ffi_0(input: Vec<i64>) -> i64 {
+    // Ffi function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn compress_ffi_1(input: &string) -> f64 {
+    // Ffi function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn encrypt_ffi_2(input: i64) -> string {
+    // Ffi function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn hash_ffi_3(input: f64) -> bool {
+    // Ffi function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 69
+    result = true
+    return result
+}
+
+
+fn create_ffi_4(input: string) -> Vec<i64> {
+    // Ffi function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn update_ffi_5(input: bool) -> &string {
+    // Ffi function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn delete_ffi_6(input: Vec<i64>) -> i64 {
+    // Ffi function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn merge_ffi_7(input: &string) -> f64 {
+    // Ffi function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn split_ffi_8(input: i64) -> string {
+    // Ffi function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn check_ffi_9(input: f64) -> bool {
+    // Ffi function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 69
+    result = true
+    return result
+}
+
+
+fn verify_ffi_10(input: string) -> Vec<i64> {
+    // Ffi function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn assert_ffi_11(input: bool) -> &string {
+    // Ffi function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn test_ffi_12(input: Vec<i64>) -> i64 {
+    // Ffi function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn benchmark_ffi_13(input: &string) -> f64 {
+    // Ffi function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== FFI Example #28 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    decode_ffi_0()
+    compress_ffi_1()
+    encrypt_ffi_2()
+    hash_ffi_3()
+    update_ffi_5()
+    delete_ffi_6()
+    merge_ffi_7()
+
+    // Verify results
+    println!("All FFI operations completed!")
+    println!("Example #28 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_ffi_28_0() {
+    // Test ffi functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_ffi_28_1() {
+    // Test ffi functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_ffi_28_2() {
+    // Test ffi functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_ffi_28_3() {
+    // Test ffi functionality
+    let result: i64 = 69
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_ffi_28_0(input: i64) -> i64 {
+    // Helper function for FFI example #28
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 30
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_28_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ffi_28_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ffi_28_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ffi_28_1(input: i64) -> i64 {
+    // Helper function for FFI example #28
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 37
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_28_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ffi_28_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ffi_28_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

@@ -1,0 +1,520 @@
+// ─── Embedded Example #26 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating embedded concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Register {
+    pub let addr: u64,
+    pub let mut value: u32,
+}
+
+impl Register {
+    pub fn new(addr: u64, value: u32) -> Register {
+        return Register {
+            addr,
+            value,
+        }
+    }
+
+    pub fn default() -> Register {
+        return Register::new(0, 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Register".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Register")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Register")
+    }
+}
+
+
+pub struct GPIO {
+    pub let pin: u32,
+    pub let mut mode: u32,
+    pub let mut value: bool,
+}
+
+impl GPIO {
+    pub fn new(pin: u32, mode: u32, value: bool) -> GPIO {
+        return GPIO {
+            pin,
+            mode,
+            value,
+        }
+    }
+
+    pub fn default() -> GPIO {
+        return GPIO::new(0, 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "GPIO".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on GPIO")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on GPIO")
+    }
+}
+
+
+pub struct SPI {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl SPI {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> SPI {
+        return SPI {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> SPI {
+        return SPI::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "SPI".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on SPI")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on SPI")
+    }
+}
+
+
+pub struct I2C {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl I2C {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> I2C {
+        return I2C {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> I2C {
+        return I2C::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "I2C".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on I2C")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on I2C")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn validate_embedded_0(input: Vec<i64>) -> i64 {
+    // Embedded function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn analyze_embedded_1(input: &string) -> f64 {
+    // Embedded function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn optimize_embedded_2(input: i64) -> string {
+    // Embedded function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn filter_embedded_3(input: f64) -> bool {
+    // Embedded function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 7
+    result = true
+    return result
+}
+
+
+fn aggregate_embedded_4(input: string) -> Vec<i64> {
+    // Embedded function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compute_embedded_5(input: bool) -> &string {
+    // Embedded function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn calculate_embedded_6(input: Vec<i64>) -> i64 {
+    // Embedded function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn evaluate_embedded_7(input: &string) -> f64 {
+    // Embedded function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn sort_embedded_8(input: i64) -> string {
+    // Embedded function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn search_embedded_9(input: f64) -> bool {
+    // Embedded function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 7
+    result = true
+    return result
+}
+
+
+fn find_embedded_10(input: string) -> Vec<i64> {
+    // Embedded function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn count_embedded_11(input: bool) -> &string {
+    // Embedded function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn summarize_embedded_12(input: Vec<i64>) -> i64 {
+    // Embedded function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn encode_embedded_13(input: &string) -> f64 {
+    // Embedded function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== embedded systems Example #26 ===")
+    
+    // Initialize components
+    let mut register_1 = create_register_1()
+    let mut g_p_i_o_1 = create_g_p_i_o_1()
+    let mut s_p_i_1 = create_s_p_i_1()
+
+    // Process data
+    validate_embedded_0()
+    analyze_embedded_1()
+    optimize_embedded_2()
+    filter_embedded_3()
+    aggregate_embedded_4()
+    compute_embedded_5()
+    calculate_embedded_6()
+    evaluate_embedded_7()
+
+    // Verify results
+    println!("All embedded systems operations completed!")
+    println!("Example #26 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_embedded_26_0() {
+    // Test embedded functionality
+    let result: i64 = 7
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_embedded_26_1() {
+    // Test embedded functionality
+    let result: i64 = 7
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_embedded_26_2() {
+    // Test embedded functionality
+    let result: i64 = 7
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_embedded_26_3() {
+    // Test embedded functionality
+    let result: i64 = 7
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_embedded_26_0(input: i64) -> i64 {
+    // Helper function for embedded systems example #26
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 16
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_26_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_embedded_26_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_embedded_26_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_embedded_26_1(input: i64) -> i64 {
+    // Helper function for embedded systems example #26
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 25
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_26_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_embedded_26_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_embedded_26_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

@@ -1,0 +1,492 @@
+// ─── Classes Example #75 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Cache class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Cache {
+    pub let max_size:u64;
+    pub let items:u64;
+    pub let hits:u64;
+    pub let misses:u64;
+    pub let mut created_at: i64,
+
+    pub fn new(max_size: u64, items: u64, hits: u64, misses: u64) -> Self {
+        return Self {
+            max_size,
+            items,
+            hits,
+            misses,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn get(&mut self) {
+        println!("Calling get on Cache")
+    }
+
+    pub fn put(&mut self) {
+        println!("Calling put on Cache")
+    }
+
+    pub fn evict(&mut self) {
+        println!("Calling evict on Cache")
+    }
+
+    pub fn clear(&mut self) {
+        println!("Calling clear on Cache")
+    }
+
+    pub fn stats(&mut self) {
+        println!("Calling stats on Cache")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Cache object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Cache {
+    pub fn default() -> Cache {
+        return Cache::new(0, 0, 0, 0)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Cache")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Cache::new(76, 76, 76, 76)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Cache::default())
+    objects.push(Cache::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Cache::default())
+    registry.insert("secondary", Cache::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Cache demo complete!")
+}
+
+// Additional Cache examples and patterns
+
+fn extra_cache_0() {
+    // Demonstrate Cache in scenario 1
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_1() {
+    // Demonstrate Cache in scenario 2
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_2() {
+    // Demonstrate Cache in scenario 3
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_3() {
+    // Demonstrate Cache in scenario 4
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_4() {
+    // Demonstrate Cache in scenario 5
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_5() {
+    // Demonstrate Cache in scenario 6
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_6() {
+    // Demonstrate Cache in scenario 7
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_7() {
+    // Demonstrate Cache in scenario 8
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_8() {
+    // Demonstrate Cache in scenario 9
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_9() {
+    // Demonstrate Cache in scenario 10
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_10() {
+    // Demonstrate Cache in scenario 11
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_11() {
+    // Demonstrate Cache in scenario 12
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_12() {
+    // Demonstrate Cache in scenario 13
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_13() {
+    // Demonstrate Cache in scenario 14
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_14() {
+    // Demonstrate Cache in scenario 15
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_15() {
+    // Demonstrate Cache in scenario 16
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_16() {
+    // Demonstrate Cache in scenario 17
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_17() {
+    // Demonstrate Cache in scenario 18
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_18() {
+    // Demonstrate Cache in scenario 19
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_19() {
+    // Demonstrate Cache in scenario 20
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_20() {
+    // Demonstrate Cache in scenario 21
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_21() {
+    // Demonstrate Cache in scenario 22
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_22() {
+    // Demonstrate Cache in scenario 23
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_23() {
+    // Demonstrate Cache in scenario 24
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_24() {
+    // Demonstrate Cache in scenario 25
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_25() {
+    // Demonstrate Cache in scenario 26
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_26() {
+    // Demonstrate Cache in scenario 27
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_27() {
+    // Demonstrate Cache in scenario 28
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_28() {
+    // Demonstrate Cache in scenario 29
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_cache_29() {
+    // Demonstrate Cache in scenario 30
+    let mut obj = Cache::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

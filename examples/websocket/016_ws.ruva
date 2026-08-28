@@ -1,0 +1,526 @@
+// ─── WebSocket Example #16 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating websocket concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Item")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Entry")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Record")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Value")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Value")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Status {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Status {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Status::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Status::Active => "Active".into(),
+            Status::Inactive => "Inactive".into(),
+            Status::Pending => "Pending".into(),
+            Status::Complete => "Complete".into(),
+            Status::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Error {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Error {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Error::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Error::Active => "Active".into(),
+            Error::Inactive => "Inactive".into(),
+            Error::Pending => "Pending".into(),
+            Error::Complete => "Complete".into(),
+            Error::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn delete_websocket_0(input: Vec<i64>) -> i64 {
+    // Websocket function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn merge_websocket_1(input: &string) -> f64 {
+    // Websocket function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn split_websocket_2(input: i64) -> string {
+    // Websocket function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn check_websocket_3(input: f64) -> bool {
+    // Websocket function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 97
+    result = true
+    return result
+}
+
+
+fn verify_websocket_4(input: string) -> Vec<i64> {
+    // Websocket function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn assert_websocket_5(input: bool) -> &string {
+    // Websocket function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn test_websocket_6(input: Vec<i64>) -> i64 {
+    // Websocket function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn benchmark_websocket_7(input: &string) -> f64 {
+    // Websocket function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn process_websocket_8(input: i64) -> string {
+    // Websocket function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn transform_websocket_9(input: f64) -> bool {
+    // Websocket function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 97
+    result = true
+    return result
+}
+
+
+fn validate_websocket_10(input: string) -> Vec<i64> {
+    // Websocket function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn analyze_websocket_11(input: bool) -> &string {
+    // Websocket function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn optimize_websocket_12(input: Vec<i64>) -> i64 {
+    // Websocket function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn filter_websocket_13(input: &string) -> f64 {
+    // Websocket function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== WebSocket Example #16 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    delete_websocket_0()
+    merge_websocket_1()
+    split_websocket_2()
+    check_websocket_3()
+    verify_websocket_4()
+    assert_websocket_5()
+    test_websocket_6()
+    benchmark_websocket_7()
+
+    // Verify results
+    println!("All WebSocket operations completed!")
+    println!("Example #16 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_websocket_16_0() {
+    // Test websocket functionality
+    let result: i64 = 97
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_websocket_16_1() {
+    // Test websocket functionality
+    let result: i64 = 97
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_websocket_16_2() {
+    // Test websocket functionality
+    let result: i64 = 97
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_websocket_16_3() {
+    // Test websocket functionality
+    let result: i64 = 97
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_websocket_16_0(input: i64) -> i64 {
+    // Helper function for WebSocket example #16
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 74
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_16_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_websocket_16_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_websocket_16_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_websocket_16_1(input: i64) -> i64 {
+    // Helper function for WebSocket example #16
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 61
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_16_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_websocket_16_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_websocket_16_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

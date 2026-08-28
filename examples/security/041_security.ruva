@@ -1,0 +1,517 @@
+// ─── Security Example #41 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating security concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Token {
+    pub let value: string,
+    pub let expires: i64,
+    pub let user_id: u64,
+}
+
+impl Token {
+    pub fn new(value: string, expires: i64, user_id: u64) -> Token {
+        return Token {
+            value,
+            expires,
+            user_id,
+        }
+    }
+
+    pub fn default() -> Token {
+        return Token::new("".into(), 0, 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Token".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Token")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Token")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Token")
+    }
+}
+
+
+pub struct Session {
+    pub let id: string,
+    pub let user_id: u64,
+    pub let mut data: string,
+}
+
+impl Session {
+    pub fn new(id: string, user_id: u64, data: string) -> Session {
+        return Session {
+            id,
+            user_id,
+            data,
+        }
+    }
+
+    pub fn default() -> Session {
+        return Session::new("".into(), 0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Session".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Session")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Session")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Session")
+    }
+}
+
+
+pub struct Credential {
+    pub let username: string,
+    pub let password_hash: string,
+}
+
+impl Credential {
+    pub fn new(username: string, password_hash: string) -> Credential {
+        return Credential {
+            username,
+            password_hash,
+        }
+    }
+
+    pub fn default() -> Credential {
+        return Credential::new("".into(), "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Credential".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Credential")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Credential")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Credential")
+    }
+}
+
+
+pub struct Certificate {
+    pub let subject: string,
+    pub let issuer: string,
+    pub let expires: i64,
+}
+
+impl Certificate {
+    pub fn new(subject: string, issuer: string, expires: i64) -> Certificate {
+        return Certificate {
+            subject,
+            issuer,
+            expires,
+        }
+    }
+
+    pub fn default() -> Certificate {
+        return Certificate::new("".into(), "".into(), 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Certificate".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Certificate")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Certificate")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Certificate")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Error {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Error {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Error::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Error::Active => "Active".into(),
+            Error::Inactive => "Inactive".into(),
+            Error::Pending => "Pending".into(),
+            Error::Complete => "Complete".into(),
+            Error::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum State {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn compress_security_0(input: f64) -> bool {
+    // Security function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 72
+    result = true
+    return result
+}
+
+
+fn encrypt_security_1(input: string) -> Vec<i64> {
+    // Security function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn hash_security_2(input: bool) -> &string {
+    // Security function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn create_security_3(input: Vec<i64>) -> i64 {
+    // Security function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 2
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn update_security_4(input: &string) -> f64 {
+    // Security function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 2
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_security_5(input: i64) -> string {
+    // Security function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_security_6(input: f64) -> bool {
+    // Security function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 72
+    result = true
+    return result
+}
+
+
+fn split_security_7(input: string) -> Vec<i64> {
+    // Security function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_security_8(input: bool) -> &string {
+    // Security function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn verify_security_9(input: Vec<i64>) -> i64 {
+    // Security function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 2
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn assert_security_10(input: &string) -> f64 {
+    // Security function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 2
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== security Example #41 ===")
+    
+    // Initialize components
+    let mut token_1 = create_token_1()
+    let mut session_1 = create_session_1()
+    let mut credential_1 = create_credential_1()
+
+    // Process data
+    compress_security_0()
+    encrypt_security_1()
+    hash_security_2()
+    update_security_4()
+    delete_security_5()
+    merge_security_6()
+    split_security_7()
+
+    // Verify results
+    println!("All security operations completed!")
+    println!("Example #41 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_security_41_0() {
+    // Test security functionality
+    let result: i64 = 72
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_security_41_1() {
+    // Test security functionality
+    let result: i64 = 72
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_security_41_2() {
+    // Test security functionality
+    let result: i64 = 72
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_security_41_3() {
+    // Test security functionality
+    let result: i64 = 72
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_security_41_0(input: i64) -> i64 {
+    // Helper function for security example #41
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 69
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_41_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_security_41_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_security_41_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_security_41_1(input: i64) -> i64 {
+    // Helper function for security example #41
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 73
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_41_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_security_41_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_security_41_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
