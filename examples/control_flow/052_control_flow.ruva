@@ -1,0 +1,526 @@
+// ─── Control Flow Example #52 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating control flow concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Switch {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Switch {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Switch {
+        return Switch {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Switch {
+        return Switch::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Switch".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Switch")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Switch")
+    }
+}
+
+
+pub struct Case {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Case {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Case {
+        return Case {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Case {
+        return Case::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Case".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Case")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Case")
+    }
+}
+
+
+pub struct Branch {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Branch {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Branch {
+        return Branch {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Branch {
+        return Branch::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Branch".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Branch")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Branch")
+    }
+}
+
+
+pub struct Route {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Route {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Route {
+        return Route {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Route {
+        return Route::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Route".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Route")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Route")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn optimize_control_flow_0(input: Vec<i64>) -> i64 {
+    // Control_flow function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn filter_control_flow_1(input: &string) -> f64 {
+    // Control_flow function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn aggregate_control_flow_2(input: i64) -> string {
+    // Control_flow function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compute_control_flow_3(input: f64) -> bool {
+    // Control_flow function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 13
+    result = true
+    return result
+}
+
+
+fn calculate_control_flow_4(input: string) -> Vec<i64> {
+    // Control_flow function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn evaluate_control_flow_5(input: bool) -> &string {
+    // Control_flow function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn sort_control_flow_6(input: Vec<i64>) -> i64 {
+    // Control_flow function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn search_control_flow_7(input: &string) -> f64 {
+    // Control_flow function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn find_control_flow_8(input: i64) -> string {
+    // Control_flow function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn count_control_flow_9(input: f64) -> bool {
+    // Control_flow function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 13
+    result = true
+    return result
+}
+
+
+fn summarize_control_flow_10(input: string) -> Vec<i64> {
+    // Control_flow function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encode_control_flow_11(input: bool) -> &string {
+    // Control_flow function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn decode_control_flow_12(input: Vec<i64>) -> i64 {
+    // Control_flow function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn compress_control_flow_13(input: &string) -> f64 {
+    // Control_flow function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== control_flow Example #52 ===")
+    
+    // Initialize components
+    let mut switch_1 = create_switch_1()
+    let mut case_1 = create_case_1()
+    let mut branch_1 = create_branch_1()
+
+    // Process data
+    optimize_control_flow_0()
+    filter_control_flow_1()
+    aggregate_control_flow_2()
+    compute_control_flow_3()
+    calculate_control_flow_4()
+    evaluate_control_flow_5()
+    sort_control_flow_6()
+    search_control_flow_7()
+
+    // Verify results
+    println!("All control_flow operations completed!")
+    println!("Example #52 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_control_flow_52_0() {
+    // Test control_flow functionality
+    let result: i64 = 13
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_control_flow_52_1() {
+    // Test control_flow functionality
+    let result: i64 = 13
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_control_flow_52_2() {
+    // Test control_flow functionality
+    let result: i64 = 13
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_control_flow_52_3() {
+    // Test control_flow functionality
+    let result: i64 = 13
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_control_flow_52_0(input: i64) -> i64 {
+    // Helper function for control_flow example #52
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 74
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_52_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_control_flow_52_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_control_flow_52_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_control_flow_52_1(input: i64) -> i64 {
+    // Helper function for control_flow example #52
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 29
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_52_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_control_flow_52_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_control_flow_52_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

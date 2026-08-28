@@ -77,7 +77,9 @@ pub fn create_generator(target: Target) -> Box<dyn CodeGenerator> {
         Target::Rust => Box::new(crate::codegen::CodeGen::new()),
         Target::Zig => Box::new(crate::codegen_zig::ZigCodeGen::new()),
         Target::Python => Box::new(crate::codegen_python::PythonCodeGen::new()),
-        _ => panic!("Target {:?} not yet implemented", target),
+        Target::C => Box::new(crate::codegen_c::CCodeGen::new()),
+        Target::Cpp => Box::new(crate::codegen_cpp::CppCodeGen::new()),
+        Target::Wasm => Box::new(crate::codegen_wasm::WasmCodeGen::new()),
     }
 }
 

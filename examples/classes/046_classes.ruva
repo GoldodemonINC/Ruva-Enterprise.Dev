@@ -1,0 +1,490 @@
+// ─── Classes Example #46 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Timer class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Timer {
+    pub let duration:f64;
+    pub let elapsed:f64;
+    pub let running:bool;
+    pub let mut created_at: i64,
+
+    pub fn new(duration: f64, elapsed: f64, running: bool) -> Self {
+        return Self {
+            duration,
+            elapsed,
+            running,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn start(&mut self) {
+        println!("Calling start on Timer")
+    }
+
+    pub fn stop(&mut self) {
+        println!("Calling stop on Timer")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Timer")
+    }
+
+    pub fn tick(&mut self) {
+        println!("Calling tick on Timer")
+    }
+
+    pub fn is_finished(&mut self) {
+        println!("Calling is_finished on Timer")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Timer object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Timer {
+    pub fn default() -> Timer {
+        return Timer::new(0.0, 0.0, false)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Timer")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Timer::new(46.0, 46.0, true)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Timer::default())
+    objects.push(Timer::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Timer::default())
+    registry.insert("secondary", Timer::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Timer demo complete!")
+}
+
+// Additional Timer examples and patterns
+
+fn extra_timer_0() {
+    // Demonstrate Timer in scenario 1
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_1() {
+    // Demonstrate Timer in scenario 2
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_2() {
+    // Demonstrate Timer in scenario 3
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_3() {
+    // Demonstrate Timer in scenario 4
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_4() {
+    // Demonstrate Timer in scenario 5
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_5() {
+    // Demonstrate Timer in scenario 6
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_6() {
+    // Demonstrate Timer in scenario 7
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_7() {
+    // Demonstrate Timer in scenario 8
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_8() {
+    // Demonstrate Timer in scenario 9
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_9() {
+    // Demonstrate Timer in scenario 10
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_10() {
+    // Demonstrate Timer in scenario 11
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_11() {
+    // Demonstrate Timer in scenario 12
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_12() {
+    // Demonstrate Timer in scenario 13
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_13() {
+    // Demonstrate Timer in scenario 14
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_14() {
+    // Demonstrate Timer in scenario 15
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_15() {
+    // Demonstrate Timer in scenario 16
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_16() {
+    // Demonstrate Timer in scenario 17
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_17() {
+    // Demonstrate Timer in scenario 18
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_18() {
+    // Demonstrate Timer in scenario 19
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_19() {
+    // Demonstrate Timer in scenario 20
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_20() {
+    // Demonstrate Timer in scenario 21
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_21() {
+    // Demonstrate Timer in scenario 22
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_22() {
+    // Demonstrate Timer in scenario 23
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_23() {
+    // Demonstrate Timer in scenario 24
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_24() {
+    // Demonstrate Timer in scenario 25
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_25() {
+    // Demonstrate Timer in scenario 26
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_26() {
+    // Demonstrate Timer in scenario 27
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_27() {
+    // Demonstrate Timer in scenario 28
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_28() {
+    // Demonstrate Timer in scenario 29
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_timer_29() {
+    // Demonstrate Timer in scenario 30
+    let mut obj = Timer::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

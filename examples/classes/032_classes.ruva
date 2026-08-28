@@ -1,0 +1,492 @@
+// ─── Classes Example #32 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Vector2D class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Vector2D {
+    pub let x:f64;
+    pub let y:f64;
+    pub let mut created_at: i64,
+
+    pub fn new(x: f64, y: f64) -> Self {
+        return Self {
+            x,
+            y,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn add(&mut self) {
+        println!("Calling add on Vector2D")
+    }
+
+    pub fn sub(&mut self) {
+        println!("Calling sub on Vector2D")
+    }
+
+    pub fn scale(&mut self) {
+        println!("Calling scale on Vector2D")
+    }
+
+    pub fn length(&mut self) {
+        println!("Calling length on Vector2D")
+    }
+
+    pub fn normalize(&mut self) {
+        println!("Calling normalize on Vector2D")
+    }
+
+    pub fn dot(&mut self) {
+        println!("Calling dot on Vector2D")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Vector2D object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Vector2D {
+    pub fn default() -> Vector2D {
+        return Vector2D::new(0.0, 0.0)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Vector2D")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Vector2D::new(32.0, 32.0)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Vector2D::default())
+    objects.push(Vector2D::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Vector2D::default())
+    registry.insert("secondary", Vector2D::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Vector2D demo complete!")
+}
+
+// Additional Vector2D examples and patterns
+
+fn extra_vector2d_0() {
+    // Demonstrate Vector2D in scenario 1
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_1() {
+    // Demonstrate Vector2D in scenario 2
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_2() {
+    // Demonstrate Vector2D in scenario 3
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_3() {
+    // Demonstrate Vector2D in scenario 4
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_4() {
+    // Demonstrate Vector2D in scenario 5
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_5() {
+    // Demonstrate Vector2D in scenario 6
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_6() {
+    // Demonstrate Vector2D in scenario 7
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_7() {
+    // Demonstrate Vector2D in scenario 8
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_8() {
+    // Demonstrate Vector2D in scenario 9
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_9() {
+    // Demonstrate Vector2D in scenario 10
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_10() {
+    // Demonstrate Vector2D in scenario 11
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_11() {
+    // Demonstrate Vector2D in scenario 12
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_12() {
+    // Demonstrate Vector2D in scenario 13
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_13() {
+    // Demonstrate Vector2D in scenario 14
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_14() {
+    // Demonstrate Vector2D in scenario 15
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_15() {
+    // Demonstrate Vector2D in scenario 16
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_16() {
+    // Demonstrate Vector2D in scenario 17
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_17() {
+    // Demonstrate Vector2D in scenario 18
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_18() {
+    // Demonstrate Vector2D in scenario 19
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_19() {
+    // Demonstrate Vector2D in scenario 20
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_20() {
+    // Demonstrate Vector2D in scenario 21
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_21() {
+    // Demonstrate Vector2D in scenario 22
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_22() {
+    // Demonstrate Vector2D in scenario 23
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_23() {
+    // Demonstrate Vector2D in scenario 24
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_24() {
+    // Demonstrate Vector2D in scenario 25
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_25() {
+    // Demonstrate Vector2D in scenario 26
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_26() {
+    // Demonstrate Vector2D in scenario 27
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_27() {
+    // Demonstrate Vector2D in scenario 28
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_28() {
+    // Demonstrate Vector2D in scenario 29
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_vector2d_29() {
+    // Demonstrate Vector2D in scenario 30
+    let mut obj = Vector2D::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

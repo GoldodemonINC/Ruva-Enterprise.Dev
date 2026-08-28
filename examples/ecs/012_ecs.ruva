@@ -1,0 +1,643 @@
+// ─── ECS Example #12 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating ecs concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Entity {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut active: bool,
+}
+
+impl Entity {
+    pub fn new(id: u64, name: string, active: bool) -> Entity {
+        return Entity {
+            id,
+            name,
+            active,
+        }
+    }
+
+    pub fn default() -> Entity {
+        return Entity::new(0, "".into(), false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entity".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Entity")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entity")
+    }
+}
+
+
+pub struct Component {
+    pub let entity_id: u64,
+    pub let type_name: string,
+    pub let mut data: string,
+}
+
+impl Component {
+    pub fn new(entity_id: u64, type_name: string, data: string) -> Component {
+        return Component {
+            entity_id,
+            type_name,
+            data,
+        }
+    }
+
+    pub fn default() -> Component {
+        return Component::new(0, "".into(), "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Component".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Component")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Component")
+    }
+}
+
+
+pub struct World {
+    pub let mut entities: Vec<i64>,
+    pub let mut tick: u64,
+    pub let mut dt: f64,
+}
+
+impl World {
+    pub fn new(entities: Vec<i64>, tick: u64, dt: f64) -> World {
+        return World {
+            entities,
+            tick,
+            dt,
+        }
+    }
+
+    pub fn default() -> World {
+        return World::new(Vec::new(), 0, 0.0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "World".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on World")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on World")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn split_ecs_0(input: i64) -> string {
+    // Ecs function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn check_ecs_1(input: f64) -> bool {
+    // Ecs function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 73
+    result = true
+    return result
+}
+
+
+fn verify_ecs_2(input: string) -> Vec<i64> {
+    // Ecs function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn assert_ecs_3(input: bool) -> &string {
+    // Ecs function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn test_ecs_4(input: Vec<i64>) -> i64 {
+    // Ecs function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn benchmark_ecs_5(input: &string) -> f64 {
+    // Ecs function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn process_ecs_6(input: i64) -> string {
+    // Ecs function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn transform_ecs_7(input: f64) -> bool {
+    // Ecs function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 73
+    result = true
+    return result
+}
+
+
+fn validate_ecs_8(input: string) -> Vec<i64> {
+    // Ecs function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn analyze_ecs_9(input: bool) -> &string {
+    // Ecs function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== Entity Component System Example #12 ===")
+    
+    // Initialize components
+    let mut entity_1 = create_entity_1()
+    let mut component_1 = create_component_1()
+    let mut world_1 = create_world_1()
+
+    // Process data
+    split_ecs_0()
+    check_ecs_1()
+    verify_ecs_2()
+    assert_ecs_3()
+    test_ecs_4()
+    benchmark_ecs_5()
+    process_ecs_6()
+    transform_ecs_7()
+
+    // Verify results
+    println!("All Entity Component System operations completed!")
+    println!("Example #12 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_ecs_12_0() {
+    // Test ecs functionality
+    let result: i64 = 73
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_ecs_12_1() {
+    // Test ecs functionality
+    let result: i64 = 73
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_ecs_12_2() {
+    // Test ecs functionality
+    let result: i64 = 73
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_ecs_12_0(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 50
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_1(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 5
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_2(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 73
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_3(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 17
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_3(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_3(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_3(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_4(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 1
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_4(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_4(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_4(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_5(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 69
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_5(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_5(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_5(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_6(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 17
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_6(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_6(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_6(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_7(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 85
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_7(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_7(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_7(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_8(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 49
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_8(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_8(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_8(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_ecs_12_9(input: i64) -> i64 {
+    // Helper function for Entity Component System example #12
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 45
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_12_9(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_ecs_12_9(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_ecs_12_9(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

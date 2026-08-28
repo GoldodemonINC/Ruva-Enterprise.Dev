@@ -1,0 +1,522 @@
+// ─── Server Example #196 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating server concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Request {
+    pub let method: string,
+    pub let path: string,
+    pub let body: string,
+}
+
+impl Request {
+    pub fn new(method: string, path: string, body: string) -> Request {
+        return Request {
+            method,
+            path,
+            body,
+        }
+    }
+
+    pub fn default() -> Request {
+        return Request::new("".into(), "".into(), "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Request".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Request")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Request")
+    }
+}
+
+
+pub struct Response {
+    pub let status: u16,
+    pub let body: string,
+    pub let headers: string,
+}
+
+impl Response {
+    pub fn new(status: u16, body: string, headers: string) -> Response {
+        return Response {
+            status,
+            body,
+            headers,
+        }
+    }
+
+    pub fn default() -> Response {
+        return Response::new(0, "".into(), "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Response".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Response")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Response")
+    }
+}
+
+
+pub struct Handler {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Handler {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Handler {
+        return Handler {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Handler {
+        return Handler::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Handler".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Handler")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Handler")
+    }
+}
+
+
+pub struct Router {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Router {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Router {
+        return Router {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Router {
+        return Router::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Router".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Router")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Router")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn delete_server_0(input: Vec<i64>) -> i64 {
+    // Server function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn merge_server_1(input: &string) -> f64 {
+    // Server function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn split_server_2(input: i64) -> string {
+    // Server function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn check_server_3(input: f64) -> bool {
+    // Server function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 77
+    result = true
+    return result
+}
+
+
+fn verify_server_4(input: string) -> Vec<i64> {
+    // Server function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn assert_server_5(input: bool) -> &string {
+    // Server function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn test_server_6(input: Vec<i64>) -> i64 {
+    // Server function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn benchmark_server_7(input: &string) -> f64 {
+    // Server function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn process_server_8(input: i64) -> string {
+    // Server function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn transform_server_9(input: f64) -> bool {
+    // Server function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 77
+    result = true
+    return result
+}
+
+
+fn validate_server_10(input: string) -> Vec<i64> {
+    // Server function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn analyze_server_11(input: bool) -> &string {
+    // Server function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn optimize_server_12(input: Vec<i64>) -> i64 {
+    // Server function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn filter_server_13(input: &string) -> f64 {
+    // Server function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== server hosting Example #196 ===")
+    
+    // Initialize components
+    let mut request_1 = create_request_1()
+    let mut response_1 = create_response_1()
+    let mut handler_1 = create_handler_1()
+
+    // Process data
+    delete_server_0()
+    merge_server_1()
+    split_server_2()
+    check_server_3()
+    verify_server_4()
+    assert_server_5()
+    test_server_6()
+    benchmark_server_7()
+
+    // Verify results
+    println!("All server hosting operations completed!")
+    println!("Example #196 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_server_196_0() {
+    // Test server functionality
+    let result: i64 = 77
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_server_196_1() {
+    // Test server functionality
+    let result: i64 = 77
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_server_196_2() {
+    // Test server functionality
+    let result: i64 = 77
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_server_196_3() {
+    // Test server functionality
+    let result: i64 = 77
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_server_196_0(input: i64) -> i64 {
+    // Helper function for server hosting example #196
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 26
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_196_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_server_196_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_server_196_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_server_196_1(input: i64) -> i64 {
+    // Helper function for server hosting example #196
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 85
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_196_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_server_196_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_server_196_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

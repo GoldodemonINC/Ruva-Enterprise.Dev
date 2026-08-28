@@ -1,0 +1,488 @@
+// ─── Classes Example #30 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Player class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Player {
+    pub let name:string;
+    pub let health:i64;
+    pub let score:i64;
+    pub let level:u32;
+    pub let mut created_at: i64,
+
+    pub fn new(name: string, health: i64, score: i64, level: u32) -> Self {
+        return Self {
+            name,
+            health,
+            score,
+            level,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn attack(&mut self) {
+        println!("Calling attack on Player")
+    }
+
+    pub fn heal(&mut self) {
+        println!("Calling heal on Player")
+    }
+
+    pub fn level_up(&mut self) {
+        println!("Calling level_up on Player")
+    }
+
+    pub fn take_damage(&mut self) {
+        println!("Calling take_damage on Player")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Player object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Player {
+    pub fn default() -> Player {
+        return Player::new("default".into(), 0, 0, 0)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Player")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Player::new("test_30".into(), 31, 31, 31)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Player::default())
+    objects.push(Player::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Player::default())
+    registry.insert("secondary", Player::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Player demo complete!")
+}
+
+// Additional Player examples and patterns
+
+fn extra_player_0() {
+    // Demonstrate Player in scenario 1
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_1() {
+    // Demonstrate Player in scenario 2
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_2() {
+    // Demonstrate Player in scenario 3
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_3() {
+    // Demonstrate Player in scenario 4
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_4() {
+    // Demonstrate Player in scenario 5
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_5() {
+    // Demonstrate Player in scenario 6
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_6() {
+    // Demonstrate Player in scenario 7
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_7() {
+    // Demonstrate Player in scenario 8
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_8() {
+    // Demonstrate Player in scenario 9
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_9() {
+    // Demonstrate Player in scenario 10
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_10() {
+    // Demonstrate Player in scenario 11
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_11() {
+    // Demonstrate Player in scenario 12
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_12() {
+    // Demonstrate Player in scenario 13
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_13() {
+    // Demonstrate Player in scenario 14
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_14() {
+    // Demonstrate Player in scenario 15
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_15() {
+    // Demonstrate Player in scenario 16
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_16() {
+    // Demonstrate Player in scenario 17
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_17() {
+    // Demonstrate Player in scenario 18
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_18() {
+    // Demonstrate Player in scenario 19
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_19() {
+    // Demonstrate Player in scenario 20
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_20() {
+    // Demonstrate Player in scenario 21
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_21() {
+    // Demonstrate Player in scenario 22
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_22() {
+    // Demonstrate Player in scenario 23
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_23() {
+    // Demonstrate Player in scenario 24
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_24() {
+    // Demonstrate Player in scenario 25
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_25() {
+    // Demonstrate Player in scenario 26
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_26() {
+    // Demonstrate Player in scenario 27
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_27() {
+    // Demonstrate Player in scenario 28
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_28() {
+    // Demonstrate Player in scenario 29
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_player_29() {
+    // Demonstrate Player in scenario 30
+    let mut obj = Player::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

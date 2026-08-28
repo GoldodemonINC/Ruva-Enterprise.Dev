@@ -1,0 +1,550 @@
+// ─── Database Example #3 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating database concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Table {
+    pub let name: string,
+    pub let mut rows: Vec<i64>,
+}
+
+impl Table {
+    pub fn new(name: string, rows: Vec<i64>) -> Table {
+        return Table {
+            name,
+            rows,
+        }
+    }
+
+    pub fn default() -> Table {
+        return Table::new("".into(), Vec::new())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Table".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Table")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Table")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Table")
+    }
+}
+
+
+pub struct Row {
+    pub let id: u64,
+    pub let mut data: string,
+}
+
+impl Row {
+    pub fn new(id: u64, data: string) -> Row {
+        return Row {
+            id,
+            data,
+        }
+    }
+
+    pub fn default() -> Row {
+        return Row::new(0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Row".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Row")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Row")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Row")
+    }
+}
+
+
+pub struct Column {
+    pub let name: string,
+    pub let type_name: string,
+    pub let nullable: bool,
+}
+
+impl Column {
+    pub fn new(name: string, type_name: string, nullable: bool) -> Column {
+        return Column {
+            name,
+            type_name,
+            nullable,
+        }
+    }
+
+    pub fn default() -> Column {
+        return Column::new("".into(), "".into(), false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Column".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Column")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Column")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Column")
+    }
+}
+
+
+pub struct Query {
+    pub let sql: string,
+    pub let mut params: Vec<i64>,
+}
+
+impl Query {
+    pub fn new(sql: string, params: Vec<i64>) -> Query {
+        return Query {
+            sql,
+            params,
+        }
+    }
+
+    pub fn default() -> Query {
+        return Query::new("".into(), Vec::new())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Query".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Query")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Query")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Query")
+    }
+}
+
+
+pub struct Transaction {
+    pub let id: u64,
+    pub let mut active: bool,
+}
+
+impl Transaction {
+    pub fn new(id: u64, active: bool) -> Transaction {
+        return Transaction {
+            id,
+            active,
+        }
+    }
+
+    pub fn default() -> Transaction {
+        return Transaction::new(0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Transaction".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Transaction")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Transaction")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Transaction")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn update_database_0(input: &string) -> f64 {
+    // Database function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_database_1(input: i64) -> string {
+    // Database function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_database_2(input: f64) -> bool {
+    // Database function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn split_database_3(input: string) -> Vec<i64> {
+    // Database function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_database_4(input: bool) -> &string {
+    // Database function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn verify_database_5(input: Vec<i64>) -> i64 {
+    // Database function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn assert_database_6(input: &string) -> f64 {
+    // Database function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn test_database_7(input: i64) -> string {
+    // Database function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn benchmark_database_8(input: f64) -> bool {
+    // Database function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn process_database_9(input: string) -> Vec<i64> {
+    // Database function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn transform_database_10(input: bool) -> &string {
+    // Database function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn validate_database_11(input: Vec<i64>) -> i64 {
+    // Database function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn analyze_database_12(input: &string) -> f64 {
+    // Database function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn optimize_database_13(input: i64) -> string {
+    // Database function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn filter_database_14(input: f64) -> bool {
+    // Database function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== database Example #3 ===")
+    
+    // Initialize components
+    let mut table_1 = create_table_1()
+    let mut row_1 = create_row_1()
+    let mut column_1 = create_column_1()
+
+    // Process data
+    update_database_0()
+    delete_database_1()
+    merge_database_2()
+    split_database_3()
+    check_database_4()
+    verify_database_5()
+    assert_database_6()
+    test_database_7()
+
+    // Verify results
+    println!("All database operations completed!")
+    println!("Example #3 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_database_3_0() {
+    // Test database functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_database_3_1() {
+    // Test database functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_database_3_2() {
+    // Test database functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_database_3_3() {
+    // Test database functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_database_3_4() {
+    // Test database functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

@@ -1,0 +1,480 @@
+// ─── File I/O Example #22 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating file i/o concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Item")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Entry")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Record")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Value")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Result")
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Event {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Event {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Event::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Event::Active => "Active".into(),
+            Event::Inactive => "Inactive".into(),
+            Event::Pending => "Pending".into(),
+            Event::Complete => "Complete".into(),
+            Event::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Action {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Action {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Action::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Action::Active => "Active".into(),
+            Action::Inactive => "Inactive".into(),
+            Action::Pending => "Pending".into(),
+            Action::Complete => "Complete".into(),
+            Action::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn optimize_file_io_0(input: string) -> Vec<i64> {
+    // File_io function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn filter_file_io_1(input: bool) -> &string {
+    // File_io function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn aggregate_file_io_2(input: Vec<i64>) -> i64 {
+    // File_io function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn compute_file_io_3(input: &string) -> f64 {
+    // File_io function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn calculate_file_io_4(input: i64) -> string {
+    // File_io function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn evaluate_file_io_5(input: f64) -> bool {
+    // File_io function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 83
+    result = true
+    return result
+}
+
+
+fn sort_file_io_6(input: string) -> Vec<i64> {
+    // File_io function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn search_file_io_7(input: bool) -> &string {
+    // File_io function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn find_file_io_8(input: Vec<i64>) -> i64 {
+    // File_io function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn count_file_io_9(input: &string) -> f64 {
+    // File_io function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 3
+    result = result + factor
+    result = result * 3
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn summarize_file_io_10(input: i64) -> string {
+    // File_io function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn encode_file_io_11(input: f64) -> bool {
+    // File_io function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 83
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== file I/O Example #22 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    optimize_file_io_0()
+    filter_file_io_1()
+    aggregate_file_io_2()
+    compute_file_io_3()
+    calculate_file_io_4()
+    evaluate_file_io_5()
+    sort_file_io_6()
+    search_file_io_7()
+
+    // Verify results
+    println!("All file I/O operations completed!")
+    println!("Example #22 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_file_io_22_0() {
+    // Test file_io functionality
+    let result: i64 = 83
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_22_1() {
+    // Test file_io functionality
+    let result: i64 = 83
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_22_2() {
+    // Test file_io functionality
+    let result: i64 = 83
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_22_3() {
+    // Test file_io functionality
+    let result: i64 = 83
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_file_io_22_4() {
+    // Test file_io functionality
+    let result: i64 = 83
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

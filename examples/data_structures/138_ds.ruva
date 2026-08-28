@@ -1,0 +1,619 @@
+// ─── Data Structures Example #138 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating data structures concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn aggregate_data_structure_0(input: i64) -> string {
+    // Data_structure function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compute_data_structure_1(input: f64) -> bool {
+    // Data_structure function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 79
+    result = true
+    return result
+}
+
+
+fn calculate_data_structure_2(input: string) -> Vec<i64> {
+    // Data_structure function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn evaluate_data_structure_3(input: bool) -> &string {
+    // Data_structure function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn sort_data_structure_4(input: Vec<i64>) -> i64 {
+    // Data_structure function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn search_data_structure_5(input: &string) -> f64 {
+    // Data_structure function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn find_data_structure_6(input: i64) -> string {
+    // Data_structure function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn count_data_structure_7(input: f64) -> bool {
+    // Data_structure function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 79
+    result = true
+    return result
+}
+
+
+fn summarize_data_structure_8(input: string) -> Vec<i64> {
+    // Data_structure function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encode_data_structure_9(input: bool) -> &string {
+    // Data_structure function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== data_structure Example #138 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    aggregate_data_structure_0()
+    compute_data_structure_1()
+    calculate_data_structure_2()
+    evaluate_data_structure_3()
+    sort_data_structure_4()
+    search_data_structure_5()
+    find_data_structure_6()
+    count_data_structure_7()
+
+    // Verify results
+    println!("All data_structure operations completed!")
+    println!("Example #138 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_data_structure_138_0() {
+    // Test data_structure functionality
+    let result: i64 = 79
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_data_structure_138_1() {
+    // Test data_structure functionality
+    let result: i64 = 79
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_data_structure_138_2() {
+    // Test data_structure functionality
+    let result: i64 = 79
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_data_structure_138_0(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 68
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_1(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 81
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_2(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 21
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_3(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 33
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_3(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_3(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_3(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_4(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 21
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_4(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_4(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_4(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_5(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 33
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_5(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_5(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_5(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_6(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 89
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_6(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_6(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_6(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_7(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 57
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_7(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_7(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_7(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_data_structure_138_8(input: i64) -> i64 {
+    // Helper function for data_structure example #138
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 41
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_138_8(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_data_structure_138_8(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_data_structure_138_8(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

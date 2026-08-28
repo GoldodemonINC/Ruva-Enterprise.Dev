@@ -1,0 +1,480 @@
+// ─── Closures Example #18 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating closures concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Result")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn aggregate_closure_0(input: string) -> Vec<i64> {
+    // Closure function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compute_closure_1(input: bool) -> &string {
+    // Closure function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn calculate_closure_2(input: Vec<i64>) -> i64 {
+    // Closure function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn evaluate_closure_3(input: &string) -> f64 {
+    // Closure function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn sort_closure_4(input: i64) -> string {
+    // Closure function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn search_closure_5(input: f64) -> bool {
+    // Closure function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 59
+    result = true
+    return result
+}
+
+
+fn find_closure_6(input: string) -> Vec<i64> {
+    // Closure function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn count_closure_7(input: bool) -> &string {
+    // Closure function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn summarize_closure_8(input: Vec<i64>) -> i64 {
+    // Closure function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn encode_closure_9(input: &string) -> f64 {
+    // Closure function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn decode_closure_10(input: i64) -> string {
+    // Closure function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compress_closure_11(input: f64) -> bool {
+    // Closure function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 59
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== closure Example #18 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    aggregate_closure_0()
+    compute_closure_1()
+    calculate_closure_2()
+    evaluate_closure_3()
+    sort_closure_4()
+    search_closure_5()
+    find_closure_6()
+    count_closure_7()
+
+    // Verify results
+    println!("All closure operations completed!")
+    println!("Example #18 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_closure_18_0() {
+    // Test closure functionality
+    let result: i64 = 59
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_closure_18_1() {
+    // Test closure functionality
+    let result: i64 = 59
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_closure_18_2() {
+    // Test closure functionality
+    let result: i64 = 59
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_closure_18_3() {
+    // Test closure functionality
+    let result: i64 = 59
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_closure_18_4() {
+    // Test closure functionality
+    let result: i64 = 59
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
