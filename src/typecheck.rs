@@ -23,10 +23,12 @@ type TypeVar = usize;
 
 // ─── Type Variable Table ───────────────────────────────────────────────────
 
+#[allow(dead_code)]
 struct TypeTable {
     next_var: TypeVar,
 }
 
+#[allow(dead_code)]
 impl TypeTable {
     fn new() -> Self {
         Self { next_var: 0 }
@@ -54,6 +56,7 @@ pub struct TypeChecker {
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
     in_unsafe_fn: bool,
+    #[allow(dead_code)]
     type_table: TypeTable,
     /// Tracks the current source location for error reporting
     current_line: usize,
@@ -1371,6 +1374,7 @@ impl TypeChecker {
 
     // ─── Unsafe Checking Helpers ───────────────────────────────────────
 
+    #[allow(dead_code)]
     fn is_unsafe_required_fn(&self, name: &str) -> bool {
         matches!(name,
             "transmute" | "size_of" | "align_of" | "offset_of"
@@ -1380,6 +1384,7 @@ impl TypeChecker {
         ) || name.starts_with("asm") || name.starts_with("llvm")
     }
 
+    #[allow(dead_code)]
     fn is_unsafe_type(&self, ty: &Ty) -> bool {
         self.ty_is_raw_pointer(ty)
     }
