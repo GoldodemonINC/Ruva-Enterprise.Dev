@@ -120,6 +120,36 @@ impl Parser {
             Token::Const => Ok(Item::Const(self.parse_const_item(is_pub)?)),
             Token::Mod => Ok(Item::Module(self.parse_mod(is_pub)?)),
             Token::Extern => Ok(Item::ExternBlock(self.parse_extern_block()?)),
+            Token::Interface => Ok(Item::Interface(self.parse_interface_def(is_pub)?)),
+            Token::Package => Ok(Item::Package(self.parse_package()?)),
+            Token::Comptime => Ok(Item::Comptime(self.parse_comptime()?)),
+            Token::At => {
+                // Python-style decorator: @decorator
+                let decorators = self.parse_decorators()?;
+                let definition = self.parse_item()?;
+                Ok(Item::Decorated(DecoratedDef { decorators, definition: Box::new(definition) }))
+            }
+            Token::Try => {
+                // Try/catch as a statement expression
+                let try_expr = self.parse_try_catch_expr()?;
+                Ok(Item::Function(FunctionDef {
+                    is_pub: false, is_test: false, is_unsafe: false,
+                    name: "__try_expr__".into(), generics: vec![],
+                    params: vec![], return_type: None,
+                    body: Block { stmts: vec![], expr: Some(Box::new(try_expr)) },
+                    span: self.peek_span(),
+                }))
+            }
+            Token::Throw => {
+                let throw_expr = self.parse_throw()?;
+                Ok(Item::Function(FunctionDef {
+                    is_pub: false, is_test: false, is_unsafe: false,
+                    name: "__throw_expr__".into(), generics: vec![],
+                    params: vec![], return_type: None,
+                    body: Block { stmts: vec![], expr: Some(Box::new(throw_expr)) },
+                    span: self.peek_span(),
+                }))
+            }
             Token::LBrace if is_unsafe => {
                 // unsafe { ... } as a top-level item? Not standard, but let's handle gracefully
                 bail!("unsafe blocks cannot be top-level items at {}:{}", self.peek_span().line, self.peek_span().col)
@@ -2106,6 +2136,150 @@ impl Parser {
                 bail!("Unexpected token {:?} in expression at {}:{}", self.peek(), span.line, span.col);
             }
         }
+    }
+
+    // ─── Java Features ────────────────────────────────────────────────
+
+    fn parse_interface_def(&mut self, is_pub: bool) -> Result<InterfaceDef> {
+        self.expect(&Token::Interface)?;
+        let (name, _) = self.expect_ident()?;
+        let generics = if self.at(&Token::Lt) {
+            self.parse_generic_params()?
+        } else {
+            Vec::new()
+        };
+        self.expect(&Token::LBrace)?;
+        let mut methods = Vec::new();
+        while !self.at(&Token::RBrace) && !self.at(&Token::Eof) {
+            let _is_pub_method = self.at(&Token::Pub);
+            if _is_pub_method { self.advance(); }
+            let (method_name, _) = self.expect_ident()?;
+            self.expect(&Token::LParen)?;
+            let mut params = Vec::new();
+            while !self.at(&Token::RParen) && !self.at(&Token::Eof) {
+                params.push(self.parse_param()?);
+                if self.at(&Token::Comma) { self.advance(); }
+            }
+            self.expect(&Token::RParen)?;
+            let return_type = if self.at(&Token::Arrow) {
+                self.advance();
+                Some(self.parse_type()?)
+            } else {
+                None
+            };
+            let default_body = if self.at(&Token::LBrace) {
+                Some(self.parse_block()?)
+            } else {
+                self.expect(&Token::Semicolon)?;
+                None
+            };
+            methods.push(InterfaceMethod {
+                name: method_name,
+                params,
+                return_type,
+                default_body,
+            });
+        }
+        self.expect(&Token::RBrace)?;
+        Ok(InterfaceDef { is_pub, name, generics, methods, span: self.peek_span() })
+    }
+
+    fn parse_try_catch_expr(&mut self) -> Result<Expr> {
+        self.expect(&Token::Try)?;
+        let try_body = self.parse_block()?;
+        let mut catch_clauses = Vec::new();
+        while self.at(&Token::Catch) {
+            self.advance();
+            let (var_name, var_type) = if self.at(&Token::LParen) {
+                self.advance();
+                let (name, _) = self.expect_ident()?;
+                let ty = if self.at(&Token::Colon) {
+                    self.advance();
+                    Some(self.parse_type()?)
+                } else {
+                    None
+                };
+                self.expect(&Token::RParen)?;
+                (Some(name), ty)
+            } else {
+                (None, None)
+            };
+            let body = self.parse_block()?;
+            catch_clauses.push(CatchClause { var_name, var_type, body });
+        }
+        let finally_body = if self.at(&Token::Finally) {
+            self.advance();
+            Some(self.parse_block()?)
+        } else {
+            None
+        };
+        Ok(Expr::TryCatch(TryCatchExpr {
+            try_body,
+            catch_clauses,
+            finally_body,
+        }))
+    }
+
+    fn parse_throw(&mut self) -> Result<Expr> {
+        self.expect(&Token::Throw)?;
+        let value = self.parse_expr()?;
+        Ok(Expr::Throw(ThrowExpr { value: Box::new(value) }))
+    }
+
+    fn parse_package(&mut self) -> Result<PackageDef> {
+        self.expect(&Token::Package)?;
+        let mut path = Vec::new();
+        let (first, _) = self.expect_ident()?;
+        path.push(first);
+        while self.at(&Token::DoubleColon) {
+            self.advance();
+            let (part, _) = self.expect_ident()?;
+            path.push(part);
+        }
+        self.expect(&Token::Semicolon)?;
+        Ok(PackageDef { path })
+    }
+
+    // ─── Zig Features ─────────────────────────────────────────────────
+
+    fn parse_comptime(&mut self) -> Result<ComptimeBlock> {
+        self.expect(&Token::Comptime)?;
+        let body = self.parse_block()?;
+        Ok(ComptimeBlock { body })
+    }
+
+    // ─── Python Features ──────────────────────────────────────────────
+
+    fn parse_decorators(&mut self) -> Result<Vec<Expr>> {
+        let mut decorators = Vec::new();
+        while self.at(&Token::At) {
+            self.advance();
+            let expr = self.parse_expr()?;
+            decorators.push(expr);
+        }
+        Ok(decorators)
+    }
+
+    fn parse_list_comp(&mut self) -> Result<ListCompExpr> {
+        self.expect(&Token::LBracket)?;
+        let element = self.parse_expr()?;
+        self.expect(&Token::For)?;
+        let (var_name, _) = self.expect_ident()?;
+        self.expect(&Token::In)?;
+        let iterable = self.parse_expr()?;
+        let condition = if self.at(&Token::If) {
+            self.advance();
+            Some(Box::new(self.parse_expr()?))
+        } else {
+            None
+        };
+        self.expect(&Token::RBracket)?;
+        Ok(ListCompExpr {
+            element: Box::new(element),
+            variable: var_name,
+            iterable: Box::new(iterable),
+            condition,
+        })
     }
 }
 

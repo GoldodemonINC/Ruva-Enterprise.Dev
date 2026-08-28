@@ -1,10 +1,6 @@
-type Meter = f64
-type Second = f64
-type Speed = f64
-
 fn main() {
-    let distance: Meter = 100.0
-    let time: Second = 9.58
-    let speed: Speed = distance / time
+    let distance: f64 = 100.0
+    let time: f64 = 9.58
+    let speed: f64 = distance / time
     println!("Speed: {} m/s", speed)
 }

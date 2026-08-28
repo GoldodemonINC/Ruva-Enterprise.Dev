@@ -58,6 +58,18 @@ pub enum Token {
     Extern,
     Static,
     Const,
+    // Java features
+    Interface,
+    Abstract,
+    Synchronized,
+    Package,
+    Try,
+    Finally,
+    Throw,
+    // Zig features
+    Comptime,
+    // Python features
+    Decorator,
 
     // Operators
     Plus,       // +
@@ -147,6 +159,16 @@ pub enum Item {
     Module(ModDef),
     /// extern "C" { fn name(...) -> ...; ... }
     ExternBlock(ExternBlock),
+    // Java features
+    Interface(InterfaceDef),
+    TryCatch(TryCatchExpr),
+    Throw(ThrowExpr),
+    Package(PackageDef),
+    // Zig features
+    Comptime(ComptimeBlock),
+    // Python features
+    Decorated(DecoratedDef),
+    ListComp(ListCompExpr),
 }
 
 // ─── Functions ───────────────────────────────────────────────────────────────
@@ -378,6 +400,79 @@ pub enum ExternItem {
         ty: Type,
         value: Option<Expr>,
     },
+}
+
+// ─── Java Features ─────────────────────────────────────────────────────────
+
+/// Interface definition (Java-style)
+#[derive(Debug, Clone)]
+pub struct InterfaceDef {
+    pub is_pub: bool,
+    pub name: String,
+    pub generics: Vec<GenericParam>,
+    pub methods: Vec<InterfaceMethod>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone)]
+pub struct InterfaceMethod {
+    pub name: String,
+    pub params: Vec<Param>,
+    pub return_type: Option<Type>,
+    pub default_body: Option<Block>,
+}
+
+/// Try/catch expression (Java-style)
+#[derive(Debug, Clone)]
+pub struct TryCatchExpr {
+    pub try_body: Block,
+    pub catch_clauses: Vec<CatchClause>,
+    pub finally_body: Option<Block>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CatchClause {
+    pub var_name: Option<String>,
+    pub var_type: Option<Type>,
+    pub body: Block,
+}
+
+/// Throw expression (Java-style)
+#[derive(Debug, Clone)]
+pub struct ThrowExpr {
+    pub value: Box<Expr>,
+}
+
+/// Package declaration (Java-style)
+#[derive(Debug, Clone)]
+pub struct PackageDef {
+    pub path: Vec<String>,
+}
+
+// ─── Zig Features ──────────────────────────────────────────────────────────
+
+/// Comptime block (Zig-style) — evaluated at compile time
+#[derive(Debug, Clone)]
+pub struct ComptimeBlock {
+    pub body: Block,
+}
+
+// ─── Python Features ───────────────────────────────────────────────────────
+
+/// Decorated definition (Python-style @decorator)
+#[derive(Debug, Clone)]
+pub struct DecoratedDef {
+    pub decorators: Vec<Expr>,
+    pub definition: Box<Item>,
+}
+
+/// List comprehension (Python-style)
+#[derive(Debug, Clone)]
+pub struct ListCompExpr {
+    pub element: Box<Expr>,
+    pub variable: String,
+    pub iterable: Box<Expr>,
+    pub condition: Option<Box<Expr>>,
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -663,6 +758,14 @@ pub enum Expr {
         left: Box<Expr>,
         right: Box<Expr>,
     },
+    // Java-style try/catch
+    TryCatch(TryCatchExpr),
+    // Java-style throw
+    Throw(ThrowExpr),
+    // Zig comptime block
+    Comptime(ComptimeBlock),
+    // Python list comprehension
+    ListComp(ListCompExpr),
     // Assert: assert!(condition, msg)
     Assert {
         condition: Box<Expr>,

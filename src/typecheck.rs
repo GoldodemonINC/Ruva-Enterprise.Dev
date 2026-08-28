@@ -23,10 +23,12 @@ type TypeVar = usize;
 
 // ─── Type Variable Table ───────────────────────────────────────────────────
 
+#[allow(dead_code)]
 struct TypeTable {
     next_var: TypeVar,
 }
 
+#[allow(dead_code)]
 impl TypeTable {
     fn new() -> Self {
         Self { next_var: 0 }
@@ -59,6 +61,7 @@ pub struct TypeChecker {
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
     in_unsafe_fn: bool,
+    #[allow(dead_code)]
     type_table: TypeTable,
     /// Tracks the current source location for error reporting
     current_line: usize,
@@ -952,6 +955,31 @@ impl TypeChecker {
                     self.check_expr(msg);
                 }
             }
+            Expr::TryCatch(tc) => {
+                for stmt in &tc.try_body.stmts {
+                    self.check_stmt(stmt);
+                }
+                for clause in &tc.catch_clauses {
+                    for stmt in &clause.body.stmts {
+                        self.check_stmt(stmt);
+                    }
+                }
+            }
+            Expr::Throw(th) => {
+                self.check_expr(&th.value);
+            }
+            Expr::Comptime(ct) => {
+                for stmt in &ct.body.stmts {
+                    self.check_stmt(stmt);
+                }
+            }
+            Expr::ListComp(lc) => {
+                self.check_expr(&lc.iterable);
+                self.check_expr(&lc.element);
+                if let Some(ref cond) = lc.condition {
+                    self.check_expr(cond);
+                }
+            }
         }
     }
 
@@ -1218,6 +1246,10 @@ impl TypeChecker {
             }
             Expr::Sizeof(_) => Ty::Primitive("usize".into()),
             Expr::Offsetof { .. } => Ty::Primitive("usize".into()),
+            Expr::TryCatch(_) => Ty::Inferred,
+            Expr::Throw(_) => Ty::Inferred,
+            Expr::Comptime(_) => Ty::Inferred,
+            Expr::ListComp(_) => Ty::Array(Box::new(Ty::Inferred)),
         }
     }
 
@@ -1570,6 +1602,7 @@ impl TypeChecker {
 
     // ─── Unsafe Checking Helpers ───────────────────────────────────────
 
+    #[allow(dead_code)]
     fn is_unsafe_required_fn(&self, name: &str) -> bool {
         matches!(name,
             "transmute" | "size_of" | "align_of" | "offset_of"
@@ -1579,6 +1612,7 @@ impl TypeChecker {
         ) || name.starts_with("asm") || name.starts_with("llvm")
     }
 
+    #[allow(dead_code)]
     fn is_unsafe_type(&self, ty: &Ty) -> bool {
         self.ty_is_raw_pointer(ty)
     }

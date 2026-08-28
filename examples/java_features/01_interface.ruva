@@ -1,0 +1,31 @@
+// Java-style interface in Ruva
+// Transpiles to a Rust trait
+
+interface Drawable {
+    fn draw(&self)
+    fn area(&self) -> f64
+}
+
+class Circle {
+    pub let radius: f64,
+
+    pub fn new(radius: f64) -> Self {
+        return Self { radius }
+    }
+}
+
+impl Circle {
+    pub fn draw(&self) {
+        println!("Drawing circle with radius {}", self.radius)
+    }
+
+    pub fn area(&self) -> f64 {
+        return 3.14159 * self.radius * self.radius
+    }
+}
+
+fn main() {
+    let c = Circle::new(5.0)
+    c.draw()
+    println!("Area: {:.2}", c.area())
+}

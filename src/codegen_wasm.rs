@@ -144,6 +144,9 @@ impl WasmCodeGen {
                     }
                 }
             }
+            Item::Interface(_) | Item::TryCatch(_) | Item::Throw(_)
+            | Item::Package(_) | Item::Comptime(_)
+            | Item::Decorated(_) | Item::ListComp(_) => {}
         }
     }
 

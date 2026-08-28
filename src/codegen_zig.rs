@@ -76,6 +76,7 @@ impl ZigCodeGen {
             Item::Attribute(attr) => self.gen_attribute(attr),
             Item::Module(m) => self.gen_module(m),
             Item::ExternBlock(eb) => self.gen_extern_block(eb),
+            _ => self.writeln("// Unsupported item"),
         }
     }
 
@@ -1034,6 +1035,7 @@ impl ZigCodeGen {
                 self.output.push_str(" != ");
                 self.gen_expr(right);
             }
+            _ => self.output.push_str("undefined"),
         }
     }
 

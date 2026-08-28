@@ -1,0 +1,11 @@
+// Python-style decorator
+// Transpiles to Rust proc-macro style attribute
+
+@log_calls
+fn greet(name: string) {
+    println!("Hello, {}!", name)
+}
+
+fn main() {
+    greet("World")
+}

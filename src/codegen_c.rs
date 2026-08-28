@@ -181,6 +181,9 @@ impl CCodeGen {
                 }
             }
             Item::ExternBlock(eb) => self.gen_extern_block_items(eb),
+            Item::Interface(_) | Item::TryCatch(_) | Item::Throw(_)
+            | Item::Package(_) | Item::Comptime(_)
+            | Item::Decorated(_) | Item::ListComp(_) => {}
         }
     }
 
@@ -617,6 +620,9 @@ impl CCodeGen {
                 out.push_str(&format!("offsetof({}, {})", Self::safe_name(struct_type), Self::safe_name(field)));
             }
             Expr::FString(_) => {}
+            Expr::TryCatch(_) | Expr::Throw(_) | Expr::Comptime(_) | Expr::ListComp(_) => {
+                out.push_str("/* unhandled expr */ 0");
+            }
         }
     }
 

@@ -3,6 +3,6 @@ fn main() {
     let float_val: f64 = 3.14
     let bool_val: bool = true
     let char_val: char = 'A'
-    let str_val: string = "hello"
+    let str_val = "hello"
     println!("int={}, float={}, bool={}, char={}, str={}", int_val, float_val, bool_val, char_val, str_val)
 }

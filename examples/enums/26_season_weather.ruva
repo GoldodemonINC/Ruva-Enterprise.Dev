@@ -1,18 +1,17 @@
-enum SunnyEnum {
-    Sunny,
-    Rainy,
-    Snowy,
+// Enum example
+enum Value {
+    Variant1,
+    Variant2,
+    Variant3,
 }
 
-fn describe(v: &SunnyEnum) -> string {
-    match v {
-        SunnyEnum::Sunny => "Sunny".into(),
-        SunnyEnum::Rainy => "Rainy".into(),
-        SunnyEnum::Snowy => "Snowy".into(),
-    }
+fn describe(v: &Value) -> string {
+    if v == &Value::Variant1 { return "Variant1".into() }
+    if v == &Value::Variant2 { return "Variant2".into() }
+    return "Variant3".into()
 }
 
 fn main() {
-    let v = SunnyEnum::Sunny
+    let v = Value::Variant1
     println!("{}", describe(&v))
 }

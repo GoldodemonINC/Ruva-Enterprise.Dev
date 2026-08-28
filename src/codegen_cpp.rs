@@ -167,6 +167,9 @@ impl CppCodeGen {
                 }
             }
             Item::ExternBlock(eb) => self.gen_extern_block(eb),
+            Item::Interface(_) | Item::TryCatch(_) | Item::Throw(_)
+            | Item::Package(_) | Item::Comptime(_)
+            | Item::Decorated(_) | Item::ListComp(_) => {}
         }
     }
 
@@ -690,6 +693,9 @@ impl CppCodeGen {
                 if let Some(ref e) = block.expr { r.push_str(&self.gen_expr_str(e)); } else { r.push_str("0"); }
                 r.push_str(" }})()");
                 r
+            }
+            Expr::TryCatch(_) | Expr::Throw(_) | Expr::Comptime(_) | Expr::ListComp(_) => {
+                "/* unhandled expr */ 0".into()
             }
         }
     }
