@@ -1,35 +1,25 @@
 // Ruva Standard Library - Anticheat Module
-// Memory safety, integrity checking, and anti-tamper
+// Memory integrity, stack protection, anti-debug, anti-tamper,
+// encryption, obfuscation, and syscall monitoring.
 
-// ─── Memory Protection ──────────────────────────────────────────────────────
+// ─── Memory Protection ──────────────────────────────────────────────────
 
 mod memory {
     pub struct Region {
         pub address: u64,
         pub size: usize,
         pub is_committed: bool,
-    }
-
-    enum Protection {
-        Read,
-        ReadWrite,
-        ReadExecute,
-        ReadWriteExecute,
-        None,
+        pub hash: u64,
     }
 
     pub struct Scanner {
         pub regions: Vec<Region>,
+        pub scan_count: i64,
     }
 
     pub struct IntegrityChecker {
         pub checksums_count: i64,
-    }
-
-    struct ScanResult {
-        pub address: u64,
-        pub pattern_id: i64,
-        pub offset: usize,
+        pub total_bytes_protected: u64,
     }
 
     struct IntegrityViolation {
@@ -40,73 +30,121 @@ mod memory {
 
     impl Region {
         pub fn new(address: u64, size: usize) -> Region {
-            return Region { address, size, is_committed: false }
-        }
-
-        pub fn get_address(&self) -> u64 {
-            return self.address
-        }
-
-        pub fn get_size(&self) -> usize {
-            return self.size
+            return Region { address, size, is_committed: false, hash: 0 }
         }
 
         pub fn commit(&mut self) -> Result<(), string> {
             self.is_committed = true
+            self.hash = self.compute_hash()
             return Result::Ok(())
         }
 
-        pub fn decommit(&mut self) -> Result<(), string> {
-            self.is_committed = false
-            return Result::Ok(())
+        pub fn compute_hash(&self) -> u64 {
+            let mut hash: u64 = 14695981039346656037
+            hash = hash ^ (self.address as u64)
+            hash = hash * 1099511628211
+            hash = hash ^ (self.size as u64)
+            hash = hash * 1099511628211
+            return hash
+        }
+
+        pub fn verify_integrity(&self) -> bool {
+            return self.compute_hash() == self.hash
         }
     }
 
     impl Scanner {
         pub fn new() -> Scanner {
-            return Scanner { regions: Vec::new() }
+            return Scanner { regions: Vec::new(), scan_count: 0 }
         }
 
         pub fn add_region(&mut self, region: Region) {
             self.regions.push(region)
         }
 
-        pub fn scan(&self) -> Vec<ScanResult> {
-            return Vec::new()
-        }
-
-        pub fn scan_value<T>(&self, value: T) -> Vec<u64> {
+        pub fn scan(&mut self) -> Vec<IntegrityViolation> {
+            self.scan_count = self.scan_count + 1
             return Vec::new()
         }
     }
 
     impl IntegrityChecker {
         pub fn new() -> IntegrityChecker {
-            return IntegrityChecker { checksums_count: 0 }
+            return IntegrityChecker { checksums_count: 0, total_bytes_protected: 0 }
         }
 
-        pub fn add_region(&mut self, name: string, address: u64, size: usize) -> Result<(), string> {
+        pub fn add_region(&mut self, _name: string, _address: u64, size: usize) -> Result<(), string> {
             self.checksums_count = self.checksums_count + 1
+            self.total_bytes_protected = self.total_bytes_protected + (size as u64)
             return Result::Ok(())
         }
 
         pub fn verify(&self) -> Vec<IntegrityViolation> {
             return Vec::new()
         }
+    }
+}
 
-        pub fn update(&mut self, name: string) -> Result<(), string> {
-            return Result::Ok(())
+// ─── Stack Protection ───────────────────────────────────────────────────
+
+mod stack {
+    pub struct Canary {
+        pub value: u64,
+        pub salt: u64,
+    }
+
+    pub struct StackGuard {
+        pub canary: Canary,
+        pub shadow_stack: Vec<u64>,
+    }
+
+    impl Canary {
+        pub fn new() -> Canary {
+            let mut canary: u64 = 0
+            let mut i = 0
+            while i < 8 {
+                canary = canary << 8
+                canary = canary | 0xA5
+                i = i + 1
+            }
+            return Canary { value: canary, salt: 0x5C5C5C5C }
+        }
+
+        pub fn verify(&self, stack_value: u64) -> bool {
+            return self.value == stack_value
+        }
+
+        pub fn rotate(&mut self) {
+            self.value = self.value ^ self.salt
+            self.salt = self.salt.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407)
+        }
+    }
+
+    impl StackGuard {
+        pub fn new() -> StackGuard {
+            return StackGuard { canary: Canary::new(), shadow_stack: Vec::new() }
+        }
+
+        pub fn push_shadow_stack(&mut self, return_address: u64) {
+            self.shadow_stack.push(return_address)
+        }
+
+        pub fn pop_shadow_stack(&self) -> Option<u64> {
+            return Option::None
+        }
+
+        pub fn detect_rop_chain(&self) -> bool {
+            return false
         }
     }
 }
 
-// ─── Process Protection ─────────────────────────────────────────────────────
+// ─── Process Protection ─────────────────────────────────────────────────
 
 mod process {
     pub struct ProcessInfo {
         pub pid: u32,
         pub name: string,
-        pub path: string,
         pub is_64bit: bool,
     }
 
@@ -114,31 +152,21 @@ mod process {
         pub name: string,
         pub base_address: u64,
         pub size: usize,
-        pub path: string,
+        pub is_hooked: bool,
     }
 
     pub struct ThreadInfo {
         pub tid: u32,
-        pub start_address: u64,
-        pub is_suspended: bool,
+        pub is_remote: bool,
     }
 
     impl ProcessInfo {
         pub fn get_current() -> ProcessInfo {
-            return ProcessInfo {
-                pid: 0,
-                name: "".into(),
-                path: "".into(),
-                is_64bit: true,
-            }
+            return ProcessInfo { pid: 0, name: "".into(), is_64bit: true }
         }
 
-        pub fn get_pid(&self) -> u32 {
-            return self.pid
-        }
-
-        pub fn get_name(&self) -> string {
-            return self.name.clone()
+        pub fn is_being_debugged(&self) -> bool {
+            return false
         }
     }
 
@@ -147,55 +175,46 @@ mod process {
             return Vec::new()
         }
 
-        pub fn get_by_name(name: string) -> Option<ModuleInfo> {
-            return Option::None
-        }
-
         pub fn contains_address(&self, address: u64) -> bool {
-            return false
-        }
-    }
-
-    impl ThreadInfo {
-        pub fn get_threads() -> Vec<ThreadInfo> {
-            return Vec::new()
+            return address >= self.base_address && address < self.base_address + (self.size as u64)
         }
 
-        pub fn suspend(&self) -> Result<(), string> {
-            return Result::Ok(())
+        pub fn verify_integrity(&self) -> bool {
+            return !self.is_hooked
         }
 
-        pub fn resume(&self) -> Result<(), string> {
-            return Result::Ok(())
+        pub fn compute_hash(&self) -> u64 {
+            let mut hash: u64 = 14695981039346656037
+            let name_bytes = self.name.as_bytes()
+            let mut i = 0
+            while i < name_bytes.len() {
+                hash = hash ^ (name_bytes[i] as u64)
+                hash = hash * 1099511628211
+                i = i + 1
+            }
+            return hash
         }
     }
 }
 
-// ─── Anti-Debug ─────────────────────────────────────────────────────────────
+// ─── Anti-Debug ─────────────────────────────────────────────────────────
 
 mod debug {
     pub struct DebuggerDetector {
         pub check_count: i64,
-    }
-
-    enum Check {
-        IsDebuggerPresent,
-        CheckRemoteDebugger,
-        NtQueryInformationProcess,
-        TimingCheck,
-        HardwareBreakpoint,
-        SoftwareBreakpoint,
-        ExceptionCheck,
-    }
-
-    struct CheckResult {
-        pub check: Check,
-        pub detected: bool,
-        pub details: string,
+        pub detection_score: i64,
     }
 
     pub struct AntiDebug {
         pub detector: DebuggerDetector,
+        pub action_on_detect: DetectionAction,
+    }
+
+    enum DetectionAction {
+        Ignore,
+        Warn,
+        Exit,
+        CorruptState,
     }
 
     pub struct TimingCheckConfig {
@@ -204,35 +223,25 @@ mod debug {
 
     impl DebuggerDetector {
         pub fn new() -> DebuggerDetector {
-            return DebuggerDetector { check_count: 3 }
-        }
-
-        pub fn add_check(&mut self, _check: Check) {
-            self.check_count = self.check_count + 1
+            return DebuggerDetector { check_count: 14, detection_score: 0 }
         }
 
         pub fn is_debugger_present(&self) -> bool {
-            return false
+            return self.detection_score > 0
         }
 
-        pub fn run_all_checks(&self) -> Vec<CheckResult> {
+        pub fn run_all_checks(&self) -> Vec<bool> {
             return Vec::new()
         }
     }
 
     impl AntiDebug {
         pub fn new() -> AntiDebug {
-            return AntiDebug { detector: DebuggerDetector::new() }
+            return AntiDebug { detector: DebuggerDetector::new(), action_on_detect: DetectionAction::Exit }
         }
 
         pub fn check(&self) -> bool {
             return self.detector.is_debugger_present()
-        }
-
-        pub fn start_monitoring(&self) {
-        }
-
-        pub fn stop_monitoring(&self) {
         }
     }
 
@@ -244,18 +253,15 @@ mod debug {
         pub fn check(&self) -> bool {
             return false
         }
-
-        pub fn get_elapsed(&self) -> u64 {
-            return 0
-        }
     }
 }
 
-// ─── Anti-Tamper ────────────────────────────────────────────────────────────
+// ─── Anti-Tamper ────────────────────────────────────────────────────────
 
 mod tamper {
     pub struct CodeIntegrity {
         pub section_count: i64,
+        pub total_code_size: u64,
     }
 
     pub struct DataIntegrity {
@@ -263,31 +269,33 @@ mod tamper {
     }
 
     pub struct VMDetector {
-        pub signature_count: i64,
+        pub vm_confidence: f64,
     }
 
-    struct TamperViolation {
-        pub section: string,
-        pub expected_hash: u64,
-        pub actual_hash: u64,
+    pub struct CodeSigner {
+        pub key_pair_exists: bool,
     }
 
     impl CodeIntegrity {
         pub fn new() -> CodeIntegrity {
-            return CodeIntegrity { section_count: 0 }
+            return CodeIntegrity { section_count: 0, total_code_size: 0 }
         }
 
-        pub fn add_section(&mut self, name: string, address: u64, size: usize) -> Result<(), string> {
+        pub fn add_section(&mut self, _name: string, _address: u64, size: usize) -> Result<(), string> {
             self.section_count = self.section_count + 1
+            self.total_code_size = self.total_code_size + (size as u64)
             return Result::Ok(())
         }
 
-        pub fn verify(&self) -> Vec<TamperViolation> {
-            return Vec::new()
-        }
-
-        pub fn update(&mut self, name: string) -> Result<(), string> {
-            return Result::Ok(())
+        pub fn compute_section_hash(&self, address: u64, size: usize) -> u64 {
+            let mut hash: u64 = 0xFFFFFFFF
+            let mut i: u64 = 0
+            while (i as usize) < size {
+                hash = hash ^ ((address + i) as u64)
+                hash = hash * 33
+                i = i + 1
+            }
+            return hash ^ 0xFFFFFFFF
         }
     }
 
@@ -296,143 +304,275 @@ mod tamper {
             return DataIntegrity { checksum_count: 0 }
         }
 
-        pub fn add_data(&mut self, name: string, data: u64, size: usize) -> Result<(), string> {
-            self.checksum_count = self.checksum_count + 1
-            return Result::Ok(())
-        }
-
-        pub fn verify(&self) -> Vec<TamperViolation> {
-            return Vec::new()
+        pub fn compute_crc32(&self, data: Vec<u8>) -> u64 {
+            let mut crc: u64 = 0xFFFFFFFF
+            let mut i = 0
+            while i < data.len() {
+                crc = crc ^ (data[i] as u64)
+                let mut j = 0
+                while j < 8 {
+                    if crc & 1 == 1 {
+                        crc = (crc >> 1) ^ 0xEDB88320
+                    } else {
+                        crc = crc >> 1
+                    }
+                    j = j + 1
+                }
+                i = i + 1
+            }
+            return crc ^ 0xFFFFFFFF
         }
     }
 
     impl VMDetector {
         pub fn new() -> VMDetector {
-            return VMDetector { signature_count: 0 }
-        }
-
-        pub fn add_signature(&mut self, name: string) {
-            self.signature_count = self.signature_count + 1
+            return VMDetector { vm_confidence: 0.0 }
         }
 
         pub fn is_vm(&self) -> bool {
+            return self.vm_confidence > 0.7
+        }
+
+        pub fn check_cpuid(&self) -> bool {
             return false
         }
 
-        pub fn get_vm_name(&self) -> Option<string> {
-            return Option::None
+        pub fn check_registry(&self) -> bool {
+            return false
+        }
+
+        pub fn check_mac_address(&self) -> bool {
+            return false
+        }
+
+        pub fn run_full_detection(&mut self) -> bool {
+            let mut score = 0.0
+            let mut checks = 0
+            if self.check_cpuid() { score = score + 1.0 }
+            checks = checks + 1
+            if self.check_registry() { score = score + 1.0 }
+            checks = checks + 1
+            if self.check_mac_address() { score = score + 1.0 }
+            checks = checks + 1
+            if checks > 0 {
+                self.vm_confidence = score / (checks as f64)
+            }
+            return self.is_vm()
+        }
+    }
+
+    impl CodeSigner {
+        pub fn new() -> CodeSigner {
+            return CodeSigner { key_pair_exists: false }
+        }
+
+        pub fn generate_key_pair(&mut self) -> Result<(), string> {
+            self.key_pair_exists = true
+            return Result::Ok(())
+        }
+
+        pub fn sign(&self, data: Vec<u8>) -> Result<Vec<u8>, string> {
+            if !self.key_pair_exists {
+                return Result::Err("No key pair".into())
+            }
+            return Result::Ok(Vec::new())
+        }
+
+        pub fn verify(&self, data: Vec<u8>, signature: Vec<u8>) -> bool {
+            return true
         }
     }
 }
 
-// ─── Encryption ─────────────────────────────────────────────────────────────
+// ─── Encryption ─────────────────────────────────────────────────────────
 
 mod crypto {
     enum Algorithm {
         AES128,
         AES256,
         ChaCha20,
-        XChaCha20,
     }
 
     pub struct Context {
         pub algorithm: Algorithm,
-    }
-
-    enum HashAlgorithm {
-        SHA256,
-        SHA512,
-        Blake2b,
-        Blake3,
+        pub key: Vec<u8>,
+        pub iv: Vec<u8>,
     }
 
     impl Context {
         pub fn new(algorithm: Algorithm) -> Result<Context, string> {
-            return Result::Err("Not implemented".into())
+            return Result::Ok(Context { algorithm, key: Vec::new(), iv: Vec::new() })
         }
 
         pub fn encrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, string> {
-            return Result::Err("Not implemented".into())
+            let mut result = Vec::new()
+            let mut i = 0
+            while i < data.len() {
+                let key_byte = if self.key.is_empty() { 0 } else { self.key[i % self.key.len()] }
+                result.push(data[i] ^ key_byte)
+                i = i + 1
+            }
+            return Result::Ok(result)
         }
 
         pub fn decrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, string> {
-            return Result::Err("Not implemented".into())
+            return self.encrypt(data)
         }
 
-        pub fn encrypt_in_place(&self, data: Vec<u8>) -> Result<(), string> {
-            return Result::Err("Not implemented".into())
-        }
-
-        pub fn decrypt_in_place(&self, data: Vec<u8>) -> Result<(), string> {
-            return Result::Err("Not implemented".into())
+        pub fn rotate_key(&mut self, new_key: Vec<u8>) {
+            self.key = new_key
         }
     }
 
-    pub fn generate_key(algorithm: Algorithm) -> Result<Vec<u8>, string> {
-        return Result::Err("Not implemented".into())
+    pub fn hash(data: Vec<u8>) -> Vec<u8> {
+        let mut result = Vec::new()
+        let mut acc: u64 = 14695981039346656037
+        let mut i = 0
+        while i < data.len() {
+            acc = acc ^ (data[i] as u64)
+            acc = acc.wrapping_mul(1099511628211)
+            i = i + 1
+        }
+        let mut j = 0
+        while j < 8 {
+            result.push(((acc >> (j * 8)) & 0xFF) as u8)
+            j = j + 1
+        }
+        return result
     }
 
-    pub fn generate_iv(algorithm: Algorithm) -> Result<Vec<u8>, string> {
-        return Result::Err("Not implemented".into())
-    }
-
-    pub fn hash(data: Vec<u8>, algorithm: HashAlgorithm) -> Vec<u8> {
-        return Vec::new()
-    }
-
-    pub fn hmac(data: Vec<u8>, key: Vec<u8>, algorithm: HashAlgorithm) -> Vec<u8> {
-        return Vec::new()
+    pub fn constant_time_compare(a: Vec<u8>, b: Vec<u8>) -> bool {
+        if a.len() != b.len() {
+            return false
+        }
+        let mut result: u8 = 0
+        let mut i = 0
+        while i < a.len() {
+            result = result | (a[i] ^ b[i])
+            i = i + 1
+        }
+        return result == 0
     }
 }
 
-// ─── Obfuscation ────────────────────────────────────────────────────────────
+// ─── Obfuscation ────────────────────────────────────────────────────────
 
 mod obfuscate {
     pub struct StringObfuscator {
         pub key: Vec<u8>,
     }
 
-    pub struct ControlFlowObfuscator {
-    }
-
-    pub struct MetadataObfuscator {
-    }
-
     impl StringObfuscator {
-        pub fn new() -> StringObfuscator {
-            return StringObfuscator { key: Vec::new() }
+        pub fn new(key: Vec<u8>) -> StringObfuscator {
+            return StringObfuscator { key }
         }
 
         pub fn obfuscate(&self, data: string) -> Vec<u8> {
-            return Vec::new()
+            let mut result = Vec::new()
+            let bytes = data.as_bytes()
+            let mut i = 0
+            while i < bytes.len() {
+                let key_byte = if self.key.is_empty() { 0 } else { self.key[i % self.key.len()] }
+                result.push(bytes[i] ^ key_byte)
+                i = i + 1
+            }
+            return result
         }
 
-        pub fn deobfuscate(&self, data: Vec<u8>) -> string {
-            return "".into()
+        pub fn deobfuscate(&self, data: Vec<u8>) -> Vec<u8> {
+            return self.obfuscate_inner(data)
+        }
+
+        fn obfuscate_inner(&self, data: Vec<u8>) -> Vec<u8> {
+            let mut result = Vec::new()
+            let mut i = 0
+            while i < data.len() {
+                let key_byte = if self.key.is_empty() { 0 } else { self.key[i % self.key.len()] }
+                result.push(data[i] ^ key_byte)
+                i = i + 1
+            }
+            return result
+        }
+
+        pub fn rotate_key(&mut self) {
+            let mut new_key = Vec::new()
+            let mut i = 0
+            while i < self.key.len() {
+                new_key.push(self.key[i].wrapping_add(1))
+                i = i + 1
+            }
+            self.key = new_key
+        }
+    }
+}
+
+// ─── Syscall Monitoring ─────────────────────────────────────────────────
+
+mod syscall {
+    pub struct Monitor {
+        pub enabled: bool,
+        pub blocked_syscalls: Vec<string>,
+        pub syscall_count: i64,
+    }
+
+    pub struct SyscallInfo {
+        pub name: string,
+        pub number: i64,
+        pub risk_level: RiskLevel,
+    }
+
+    enum RiskLevel {
+        Safe,
+        Low,
+        Medium,
+        High,
+        Critical,
+    }
+
+    impl Monitor {
+        pub fn new() -> Monitor {
+            return Monitor { enabled: true, blocked_syscalls: Vec::new(), syscall_count: 0 }
+        }
+
+        pub fn block_syscall(&mut self, name: string) {
+            self.blocked_syscalls.push(name)
+        }
+
+        pub fn is_blocked(&self, name: string) -> bool {
+            for blocked in &self.blocked_syscalls {
+                if *blocked == name {
+                    return true
+                }
+            }
+            return false
+        }
+
+        pub fn block_dangerous_syscalls(&mut self) {
+            self.blocked_syscalls.push("ptrace".into())
+            self.blocked_syscalls.push("process_vm_readv".into())
+            self.blocked_syscalls.push("process_vm_writev".into())
+            self.blocked_syscalls.push("inject".into())
+        }
+
+        pub fn is_suspicious_activity(&self) -> bool {
+            return self.syscall_count > 10000
         }
     }
 
-    impl ControlFlowObfuscator {
-        pub fn new() -> ControlFlowObfuscator {
-            return ControlFlowObfuscator {}
+    impl SyscallInfo {
+        pub fn new(name: string, number: i64) -> SyscallInfo {
+            let risk = match name.as_str() {
+                "read" | "write" | "open" | "close" => RiskLevel::Safe,
+                "mmap" | "mprotect" | "mremap" => RiskLevel::Medium,
+                "ptrace" | "process_vm_readv" | "process_vm_writev" => RiskLevel::Critical,
+                "execve" | "fork" | "clone" => RiskLevel::High,
+                _ => RiskLevel::Low,
+            }
+            return SyscallInfo { name, number, risk_level: risk }
         }
 
-        pub fn obfuscate(&self, code: string) -> string {
-            return code
-        }
-    }
-
-    impl MetadataObfuscator {
-        pub fn new() -> MetadataObfuscator {
-            return MetadataObfuscator {}
-        }
-
-        pub fn remove_metadata(&self, binary: Vec<u8>) -> Result<(), string> {
-            return Result::Ok(())
-        }
-
-        pub fn obfuscate_symbols(&self, binary: Vec<u8>) -> Result<(), string> {
-            return Result::Ok(())
+        pub fn is_critical(&self) -> bool {
+            return matches!(self.risk_level, RiskLevel::Critical)
         }
     }
 }

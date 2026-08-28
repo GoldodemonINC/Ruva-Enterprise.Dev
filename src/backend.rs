@@ -21,6 +21,9 @@ pub enum Target {
     Rust,
     Zig,
     Python,
+    C,
+    Cpp,
+    Wasm,
 }
 
 impl std::fmt::Display for Target {
@@ -29,6 +32,9 @@ impl std::fmt::Display for Target {
             Target::Rust => write!(f, "rust"),
             Target::Zig => write!(f, "zig"),
             Target::Python => write!(f, "python"),
+            Target::C => write!(f, "c"),
+            Target::Cpp => write!(f, "cpp"),
+            Target::Wasm => write!(f, "wasm"),
         }
     }
 }
@@ -39,6 +45,9 @@ impl Target {
             Target::Rust => ".rs",
             Target::Zig => ".zig",
             Target::Python => ".py",
+            Target::C => ".c",
+            Target::Cpp => ".cpp",
+            Target::Wasm => ".wat",
         }
     }
 }
@@ -51,8 +60,11 @@ impl std::str::FromStr for Target {
             "rust" | "rs" => Ok(Target::Rust),
             "zig" | "zg" => Ok(Target::Zig),
             "python" | "py" => Ok(Target::Python),
+            "c" => Ok(Target::C),
+            "cpp" | "c++" | "cxx" => Ok(Target::Cpp),
+            "wasm" | "wat" => Ok(Target::Wasm),
             _ => Err(format!(
-                "Unknown target '{}'. Supported: rust, zig, python",
+                "Unknown target '{}'. Supported: rust, zig, python, c, cpp, wasm",
                 s
             )),
         }
@@ -65,8 +77,10 @@ pub fn create_generator(target: Target) -> Box<dyn CodeGenerator> {
         Target::Rust => Box::new(crate::codegen::CodeGen::new()),
         Target::Zig => Box::new(crate::codegen_zig::ZigCodeGen::new()),
         Target::Python => Box::new(crate::codegen_python::PythonCodeGen::new()),
+        _ => panic!("Target {:?} not yet implemented", target),
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -110,6 +124,6 @@ mod tests {
     #[test]
     fn test_invalid_target() {
         assert!("java".parse::<Target>().is_err());
-        assert!("c".parse::<Target>().is_err());
+        assert!("csharp".parse::<Target>().is_err());
     }
 }

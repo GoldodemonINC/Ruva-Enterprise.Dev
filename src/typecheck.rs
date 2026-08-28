@@ -1662,7 +1662,78 @@ impl TypeChecker {
         }
     }
 
-    // ─── Legacy compat: infer_type used as String in some places ───────
+    // ─── Security Analysis ──────────────────────────────────────────────
+
+    /// Check for common security anti-patterns in the program.
+    pub fn security_audit(&self, program: &Program) -> Vec<Diagnostic> {
+        let mut findings = vec![];
+        for item in &program.items {
+            match item {
+                Item::Function(f) => self.walk_block(&f.body, &mut findings),
+                Item::Class(c) => { for m in &c.methods { self.walk_block(&m.body, &mut findings); } }
+                Item::Impl(imp) => { for m in &imp.methods { self.walk_block(&m.body, &mut findings); } }
+                Item::ExternBlock(eb) => {
+                    let danger = ["exec","system","popen","ShellExecute","CreateProcess",
+                        "dlopen","LoadLibrary","VirtualAlloc","WriteProcessMemory",
+                        "ReadProcessMemory","ptrace","mprotect"];
+                    for ei in &eb.items {
+                        if let ExternItem::Function { name, .. } = ei {
+                            if danger.iter().any(|d| name.eq_ignore_ascii_case(d)) {
+                                findings.push(Diagnostic { kind: DiagnosticKind::Warning,
+                                    message: format!("SECURITY: FFI '{}' is a critical API — validate all inputs", name),
+                                    line: 0, col: 0 });
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        findings
+    }
+
+    fn walk_block(&self, block: &Block, findings: &mut Vec<Diagnostic>) {
+        for stmt in &block.stmts {
+            match stmt {
+                Stmt::Let { value, .. } | Stmt::Expr(value) => self.walk_expr(value, findings),
+                Stmt::Return(Some(e)) => self.walk_expr(e, findings),
+                Stmt::If { condition, then_body, else_body } => {
+                    self.walk_expr(condition, findings);
+                    self.walk_block(then_body, findings);
+                    match else_body {
+                        Some(ElseKind::Else(b)) => self.walk_block(b, findings),
+                        Some(ElseKind::If(c, b)) => { self.walk_expr(c, findings); self.walk_block(b, findings); }
+                        None => {}
+                    }
+                }
+                Stmt::For { iterable, body, .. } | Stmt::While { condition: iterable, body } => {
+                    self.walk_expr(iterable, findings);
+                    self.walk_block(body, findings);
+                }
+                Stmt::Block(b) => self.walk_block(b, findings),
+                _ => {}
+            }
+        }
+    }
+
+    fn walk_expr(&self, expr: &Expr, findings: &mut Vec<Diagnostic>) {
+        match expr {
+            Expr::Binary { op: BinOp::Add, left, right }
+                if matches!(left.as_ref(), Expr::Str(_)) && matches!(right.as_ref(), Expr::Ident(_)) => {
+                findings.push(Diagnostic { kind: DiagnosticKind::Warning,
+                    message: "SECURITY: String + ident may enable injection — use parameterized queries".into(),
+                    line: 0, col: 0 });
+            }
+            Expr::MethodCall { method, .. } if method == "unwrap" => {
+                findings.push(Diagnostic { kind: DiagnosticKind::Warning,
+                    message: "SECURITY: unwrap() can panic — use match or if-let".into(),
+                    line: 0, col: 0 });
+            }
+            Expr::Block(b) => self.walk_block(b, findings),
+            Expr::Call { args, .. } => { for a in args { self.walk_expr(a, findings); } }
+            _ => {}
+        }
+    }
 }
 
 #[cfg(test)]
