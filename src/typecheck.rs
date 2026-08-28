@@ -4,7 +4,6 @@ use crate::ast::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ty {
-    Var(TypeVar),
     Primitive(String),
     Named(String),
     Generic(String, Vec<Ty>),
@@ -19,27 +18,7 @@ pub enum Ty {
     Inferred,
 }
 
-type TypeVar = usize;
 
-// ─── Type Variable Table ───────────────────────────────────────────────────
-
-#[allow(dead_code)]
-struct TypeTable {
-    next_var: TypeVar,
-}
-
-#[allow(dead_code)]
-impl TypeTable {
-    fn new() -> Self {
-        Self { next_var: 0 }
-    }
-
-    fn fresh_var(&mut self) -> Ty {
-        let v = self.next_var;
-        self.next_var += 1;
-        Ty::Var(v)
-    }
-}
 
 // ─── Structured Type Checker ───────────────────────────────────────────────
 
@@ -61,8 +40,6 @@ pub struct TypeChecker {
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
     in_unsafe_fn: bool,
-    #[allow(dead_code)]
-    type_table: TypeTable,
     /// Tracks the current source location for error reporting
     current_line: usize,
     current_col: usize,
@@ -115,7 +92,7 @@ impl TypeChecker {
             current_return_type: None,
             in_unsafe_block: false,
             in_unsafe_fn: false,
-            type_table: TypeTable::new(),
+
             current_line: 0,
             current_col: 0,
             warning_count: 0,
@@ -1300,7 +1277,6 @@ impl TypeChecker {
 
     fn ty_to_string(&self, ty: &Ty) -> String {
         match ty {
-            Ty::Var(v) => format!("?{}", v),
             Ty::Primitive(s) | Ty::Named(s) => s.clone(),
             Ty::Generic(name, args) => {
                 let arg_strs: Vec<String> = args.iter().map(|a| self.ty_to_string(a)).collect();
@@ -1346,8 +1322,6 @@ impl TypeChecker {
 
         // Inferred matches anything
         if matches!(&a, Ty::Inferred) || matches!(&b, Ty::Inferred) { return true; }
-        if matches!(&a, Ty::Var(_)) || matches!(&b, Ty::Var(_)) { return true; }
-
         // Option variants (None, Some, Ok, Err) are compatible with their Option/Result types
         let a_is_option = matches!(&a, Ty::Generic(s, _) if s == "Option")
             || matches!(&a, Ty::Named(s) if s == "Option" || s == "None" || s == "Some" || s.starts_with("Option::"));
@@ -1433,7 +1407,7 @@ impl TypeChecker {
     }
 
     fn ty_is_inferred(&self, ty: &Ty) -> bool {
-        matches!(ty, Ty::Inferred | Ty::Var(_))
+        matches!(ty, Ty::Inferred)
     }
 
     fn ty_is_bool(&self, ty: &Ty) -> bool {
@@ -1601,21 +1575,6 @@ impl TypeChecker {
     }
 
     // ─── Unsafe Checking Helpers ───────────────────────────────────────
-
-    #[allow(dead_code)]
-    fn is_unsafe_required_fn(&self, name: &str) -> bool {
-        matches!(name,
-            "transmute" | "size_of" | "align_of" | "offset_of"
-            | "read_volatile" | "write_volatile"
-            | "copy" | "copy_nonoverlapping"
-            | "ptr::read" | "ptr::write"
-        ) || name.starts_with("asm") || name.starts_with("llvm")
-    }
-
-    #[allow(dead_code)]
-    fn is_unsafe_type(&self, ty: &Ty) -> bool {
-        self.ty_is_raw_pointer(ty)
-    }
 
     fn report_unused(&mut self) {
         let unused: Vec<String> = if let Some(scope) = self.scopes.first() {
