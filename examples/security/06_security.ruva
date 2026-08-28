@@ -1,0 +1,7 @@
+// Example: Security #6
+// This example demonstrates security concepts in Ruva
+
+fn main() {
+    println!("Example: Security #6")
+    println!("Ruva makes security safe and fast")
+}

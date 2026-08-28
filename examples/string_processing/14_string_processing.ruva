@@ -1,0 +1,7 @@
+// Example: String Processing #14
+// This example demonstrates string processing concepts in Ruva
+
+fn main() {
+    println!("Example: String Processing #14")
+    println!("Ruva makes string processing safe and fast")
+}

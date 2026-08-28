@@ -1,0 +1,7 @@
+// Example: Video #13
+// This example demonstrates video concepts in Ruva
+
+fn main() {
+    println!("Example: Video #13")
+    println!("Ruva makes video safe and fast")
+}

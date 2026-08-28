@@ -1,0 +1,28 @@
+class Timer {
+    let mut start_time: i64,
+    let mut elapsed: i64,
+
+    pub fn new() -> Self {
+        return Self { start_time: 0, elapsed: 0 }
+    }
+
+    pub fn start(&mut self) {
+        self.start_time = 1000
+        self.elapsed = 0
+    }
+
+    pub fn stop(&mut self) {
+        self.elapsed = 2000 - self.start_time
+    }
+
+    pub fn get_elapsed(&self) -> i64 {
+        return self.elapsed
+    }
+}
+
+fn main() {
+    let mut timer = Timer::new()
+    timer.start()
+    timer.stop()
+    println!("elapsed: {}ms", timer.get_elapsed())
+}

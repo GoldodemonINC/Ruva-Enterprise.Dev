@@ -1,0 +1,14 @@
+class TempConverter {
+    pub let celsius: f64,
+
+    pub fn new() -> Self {
+        return Self { celsius: 0.0 }
+    }
+
+    pub fn to_f(&self) -> f64 { return 0.0 }
+}
+
+fn main() {
+    let obj = TempConverter::new()
+    println!("Temp conversion class created")
+}

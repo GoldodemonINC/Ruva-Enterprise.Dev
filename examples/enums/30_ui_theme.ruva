@@ -1,0 +1,18 @@
+enum LightEnum {
+    Light,
+    Dark,
+    System,
+}
+
+fn describe(v: &LightEnum) -> string {
+    match v {
+        LightEnum::Light => "Light".into(),
+        LightEnum::Dark => "Dark".into(),
+        LightEnum::System => "System".into(),
+    }
+}
+
+fn main() {
+    let v = LightEnum::Light
+    println!("{}", describe(&v))
+}

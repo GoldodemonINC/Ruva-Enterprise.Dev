@@ -1,0 +1,5 @@
+fn main() {
+    let x = 10
+    let result = if x > 5 { "big" } else { "small" }
+    println!("x is {}", result)
+}

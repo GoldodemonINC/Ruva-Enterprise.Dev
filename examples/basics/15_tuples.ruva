@@ -1,0 +1,7 @@
+fn main() {
+    let point = (3.0, 4.0)
+    let (x, y) = point
+    println!("point=({}, {})", x, y)
+    println!("x={}", point.0)
+    println!("y={}", point.1)
+}

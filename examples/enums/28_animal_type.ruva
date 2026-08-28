@@ -1,0 +1,18 @@
+enum MammalEnum {
+    Mammal,
+    Bird,
+    Reptile,
+}
+
+fn describe(v: &MammalEnum) -> string {
+    match v {
+        MammalEnum::Mammal => "Mammal".into(),
+        MammalEnum::Bird => "Bird".into(),
+        MammalEnum::Reptile => "Reptile".into(),
+    }
+}
+
+fn main() {
+    let v = MammalEnum::Mammal
+    println!("{}", describe(&v))
+}

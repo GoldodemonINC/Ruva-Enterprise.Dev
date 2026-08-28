@@ -1,0 +1,14 @@
+class RPSGame {
+    pub let player_score: i32,
+
+    pub fn new() -> Self {
+        return Self { player_score: 0 }
+    }
+
+    pub fn play(&mut self) { self.player_score += 1 }
+}
+
+fn main() {
+    let obj = RPSGame::new()
+    println!("RPS class created")
+}

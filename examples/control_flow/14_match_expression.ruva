@@ -1,0 +1,10 @@
+fn main() {
+    let x = 42
+    let desc = match x {
+        0 => "zero",
+        1..=9 => "single digit",
+        10..=99 => "double digit",
+        _ => "large number",
+    }
+    println!("{} is a {}", x, desc)
+}

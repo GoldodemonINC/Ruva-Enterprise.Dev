@@ -95,18 +95,17 @@ Ruva is designed for **safety-critical, performance-sensitive** applications:
 
 ---
 
-## Graphics & Rendering Support (Roadmap)
+## Graphics & Rendering Support
 
-> ⚠️ **Not yet implemented.** These are planned features.
+Ruva ships with safe bindings to industry-standard graphics APIs via `import ruva::graphics`:
 
-Ruva will provide safe bindings to industry-standard graphics APIs:
+### Supported APIs
+- **OpenGL** — Window, Context, Shader, Texture management with ownership safety
+- **Vulkan** — Instance, Device, Swapchain, RenderPass, Pipeline, CommandPool, Buffer
+- **DirectX 11** — Device, DeviceContext, VertexShader, PixelShader, RenderTargetView
+- **DirectX 12** — Device, CommandQueue, CommandList, PipelineState, RootSignature, Fence
 
-### Planned APIs
-- **OpenGL** — Safe bindings with ownership preventing use-after-free
-- **Vulkan** — Memory-safe GPU resource management
-- **DirectX 11/12** — Safe COM reference counting
-
-### Why Graphics APIs Will Be Safe in Ruva
+### Why Graphics APIs Are Safe in Ruva
 
 | Traditional Risk | Ruva's Protection |
 |------------------|-------------------|
@@ -115,53 +114,80 @@ Ruva will provide safe bindings to industry-standard graphics APIs:
 | Buffer overflow in vertex data | Bounds checking on all array access |
 | Data race on render thread | Ownership prevents concurrent mutation |
 
----
+```ruva
+import ruva::graphics::opengl
 
-## Browser Support (Roadmap)
-
-> ⚠️ **Not yet implemented.** These are planned features.
-
-Ruva will compile to WebAssembly for browser deployment:
-
-```bash
-# Planned: Compile to Wasm
-ruva compile src/main.ruva --target wasm32
-
-# Planned: Compile to JavaScript
-ruva compile src/main.ruva --target js
+let window = opengl::Window::new("My Game", 1920, 1080)
+let ctx = opengl::Context::new(window)
+ctx.clear(0.1, 0.1, 0.1, 1.0)  // dark background
+let shader = ctx.create_shader(vertex_src, fragment_src)
 ```
 
-### Planned Browser Features
+---
 
-| Feature | Status |
-|---------|--------|
-| **WebGL rendering** | 🔜 Via OpenGL bindings |
-| **WebGPU rendering** | 🔜 Via Vulkan bindings |
-| **DOM manipulation** | 🔜 Via web-sys bindings |
-| **Service workers** | 🔜 Via wasm-bindgen |
-| **Web Workers** | 🔜 Via wasm-bindgen |
-| **Fetch API** | 🔜 Via web-sys |
-| **Canvas 2D** | 🔜 Via web-sys |
-| **Audio** | 🔜 Via web-sys |
+## Browser Support
+
+Ruva ships with browser API bindings via `import ruva::browser`:
+
+### Supported APIs
+
+| Module | Features |
+|--------|----------|
+| **DOM** | Element, Document, Window — get/set id, class, attributes, innerHTML, textContent |
+| **Canvas 2D** | Fill/stroke rects, text, paths, arcs, transforms (save/restore/translate/rotate/scale) |
+| **WebGL** | Shaders, programs, buffers, textures, framebuffers — full rendering pipeline |
+| **Fetch** | GET/POST requests, JSON parsing, array buffers |
+| **WebSocket** | Send text/binary data, connection state management |
+| **WebAssembly** | Memory and Table management for Wasm modules |
+
+```ruva
+import ruva::browser::dom
+import ruva::browser::canvas
+
+let doc = dom::get_document()
+let el = doc.create_element("canvas")
+let ctx = canvas::CanvasRenderingContext2D { handle: 0 }
+ctx.fill_rect(0.0, 0.0, 800.0, 600.0)
+ctx.fill_text("Hello from Ruva!", 100.0, 300.0)
+```
 
 ---
 
-## Video Rendering Support (Roadmap)
+## Video Rendering Support
 
-> ⚠️ **Not yet implemented.** These are planned features.
+Ruva ships with video encoding/decoding bindings via `import ruva::video`:
 
-Ruva will provide safe video encoding/decoding:
+### Supported Codecs
+H.264, H.265, VP8, VP9, AV1, MPEG4
 
-### Planned Video Features
+### Supported Containers
+MP4, MKV, AVI, MOV, WebM, FLV
 
-| Feature | Status |
-|---------|--------|
-| **H.264 encoding** | 🔜 Via Rust backends |
-| **H.265 encoding** | 🔜 Via Rust backends |
-| **VP9 encoding** | 🔜 Via Rust backends |
-| **AV1 encoding** | 🔜 Via Rust backends |
-| **Frame extraction** | 🔜 Via Rust backends |
-| **Hardware acceleration** | 🔜 Automatic via Rust backends |
+### Features
+
+| Module | Capabilities |
+|--------|-------------|
+| **VideoDecoder** | Decode frames, seek, get video info (resolution, framerate, bitrate) |
+| **VideoEncoder** | Encode frames, set bitrate/framerate, flush and close |
+| **AudioDecoder** | Decode audio frames, seek, get sample rate/channels |
+| **AudioEncoder** | Encode audio frames, set bitrate |
+| **Muxer/Demuxer** | Container muxing/demuxing with packet-level access |
+| **Filters** | Resize, crop, rotate, blur, sharpen, brightness, contrast, grayscale, invert, flip, text/image overlay |
+
+### Pixel Formats
+YUV420, YUV422, YUV444, RGB24, RGBA32, NV12, NV21
+
+```ruva
+import ruva::video
+
+let decoder = video::VideoDecoder::new("input.mp4")
+let info = decoder.get_info()  // width, height, frame_rate, codec
+let frame = decoder.decode_frame()  // returns VideoFrame
+
+let encoder = video::VideoEncoder::new("output.mp4", video::Codec::H264)
+encoder.write_frame(frame)
+encoder.flush()
+```
 
 ---
 
@@ -443,20 +469,21 @@ ruva compile src/main.ruva --lazy
 
 ## Status
 
-**v0.9.0 — LSP (Language Server Protocol)**
+**v0.10.0 — Type System & Security Hardening**
 
-- Lexer: ✅ complete
-- Parser: ✅ core syntax + if let, as casts, closures, use/mod, generic enums
+- Lexer: ✅ complete with token pre-allocation
+- Parser: ✅ core syntax + if let, as casts, closures, use/mod, generic enums, extern blocks, raw pointers
 - Rust CodeGen: ✅ complete with Self, floats, traits, imports, modules
 - Zig CodeGen: ✅ structs, enums, methods, control flow, modules
 - Python CodeGen: ✅ classes, match/case, dataclasses, typing, modules
 - CLI: ✅ 12 subcommands (compile, build, run, check, transpile, tokens, ast, repl, pipe, new, fmt, lsp)
-- Tests: ✅ 110 passing (lexer, parser, backends, type checker, module resolver, LSP)
-- Examples: ✅ 29 .ruva files (5,000+ LOC)
-- Type checker: ✅ variable checking, function args, return types, modules
-- Import/Module system: ✅ use declarations, inline modules, file modules
-- Standard library: ✅ core, graphics, browser, video, anticheat, io, testing, formatter, serialization
-- LSP / editor support: ✅ text document sync, hover, go-to-definition, completion, diagnostics
+- Tests: ✅ 157 passing (lexer, parser, backends, type checker, module resolver, LSP)
+- Examples: ✅ 30 .ruva files (5,000+ LOC)
+- Type checker: ✅ real type unification, argument/return type checking, unsafe enforcement, source locations
+- Security: ✅ path traversal rejection, file size limits, JSON depth limits, dangerous FFI detection
+- Import/Module system: ✅ use declarations, inline modules, file modules, path validation
+- Standard library: ✅ core, graphics (OpenGL/Vulkan/DX11/DX12), browser (DOM/Canvas/WebGL/Fetch/WebSocket/Wasm), video (encode/decode/mux/filters), anticheat, io, testing, formatter, serialization
+- LSP / editor support: ✅ text document sync, hover, go-to-definition, completion, diagnostics, parse error reporting
 - Browser/Wasm target: 🔜 planned
 
 ---

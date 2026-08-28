@@ -1,0 +1,18 @@
+enum AEnum {
+    A,
+    B,
+    O,
+}
+
+fn describe(v: &AEnum) -> string {
+    match v {
+        AEnum::A => "A".into(),
+        AEnum::B => "B".into(),
+        AEnum::O => "O".into(),
+    }
+}
+
+fn main() {
+    let v = AEnum::A
+    println!("{}", describe(&v))
+}

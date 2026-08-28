@@ -1,0 +1,9 @@
+fn main() {
+    let a: i32 = 0b1010
+    let b: i32 = 0b1100
+    println!("AND: {:#b}", a & b)
+    println!("OR: {:#b}", a | b)
+    println!("XOR: {:#b}", a ^ b)
+    println!("SHL: {:#b}", a << 1)
+    println!("SHR: {:#b}", a >> 1)
+}

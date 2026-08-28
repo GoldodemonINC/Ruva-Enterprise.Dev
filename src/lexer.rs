@@ -221,6 +221,9 @@ impl<'a> Lexer<'a> {
             "catch" => Token::Catch,
             "in" => Token::In,
             "mod" => Token::Mod,
+            "assert" => Token::Ident("assert".into()),
+            "expect" => Token::Ident("expect".into()),
+            "print" => Token::Ident("print".into()),
             _ => Token::Ident(ident),
         }
     }
@@ -254,6 +257,77 @@ impl<'a> Lexer<'a> {
                 self.advance();
                 self.advance();
                 self.skip_block_comment()?;
+                continue;
+            }
+
+            // FString: f"Hello {name}"
+            if ch == b'f' && self.peek_ahead(1) == Some(b'"') {
+                self.advance(); // skip 'f'
+                self.advance(); // skip opening quote
+                let mut parts = Vec::new();
+                let mut current = String::new();
+                loop {
+                    match self.advance() {
+                        Some(b'"') => {
+                            if !current.is_empty() {
+                                parts.push((current.clone(), false));
+                                current.clear();
+                            }
+                            break;
+                        }
+                        Some(b'{') => {
+                            if !current.is_empty() {
+                                parts.push((current.clone(), false));
+                                current.clear();
+                            }
+                            // Read until matching }
+                            let mut depth = 1u32;
+                            let mut expr = String::new();
+                            while depth > 0 {
+                                match self.advance() {
+                                    Some(b'{') => { depth += 1; expr.push('{'); }
+                                    Some(b'}') => { depth -= 1; if depth > 0 { expr.push('}'); } }
+                                    Some(c) => expr.push(c as char),
+                                    None => bail!("Unterminated f-string expression at {}:{}", self.line, self.col),
+                                }
+                            }
+                            parts.push((expr, true));
+                        }
+                        Some(b'\\') => {
+                            match self.advance() {
+                                Some(b'n') => current.push('\n'),
+                                Some(b't') => current.push('\t'),
+                                Some(b'r') => current.push('\r'),
+                                Some(b'\\') => current.push('\\'),
+                                Some(b'{') => current.push('{'),
+                                Some(b'}') => current.push('}'),
+                                Some(c) => { current.push('\\'); current.push(c as char); }
+                                None => bail!("Unterminated f-string at {}:{}", self.line, self.col),
+                            }
+                        }
+                        Some(c) => current.push(c as char),
+                        None => bail!("Unterminated f-string at {}:{}", self.line, self.col),
+                    }
+                }
+                // Convert parts to tokens: FStringStart, text parts, expr parts, FStringEnd
+                // For simplicity, we'll generate a format! macro call
+                tokens.push((Token::FStringStart, span));
+                for (text, is_expr) in parts {
+                    if is_expr {
+                        tokens.push((Token::FStringExpr, span));
+                        // Tokenize the expression inside the braces
+                        let inner_tokens = Lexer::new(&text).tokenize()?;
+                        for (t, s) in inner_tokens {
+                            if t != Token::Eof {
+                                tokens.push((t, s));
+                            }
+                        }
+                        tokens.push((Token::RBrace, span));
+                    } else {
+                        tokens.push((Token::FStringPart(text), span));
+                    }
+                }
+                tokens.push((Token::FStringEnd, span));
                 continue;
             }
 
@@ -388,7 +462,11 @@ impl<'a> Lexer<'a> {
                 b',' => Token::Comma,
                 b'#' => Token::Hash,
                 b'@' => Token::At,
-                b'?' => Token::Question,
+                b'?' => match self.peek() {
+                    Some(b'.') => { self.advance(); Token::QuestionDot }
+                    Some(b'?') => { self.advance(); Token::NullCoalesce }
+                    _ => Token::Question,
+                }
                 b'_' => Token::Underscore,
                 _ => bail!("Unexpected character '{}' at {}:{}",
                     ch as char, span.line, span.col),

@@ -1,0 +1,18 @@
+enum TrafficLight {
+    Red,
+    Yellow,
+    Green,
+}
+
+fn wait_time(light: &TrafficLight) -> i32 {
+    match light {
+        TrafficLight::Red => 60,
+        TrafficLight::Yellow => 5,
+        TrafficLight::Green => 45,
+    }
+}
+
+fn main() {
+    let light = TrafficLight::Red
+    println!("Wait {} seconds", wait_time(&light))
+}

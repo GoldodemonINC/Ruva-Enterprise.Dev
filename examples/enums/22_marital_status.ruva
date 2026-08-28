@@ -1,0 +1,18 @@
+enum SingleEnum {
+    Single,
+    Married,
+    Divorced,
+}
+
+fn describe(v: &SingleEnum) -> string {
+    match v {
+        SingleEnum::Single => "Single".into(),
+        SingleEnum::Married => "Married".into(),
+        SingleEnum::Divorced => "Divorced".into(),
+    }
+}
+
+fn main() {
+    let v = SingleEnum::Single
+    println!("{}", describe(&v))
+}

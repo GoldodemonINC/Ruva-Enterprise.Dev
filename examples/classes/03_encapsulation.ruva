@@ -1,0 +1,32 @@
+class BankAccount {
+    pub let owner: string,
+    let mut balance: f64,
+
+    pub fn new(owner: string, initial: f64) -> Self {
+        return Self { owner, balance: initial }
+    }
+
+    pub fn deposit(&mut self, amount: f64) {
+        self.balance += amount
+    }
+
+    pub fn withdraw(&mut self, amount: f64) -> bool {
+        if amount > self.balance {
+            return false
+        }
+        self.balance -= amount
+        return true
+    }
+
+    pub fn get_balance(&self) -> f64 {
+        return self.balance
+    }
+}
+
+fn main() {
+    let mut account = BankAccount::new("Alice".into(), 1000.0)
+    account.deposit(500.0)
+    println!("Balance: {}", account.get_balance())
+    account.withdraw(200.0)
+    println!("Balance after withdrawal: {}", account.get_balance())
+}

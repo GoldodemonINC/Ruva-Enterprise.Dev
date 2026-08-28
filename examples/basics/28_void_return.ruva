@@ -1,0 +1,8 @@
+fn print_line() {
+    println!("This function returns nothing")
+}
+
+fn main() {
+    print_line()
+    print_line()
+}

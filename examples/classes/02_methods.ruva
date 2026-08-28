@@ -1,0 +1,27 @@
+class Calculator {
+    pub let mut value: f64,
+
+    pub fn new() -> Self {
+        return Self { value: 0.0 }
+    }
+
+    pub fn add(&mut self, n: f64) {
+        self.value += n
+    }
+
+    pub fn multiply(&mut self, n: f64) {
+        self.value *= n
+    }
+
+    pub fn get_value(&self) -> f64 {
+        return self.value
+    }
+}
+
+fn main() {
+    let mut calc = Calculator::new()
+    calc.add(10.0)
+    calc.multiply(3.0)
+    calc.add(5.0)
+    println!("result = {}", calc.get_value())
+}

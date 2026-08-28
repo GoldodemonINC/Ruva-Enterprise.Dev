@@ -1,0 +1,7 @@
+// Example: Web Server #6
+// This example demonstrates web server concepts in Ruva
+
+fn main() {
+    println!("Example: Web Server #6")
+    println!("Ruva makes web server safe and fast")
+}

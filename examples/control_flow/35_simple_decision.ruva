@@ -1,0 +1,12 @@
+fn main() {
+    let temperature = 35
+    if temperature > 30 {
+        println!("It's hot outside!")
+    } else if temperature > 20 {
+        println!("Nice weather!")
+    } else if temperature > 10 {
+        println!("A bit chilly")
+    } else {
+        println!("It's cold!")
+    }
+}

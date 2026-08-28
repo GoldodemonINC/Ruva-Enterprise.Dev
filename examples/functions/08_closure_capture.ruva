@@ -1,0 +1,5 @@
+fn main() {
+    let offset = 10
+    let add_offset = |x: i32| -> i32 { x + offset }
+    println!("5 + offset = {}", add_offset(5))
+}

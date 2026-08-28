@@ -1,0 +1,6 @@
+fn main() {
+    let c = 'A'
+    println!("char: {}", c)
+    let escaped = '\n'
+    println!("newline char: {:?}", escaped)
+}

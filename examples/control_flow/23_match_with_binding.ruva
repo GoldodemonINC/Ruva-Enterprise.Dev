@@ -1,0 +1,8 @@
+fn main() {
+    let x = 42
+    match x {
+        n if n > 100 => println!("big: {}", n),
+        n if n > 10 => println!("medium: {}", n),
+        n => println!("small: {}", n),
+    }
+}

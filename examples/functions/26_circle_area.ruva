@@ -1,0 +1,9 @@
+fn circle_area(radius: f64) -> f64 {
+    return 3.14159 * radius * radius
+}
+
+fn main() {
+    for r in 1..=5 {
+        println!("circle({}) = {:.2}", r, circle_area(r as f64))
+    }
+}

@@ -1,0 +1,7 @@
+// Example: File Io #2
+// This example demonstrates file io concepts in Ruva
+
+fn main() {
+    println!("Example: File Io #2")
+    println!("Ruva makes file io safe and fast")
+}

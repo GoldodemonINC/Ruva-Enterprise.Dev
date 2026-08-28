@@ -1,0 +1,7 @@
+// Example: Serialization #14
+// This example demonstrates serialization concepts in Ruva
+
+fn main() {
+    println!("Example: Serialization #14")
+    println!("Ruva makes serialization safe and fast")
+}

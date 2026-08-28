@@ -1,0 +1,13 @@
+fn celsius_to_fahrenheit(c: f64) -> f64 {
+    return c * 9.0 / 5.0 + 32.0
+}
+
+fn fahrenheit_to_celsius(f: f64) -> f64 {
+    return (f - 32.0) * 5.0 / 9.0
+}
+
+fn main() {
+    println!("0C = {}F", celsius_to_fahrenheit(0.0))
+    println!("100C = {}F", celsius_to_fahrenheit(100.0))
+    println!("212F = {}C", fahrenheit_to_celsius(212.0))
+}

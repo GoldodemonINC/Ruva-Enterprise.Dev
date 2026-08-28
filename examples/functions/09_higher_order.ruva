@@ -1,0 +1,11 @@
+fn apply(f: fn(i32) -> i32, x: i32) -> i32 {
+    return f(x)
+}
+
+fn double(x: i32) -> i32 { x * 2 }
+fn square(x: i32) -> i32 { x * x }
+
+fn main() {
+    println!("double(5) = {}", apply(double, 5))
+    println!("square(5) = {}", apply(square, 5))
+}

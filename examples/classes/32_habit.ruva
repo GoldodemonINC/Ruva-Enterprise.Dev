@@ -1,0 +1,14 @@
+class Habit {
+    pub let name: string,
+
+    pub fn new() -> Self {
+        return Self { name: "" }
+    }
+
+    pub fn get_name(&self) -> string { return self.name.clone() }
+}
+
+fn main() {
+    let obj = Habit::new()
+    println!("Habits class created")
+}

@@ -1,0 +1,20 @@
+enum Occupation {
+    Engineer,
+    Doctor,
+    Teacher,
+    Artist,
+}
+
+fn salary_range(occ: &Occupation) -> string {
+    match occ {
+        Occupation::Engineer => "$80k-$150k".into(),
+        Occupation::Doctor => "$100k-$300k".into(),
+        Occupation::Teacher => "$40k-$80k".into(),
+        Occupation::Artist => "$30k-$100k".into(),
+    }
+}
+
+fn main() {
+    let occ = Occupation::Engineer
+    println!("Salary range: {}", salary_range(&occ))
+}

@@ -1,0 +1,20 @@
+enum PaymentMethod {
+    CreditCard,
+    DebitCard,
+    PayPal,
+    BankTransfer,
+}
+
+fn processing_fee(method: &PaymentMethod) -> f64 {
+    match method {
+        PaymentMethod::CreditCard => 2.9,
+        PaymentMethod::DebitCard => 1.5,
+        PaymentMethod::PayPal => 3.5,
+        PaymentMethod::BankTransfer => 0.5,
+    }
+}
+
+fn main() {
+    let method = PaymentMethod::CreditCard
+    println!("Fee: {}%", processing_fee(&method))
+}

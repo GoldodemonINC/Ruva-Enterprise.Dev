@@ -1,0 +1,18 @@
+enum PlayingEnum {
+    Playing,
+    Paused,
+    GameOver,
+}
+
+fn describe(v: &PlayingEnum) -> string {
+    match v {
+        PlayingEnum::Playing => "Playing".into(),
+        PlayingEnum::Paused => "Paused".into(),
+        PlayingEnum::GameOver => "GameOver".into(),
+    }
+}
+
+fn main() {
+    let v = PlayingEnum::Playing
+    println!("{}", describe(&v))
+}

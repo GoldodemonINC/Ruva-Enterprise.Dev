@@ -1,0 +1,33 @@
+class Queue {
+    let mut items: [i32; 100],
+    let mut front: i32,
+    let mut rear: i32,
+
+    pub fn new() -> Self {
+        return Self { items: [0; 100], front: 0, rear: 0 }
+    }
+
+    pub fn enqueue(&mut self, value: i32) {
+        self.items[self.rear as usize] = value
+        self.rear += 1
+    }
+
+    pub fn dequeue(&mut self) -> i32 {
+        let value = self.items[self.front as usize]
+        self.front += 1
+        return value
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.front == self.rear
+    }
+}
+
+fn main() {
+    let mut q = Queue::new()
+    q.enqueue(1)
+    q.enqueue(2)
+    q.enqueue(3)
+    println!("dequeue = {}", q.dequeue())
+    println!("dequeue = {}", q.dequeue())
+}

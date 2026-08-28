@@ -977,6 +977,43 @@ impl ZigCodeGen {
                 }
                 self.output.push('}');
             }
+
+            Expr::FString(parts) => {
+                for part in parts {
+                    match part {
+                        crate::ast::FStringPart::Text(text) => self.output.push_str(text),
+                        crate::ast::FStringPart::Expr(expr) => {
+                            self.output.push_str("{}");
+                            self.gen_expr(expr);
+                        }
+                    }
+                }
+            }
+            Expr::OptionalChaining { object, field } => {
+                self.gen_expr(object);
+                write!(self.output, ".{}", field).unwrap();
+            }
+            Expr::NullCoalesce { left, right } => {
+                self.gen_expr(left);
+                self.output.push_str(" orelse ");
+                self.gen_expr(right);
+            }
+            Expr::Assert { condition, .. } => {
+                self.output.push_str("assert ");
+                self.gen_expr(condition);
+            }
+            Expr::AssertEq { left, right, .. } => {
+                self.output.push_str("assert ");
+                self.gen_expr(left);
+                self.output.push_str(" == ");
+                self.gen_expr(right);
+            }
+            Expr::AssertNe { left, right, .. } => {
+                self.output.push_str("assert ");
+                self.gen_expr(left);
+                self.output.push_str(" != ");
+                self.gen_expr(right);
+            }
         }
     }
 

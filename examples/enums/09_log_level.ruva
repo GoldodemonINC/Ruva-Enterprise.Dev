@@ -1,0 +1,22 @@
+enum LogLevel {
+    Debug,
+    Info,
+    Warning,
+    Error,
+    Critical,
+}
+
+fn level_priority(level: &LogLevel) -> i32 {
+    match level {
+        LogLevel::Debug => 0,
+        LogLevel::Info => 1,
+        LogLevel::Warning => 2,
+        LogLevel::Error => 3,
+        LogLevel::Critical => 4,
+    }
+}
+
+fn main() {
+    let log = LogLevel::Warning
+    println!("Priority: {}", level_priority(&log))
+}

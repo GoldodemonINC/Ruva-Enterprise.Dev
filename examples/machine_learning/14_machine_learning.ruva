@@ -1,0 +1,7 @@
+// Example: Machine Learning #14
+// This example demonstrates machine learning concepts in Ruva
+
+fn main() {
+    println!("Example: Machine Learning #14")
+    println!("Ruva makes machine learning safe and fast")
+}

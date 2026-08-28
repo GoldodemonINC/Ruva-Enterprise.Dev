@@ -1,0 +1,8 @@
+fn main() {
+    let x = 42
+    let y = -x
+    let b = true
+    let nb = !b
+    println!("x={}, -x={}", x, y)
+    println!("b={}, !b={}", b, nb)
+}

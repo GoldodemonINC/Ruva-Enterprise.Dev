@@ -1,0 +1,14 @@
+class Contact {
+    pub let name: string,
+
+    pub fn new() -> Self {
+        return Self { name: "" }
+    }
+
+    pub fn get_name(&self) -> string { return self.name.clone() }
+}
+
+fn main() {
+    let obj = Contact::new()
+    println!("Contacts class created")
+}

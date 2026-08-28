@@ -1,0 +1,14 @@
+class Note {
+    pub let content: string,
+
+    pub fn new() -> Self {
+        return Self { content: "" }
+    }
+
+    pub fn get_content(&self) -> string { return self.content.clone() }
+}
+
+fn main() {
+    let obj = Note::new()
+    println!("Notes class created")
+}

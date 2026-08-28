@@ -1,0 +1,18 @@
+enum WarmEnum {
+    Warm,
+    Neutral,
+    Cool,
+}
+
+fn describe(v: &WarmEnum) -> string {
+    match v {
+        WarmEnum::Warm => "Warm".into(),
+        WarmEnum::Neutral => "Neutral".into(),
+        WarmEnum::Cool => "Cool".into(),
+    }
+}
+
+fn main() {
+    let v = WarmEnum::Warm
+    println!("{}", describe(&v))
+}

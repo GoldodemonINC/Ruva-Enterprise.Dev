@@ -1,0 +1,7 @@
+fn main() {
+    let c1 = 'A'
+    let c2 = 'Z'
+    let c3 = '\n'
+    let c4 = '\t'
+    println!("chars: {}, {}, newline={:?}, tab={:?}", c1, c2, c3, c4)
+}

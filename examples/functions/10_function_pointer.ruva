@@ -1,0 +1,11 @@
+fn add(a: i32, b: i32) -> i32 { a + b }
+fn sub(a: i32, b: i32) -> i32 { a - b }
+
+fn calculate(op: fn(i32, i32) -> i32, a: i32, b: i32) -> i32 {
+    op(a, b)
+}
+
+fn main() {
+    println!("10 + 5 = {}", calculate(add, 10, 5))
+    println!("10 - 5 = {}", calculate(sub, 10, 5))
+}

@@ -1,0 +1,11 @@
+fn main() {
+    let mut x = 10
+    x += 5
+    println!("after +=: {}", x)
+    x -= 3
+    println!("after -=: {}", x)
+    x *= 2
+    println!("after *=: {}", x)
+    x /= 4
+    println!("after /=: {}", x)
+}

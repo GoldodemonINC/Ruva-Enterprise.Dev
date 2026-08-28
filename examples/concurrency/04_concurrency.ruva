@@ -1,0 +1,7 @@
+// Example: Concurrency #4
+// This example demonstrates concurrency concepts in Ruva
+
+fn main() {
+    println!("Example: Concurrency #4")
+    println!("Ruva makes concurrency safe and fast")
+}

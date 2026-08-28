@@ -1,0 +1,14 @@
+class Expense {
+    pub let amount: f64,
+
+    pub fn new() -> Self {
+        return Self { amount: 0.0 }
+    }
+
+    pub fn get_amount(&self) -> f64 { return self.amount }
+}
+
+fn main() {
+    let obj = Expense::new()
+    println!("Expenses class created")
+}

@@ -1,0 +1,14 @@
+class Dice {
+    pub let sides: i32,
+
+    pub fn new() -> Self {
+        return Self { sides: 0 }
+    }
+
+    pub fn roll(&self) -> i32 { return 6 }
+}
+
+fn main() {
+    let obj = Dice::new()
+    println!("Dice rolling class created")
+}

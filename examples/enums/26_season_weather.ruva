@@ -1,0 +1,18 @@
+enum SunnyEnum {
+    Sunny,
+    Rainy,
+    Snowy,
+}
+
+fn describe(v: &SunnyEnum) -> string {
+    match v {
+        SunnyEnum::Sunny => "Sunny".into(),
+        SunnyEnum::Rainy => "Rainy".into(),
+        SunnyEnum::Snowy => "Snowy".into(),
+    }
+}
+
+fn main() {
+    let v = SunnyEnum::Sunny
+    println!("{}", describe(&v))
+}

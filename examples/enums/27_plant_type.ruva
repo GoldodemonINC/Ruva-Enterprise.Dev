@@ -1,0 +1,18 @@
+enum TreeEnum {
+    Tree,
+    Shrub,
+    Flower,
+}
+
+fn describe(v: &TreeEnum) -> string {
+    match v {
+        TreeEnum::Tree => "Tree".into(),
+        TreeEnum::Shrub => "Shrub".into(),
+        TreeEnum::Flower => "Flower".into(),
+    }
+}
+
+fn main() {
+    let v = TreeEnum::Tree
+    println!("{}", describe(&v))
+}

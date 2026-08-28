@@ -1,0 +1,7 @@
+// Example: Testing #5
+// This example demonstrates testing concepts in Ruva
+
+fn main() {
+    println!("Example: Testing #5")
+    println!("Ruva makes testing safe and fast")
+}

@@ -1,0 +1,8 @@
+fn main() {
+    let _unused = 42
+    let (x, _) = (10, 20)
+    println!("x={}", x)
+    for _ in 0..3 {
+        println!("loop iteration")
+    }
+}

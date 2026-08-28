@@ -1,0 +1,18 @@
+enum ConnectedEnum {
+    Connected,
+    Disconnected,
+    Timeout,
+}
+
+fn describe(v: &ConnectedEnum) -> string {
+    match v {
+        ConnectedEnum::Connected => "Connected".into(),
+        ConnectedEnum::Disconnected => "Disconnected".into(),
+        ConnectedEnum::Timeout => "Timeout".into(),
+    }
+}
+
+fn main() {
+    let v = ConnectedEnum::Connected
+    println!("{}", describe(&v))
+}

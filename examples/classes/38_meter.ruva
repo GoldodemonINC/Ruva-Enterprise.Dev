@@ -1,0 +1,14 @@
+class Meter {
+    pub let time_left: i32,
+
+    pub fn new() -> Self {
+        return Self { time_left: 0 }
+    }
+
+    pub fn tick(&mut self) { self.time_left -= 1 }
+}
+
+fn main() {
+    let obj = Meter::new()
+    println!("Parking class created")
+}

@@ -874,6 +874,40 @@ impl TypeChecker {
                     self.warn("null_mut() is typically used in unsafe/FFI contexts".into(), 0, 0);
                 }
             }
+            Expr::FString(parts) => {
+                for part in parts {
+                    if let crate::ast::FStringPart::Expr(expr) = part {
+                        self.check_expr(expr);
+                    }
+                }
+            }
+            Expr::OptionalChaining { object, .. } => {
+                self.check_expr(object);
+            }
+            Expr::NullCoalesce { left, right } => {
+                self.check_expr(left);
+                self.check_expr(right);
+            }
+            Expr::Assert { condition, message } => {
+                self.check_expr(condition);
+                if let Some(ref msg) = message {
+                    self.check_expr(msg);
+                }
+            }
+            Expr::AssertEq { left, right, message } => {
+                self.check_expr(left);
+                self.check_expr(right);
+                if let Some(ref msg) = message {
+                    self.check_expr(msg);
+                }
+            }
+            Expr::AssertNe { left, right, message } => {
+                self.check_expr(left);
+                self.check_expr(right);
+                if let Some(ref msg) = message {
+                    self.check_expr(msg);
+                }
+            }
         }
     }
 
@@ -888,6 +922,10 @@ impl TypeChecker {
             Expr::Bool(_) => Ty::Primitive("bool".into()),
             Expr::Null => Ty::Named("Option".into()),
             Expr::NullPtr => Ty::RawPointer(Box::new(Ty::Inferred), true),
+            Expr::FString(_) => Ty::Primitive("string".into()),
+            Expr::OptionalChaining { .. } => Ty::Named("Option".into()),
+            Expr::NullCoalesce { left, .. } => self.infer_type(left),
+            Expr::Assert { .. } | Expr::AssertEq { .. } | Expr::AssertNe { .. } => Ty::Primitive("()".into()),
 
             Expr::Ident(name) => self.lookup_var_type(name),
 

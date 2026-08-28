@@ -1,0 +1,10 @@
+fn max3(a: i32, b: i32, c: i32) -> i32 {
+    let mut max = a
+    if b > max { max = b }
+    if c > max { max = c }
+    return max
+}
+
+fn main() {
+    println!("max(3,7,5) = {}", max3(3, 7, 5))
+}

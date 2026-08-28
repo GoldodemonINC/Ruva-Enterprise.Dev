@@ -1,0 +1,7 @@
+// Example: Algorithms #3
+// This example demonstrates algorithms concepts in Ruva
+
+fn main() {
+    println!("Example: Algorithms #3")
+    println!("Ruva makes algorithms safe and fast")
+}

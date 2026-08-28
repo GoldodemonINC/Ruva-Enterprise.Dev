@@ -1,0 +1,6 @@
+fn main() {
+    let big: i64 = 9_223_372_036_854_775_807
+    let million = 1_000_000
+    println!("max i64: {}", big)
+    println!("million: {}", million)
+}

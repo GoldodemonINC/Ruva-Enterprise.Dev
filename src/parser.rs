@@ -1638,6 +1638,22 @@ impl Parser {
                     self.advance();
                     expr = Expr::Try(Box::new(expr));
                 }
+                Token::QuestionDot => {
+                    self.advance();
+                    let (field, _) = self.expect_ident()?;
+                    expr = Expr::OptionalChaining {
+                        object: Box::new(expr),
+                        field,
+                    };
+                }
+                Token::NullCoalesce => {
+                    self.advance();
+                    let right = self.parse_expr()?;
+                    expr = Expr::NullCoalesce {
+                        left: Box::new(expr),
+                        right: Box::new(right),
+                    };
+                }
                 _ => break,
             }
         }
@@ -1671,6 +1687,27 @@ impl Parser {
             Token::Str(s) => {
                 self.advance();
                 Ok(Expr::Str(s))
+            }
+            Token::FStringStart => {
+                self.advance(); // skip FStringStart
+                let mut parts = Vec::new();
+                while !self.at(&Token::FStringEnd) && !self.at(&Token::Eof) {
+                    match self.peek().clone() {
+                        Token::FStringPart(text) => {
+                            self.advance();
+                            parts.push(FStringPart::Text(text));
+                        }
+                        Token::FStringExpr => {
+                            self.advance(); // skip FStringExpr marker
+                            let expr = self.parse_expr()?;
+                            parts.push(FStringPart::Expr(expr));
+                            self.expect(&Token::RBrace)?; // consume closing brace
+                        }
+                        _ => break,
+                    }
+                }
+                self.expect(&Token::FStringEnd)?;
+                Ok(Expr::FString(parts))
             }
             Token::Char(c) => {
                 self.advance();
@@ -1797,6 +1834,46 @@ impl Parser {
                             self.expect(&Token::RParen)?;
                         }
                         return Ok(Expr::NullPtr);
+                    }
+                    "assert" => {
+                        self.expect(&Token::LParen)?;
+                        let condition = self.parse_expr()?;
+                        let message = if self.at(&Token::Comma) {
+                            self.advance();
+                            Some(Box::new(self.parse_expr()?))
+                        } else {
+                            None
+                        };
+                        self.expect(&Token::RParen)?;
+                        return Ok(Expr::Assert { condition: Box::new(condition), message });
+                    }
+                    "assert_eq" => {
+                        self.expect(&Token::LParen)?;
+                        let left = self.parse_expr()?;
+                        self.expect(&Token::Comma)?;
+                        let right = self.parse_expr()?;
+                        let message = if self.at(&Token::Comma) {
+                            self.advance();
+                            Some(Box::new(self.parse_expr()?))
+                        } else {
+                            None
+                        };
+                        self.expect(&Token::RParen)?;
+                        return Ok(Expr::AssertEq { left: Box::new(left), right: Box::new(right), message });
+                    }
+                    "assert_ne" => {
+                        self.expect(&Token::LParen)?;
+                        let left = self.parse_expr()?;
+                        self.expect(&Token::Comma)?;
+                        let right = self.parse_expr()?;
+                        let message = if self.at(&Token::Comma) {
+                            self.advance();
+                            Some(Box::new(self.parse_expr()?))
+                        } else {
+                            None
+                        };
+                        self.expect(&Token::RParen)?;
+                        return Ok(Expr::AssertNe { left: Box::new(left), right: Box::new(right), message });
                     }
                     _ => {}
                 }

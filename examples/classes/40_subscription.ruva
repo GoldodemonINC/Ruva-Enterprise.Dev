@@ -1,0 +1,14 @@
+class Subscription {
+    pub let name: string,
+
+    pub fn new() -> Self {
+        return Self { name: "" }
+    }
+
+    pub fn is_active(&self) -> bool { return true }
+}
+
+fn main() {
+    let obj = Subscription::new()
+    println!("Subscriptions class created")
+}

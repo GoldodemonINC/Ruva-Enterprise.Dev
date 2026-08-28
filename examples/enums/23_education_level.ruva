@@ -1,0 +1,18 @@
+enum HighSchoolEnum {
+    HighSchool,
+    Bachelor,
+    PhD,
+}
+
+fn describe(v: &HighSchoolEnum) -> string {
+    match v {
+        HighSchoolEnum::HighSchool => "HighSchool".into(),
+        HighSchoolEnum::Bachelor => "Bachelor".into(),
+        HighSchoolEnum::PhD => "PhD".into(),
+    }
+}
+
+fn main() {
+    let v = HighSchoolEnum::HighSchool
+    println!("{}", describe(&v))
+}

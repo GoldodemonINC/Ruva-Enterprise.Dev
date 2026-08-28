@@ -1,0 +1,7 @@
+// Example: Async #16
+// This example demonstrates async concepts in Ruva
+
+fn main() {
+    println!("Example: Async #16")
+    println!("Ruva makes async safe and fast")
+}

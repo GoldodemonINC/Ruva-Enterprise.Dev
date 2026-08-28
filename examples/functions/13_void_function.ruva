@@ -1,0 +1,11 @@
+fn print_separator() {
+    println!("==================")
+}
+
+fn main() {
+    print_separator()
+    println!("Section 1")
+    print_separator()
+    println!("Section 2")
+    print_separator()
+}
