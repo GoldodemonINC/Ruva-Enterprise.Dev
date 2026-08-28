@@ -166,8 +166,10 @@ class Snake {
     }
 
     pub fn set_direction(&mut self, dir: Direction) {
-        // Prevent reversing into yourself
-        if dir as i64 != self.direction.opposite() as i64 {
+        let dir_copy = dir.clone()
+        let dir_val = dir_copy as i64
+        let opp_val = self.direction.clone().opposite() as i64
+        if dir_val != opp_val {
             self.next_direction = dir
         }
     }
@@ -478,38 +480,45 @@ class Game {
     }
 
     pub fn handle_input(&mut self, key: string) {
-        match self.state {
-            GameState::Menu => {
-                if key == " " || key == "enter" {
-                    self.start()
-                } else if key == "q" {
-                    self.state = GameState::GameOver
-                }
+        if matches!(self.state, GameState::Menu) {
+            if key == " " || key == "enter" {
+                self.start()
             }
-            GameState::Playing => {
-                match key.as_str() {
-                    "w" | "up" => self.input_buffer.push(Direction::Up),
-                    "s" | "down" => self.input_buffer.push(Direction::Down),
-                    "a" | "left" => self.input_buffer.push(Direction::Left),
-                    "d" | "right" => self.input_buffer.push(Direction::Right),
-                    "p" | "escape" => self.state = GameState::Paused,
-                    "q" => self.state = GameState::GameOver,
-                    _ => {}
-                }
+            if key == "q" {
+                self.state = GameState::GameOver
             }
-            GameState::Paused => {
-                if key == "p" || key == "escape" || key == " " {
-                    self.state = GameState::Playing
-                } else if key == "q" {
-                    self.state = GameState::GameOver
-                }
+        }
+        if matches!(self.state, GameState::Playing) {
+            if key == "w" || key == "up" {
+                self.input_buffer.push(Direction::Up)
             }
-            GameState::GameOver => {
-                if key == " " || key == "enter" {
-                    self.start()
-                } else if key == "q" {
-                    // Exit handled by caller
-                }
+            if key == "s" || key == "down" {
+                self.input_buffer.push(Direction::Down)
+            }
+            if key == "a" || key == "left" {
+                self.input_buffer.push(Direction::Left)
+            }
+            if key == "d" || key == "right" {
+                self.input_buffer.push(Direction::Right)
+            }
+            if key == "p" || key == "escape" {
+                self.state = GameState::Paused
+            }
+            if key == "q" {
+                self.state = GameState::GameOver
+            }
+        }
+        if matches!(self.state, GameState::Paused) {
+            if key == "p" || key == "escape" || key == " " {
+                self.state = GameState::Playing
+            }
+            if key == "q" {
+                self.state = GameState::GameOver
+            }
+        }
+        if matches!(self.state, GameState::GameOver) {
+            if key == " " || key == "enter" {
+                self.start()
             }
         }
     }
@@ -589,12 +598,12 @@ class Game {
         let mut i = 0
         while i < self.snake.body.len() as i64 {
             let pos = &self.snake.body[i as usize]
-            let cell = if i == 0 {
-                CellType::SnakeHead
-            } else if i == self.snake.body.len() as i64 - 1 {
-                CellType::SnakeTail
-            } else {
-                CellType::SnakeBody
+            let mut cell = CellType::SnakeBody
+            if i == 0 {
+                cell = CellType::SnakeHead
+            }
+            if i == self.snake.body.len() as i64 - 1 {
+                cell = CellType::SnakeTail
             }
             self.board.set_cell(pos.x, pos.y, cell)
             i += 1
@@ -603,7 +612,8 @@ class Game {
         // Draw food
         if self.food.food_type == 1 {
             self.board.set_cell(self.food.position.x, self.food.position.y, CellType::BonusFood)
-        } else {
+        }
+        if self.food.food_type != 1 {
             self.board.set_cell(self.food.position.x, self.food.position.y, CellType::Food)
         }
     }
@@ -715,17 +725,18 @@ fn main() {
         // Simulate input (in real terminal, you'd read keypresses)
         // For now, auto-play for demonstration
         if matches!(game.state, GameState::Playing) {
-            // Auto-play logic: snake moves towards food
             let head = game.snake.head()
             let food_pos = game.food.position.clone()
-
             if head.x < food_pos.x {
                 game.handle_input("d")
-            } else if head.x > food_pos.x {
+            }
+            if head.x > food_pos.x {
                 game.handle_input("a")
-            } else if head.y < food_pos.y {
+            }
+            if head.y < food_pos.y {
                 game.handle_input("s")
-            } else if head.y > food_pos.y {
+            }
+            if head.y > food_pos.y {
                 game.handle_input("w")
             }
         }

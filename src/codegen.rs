@@ -189,8 +189,13 @@ edition = "2021"
         self.output.push_str("const ");
         self.output.push_str(&c.name);
         if let Some(ref ts) = ty_str {
-            self.output.push_str(": ");
-            self.output.push_str(ts);
+            // For string type in const context, use &str instead of String
+            if ts == "string" || ts == "String" {
+                self.output.push_str(": &str");
+            } else {
+                self.output.push_str(": ");
+                self.output.push_str(ts);
+            }
         }
         self.output.push_str(" = ");
         self.gen_expr(&c.value);
@@ -253,11 +258,15 @@ edition = "2021"
     fn gen_struct(&mut self, s: &StructDef) {
         let vis = if s.is_pub { "pub " } else { "" };
 
-        // Derives
-        if !s.derives.is_empty() {
-            let derives = s.derives.join(", ");
-            self.writeln(&format!("#[derive({})]", derives));
+        // Always derive Clone and Debug for structs
+        let mut all_derives = vec!["Clone".to_string(), "Debug".to_string()];
+        for d in &s.derives {
+            if !all_derives.contains(d) {
+                all_derives.push(d.clone());
+            }
         }
+        let derives = all_derives.join(", ");
+        self.writeln(&format!("#[derive({})]", derives));
 
         // Generics
         let generics = if s.generics.is_empty() {
@@ -273,6 +282,7 @@ edition = "2021"
         for field in &s.fields {
             let vis = if field.is_pub { "pub " } else { "" };
             let ty = self.type_str(&field.ty);
+            // Note: `mut` is not valid on Rust struct fields; only local bindings
             self.writeln(&format!("{}{}: {},", vis, field.name, ty));
         }
 
@@ -291,6 +301,8 @@ edition = "2021"
             let params: Vec<String> = e.generics.iter().map(|g| g.name.clone()).collect();
             format!("<{}>", params.join(", "))
         };
+        // Always derive Clone and Debug for enums
+        self.writeln(&format!("#[derive(Clone, Debug)]"));
         self.writeln(&format!("{}enum {}{} {{", vis, e.name, generics));
         self.indent += 1;
 
@@ -313,11 +325,15 @@ edition = "2021"
     fn gen_class(&mut self, c: &ClassDef) {
         let vis = if c.is_pub { "pub " } else { "" };
 
-        // Derives
-        if !c.derives.is_empty() {
-            let derives = c.derives.join(", ");
-            self.writeln(&format!("#[derive({})]", derives));
+        // Derives - always include Clone and Debug
+        let mut all_derives = vec!["Clone".to_string(), "Debug".to_string()];
+        for d in &c.derives {
+            if !all_derives.contains(d) {
+                all_derives.push(d.clone());
+            }
         }
+        let derives = all_derives.join(", ");
+        self.writeln(&format!("#[derive({})]", derives));
 
         // Generate struct
         self.writeln(&format!("{}struct {} {{", vis, c.name));
@@ -325,9 +341,9 @@ edition = "2021"
 
         for field in &c.fields {
             let vis = if field.is_pub { "pub " } else { "" };
-            let mut_str = if field.is_mut { "mut " } else { "" };
+            // Note: `mut` is not valid on Rust struct fields
             let ty = self.type_str(&field.ty);
-            self.writeln(&format!("{}{}{}: {},", vis, mut_str, field.name, ty));
+            self.writeln(&format!("{}{}: {},", vis, field.name, ty));
         }
 
         self.indent -= 1;
@@ -863,12 +879,11 @@ edition = "2021"
             }
 
             Expr::Index { object, index } => {
-                // Use .get() for bounds checking instead of direct indexing
-                // This prevents panics on out-of-bounds access
+                // Use direct indexing for Vec — simpler and works as LHS
                 self.gen_expr(object);
-                self.output.push_str(".get(");
+                self.output.push('[');
                 self.gen_expr(index);
-                self.output.push_str(").unwrap_or_else(|| panic!(\"Index out of bounds\"))");
+                self.output.push(']');
             }
 
             Expr::Closure { params, return_type, body } => {
@@ -1168,7 +1183,14 @@ edition = "2021"
 
     fn type_str(&mut self, ty: &Type) -> String {
         match ty {
-            Type::Name(name) => name.clone(),
+            Type::Name(name) => {
+                // Map Ruva's `string` type to Rust's `&str`
+                if name == "string" || name == "String" {
+                    "&str".to_string()
+                } else {
+                    name.clone()
+                }
+            },
             Type::Path(path) => path.join("::"),
             Type::Reference { inner, is_mut } => {
                 let mut_str = if *is_mut { "mut " } else { "" };
