@@ -312,6 +312,7 @@ impl TypeChecker {
                     }
                 }
             }
+            Item::Attribute(attr) => self.register_item(&attr.item),
             _ => {}
         }
     }
@@ -380,6 +381,7 @@ impl TypeChecker {
                     }
                 }
             }
+            Item::Attribute(attr) => self.check_item(&attr.item),
             _ => {}
         }
     }
