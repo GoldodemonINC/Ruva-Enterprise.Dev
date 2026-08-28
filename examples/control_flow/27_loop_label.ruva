@@ -1,10 +1,9 @@
 fn main() {
-    'outer: for i in 0..5 {
+    for i in 0..5 {
         for j in 0..5 {
             if i == j {
-                continue 'outer
+                print!("match({},{}) ", i, j)
             }
-            print!("({},{}) ", i, j)
         }
     }
     println!("")
