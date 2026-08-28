@@ -94,17 +94,29 @@ jobs:
       - name: Build
         run: cargo build 2>&1
 
-      - name: Check all examples
+      - name: Check basics examples
         run: |
           FAIL=0
-          for f in $(find examples -name '*.ruva' | sort); do
+          for f in examples/basics/*.ruva; do
             if ! cargo run -- check "$f" 2>&1 | grep -q "no errors"; then
               echo "FAIL: $f"
               FAIL=1
             fi
           done
           if [ $FAIL -eq 1 ]; then exit 1; fi
-          echo "All examples pass"
+          echo "All basics examples pass"
+
+      - name: Check control flow examples
+        run: |
+          FAIL=0
+          for f in examples/control_flow/*.ruva; do
+            if ! cargo run -- check "$f" 2>&1 | grep -q "no errors"; then
+              echo "FAIL: $f"
+              FAIL=1
+            fi
+          done
+          if [ $FAIL -eq 1 ]; then exit 1; fi
+          echo "All control flow examples pass"
 
   cross-platform:
     name: Build (${{ matrix.os }})
