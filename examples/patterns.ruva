@@ -1,0 +1,154 @@
+// Pattern matching deep-dive — exhaustive matching, ranges, destructuring
+
+// ─── Enums with data ──────────────────────────────────────────────────
+
+enum shape {
+    Circle(f64),
+    Rectangle(f64, f64),
+    Triangle(f64, f64, f64),
+    Point,
+}
+
+fn area(s: shape) -> f64 {
+    match s {
+        shape::Circle(radius) => 3.14159 * radius * radius,
+        shape::Rectangle(w, h) => w * h,
+        shape::Triangle(a, b, c) => {
+            let s = (a + b + c) / 2.0
+            let val = s * (s - a) * (s - b) * (s - c)
+            if val > 0.0 { val } else { 0.0 }
+        }
+        shape::Point => 0.0,
+    }
+}
+
+fn describe(s: shape) -> string {
+    match s {
+        shape::Circle(r) => format!("Circle with radius {}", r),
+        shape::Rectangle(w, h) => format!("{}×{} rectangle", w, h),
+        shape::Triangle(_, _, _) => "A triangle".into(),
+        shape::Point => "Just a point".into(),
+    }
+}
+
+// ─── Match with ranges ───────────────────────────────────────────────
+
+fn grade(score: u32) -> string {
+    match score {
+        90..=100 => "A".into(),
+        80..=89 => "B".into(),
+        70..=79 => "C".into(),
+        60..=69 => "D".into(),
+        0..=59 => "F".into(),
+        _ => "Invalid".into(),
+    }
+}
+
+// ─── Or patterns ──────────────────────────────────────────────────────
+
+fn is_weekend(day: string) -> bool {
+    match day.as_str() {
+        "Saturday" | "Sunday" => true,
+        _ => false,
+    }
+}
+
+// ─── Point classification with guards ─────────────────────────────────
+
+fn classify_point(x: f64, y: f64) -> string {
+    match (x, y) {
+        (0.0, 0.0) => "Origin".into(),
+        (x, 0.0) if x > 0.0 => "Positive X-axis".into(),
+        (x, 0.0) if x < 0.0 => "Negative X-axis".into(),
+        (0.0, y) if y > 0.0 => "Positive Y-axis".into(),
+        (0.0, y) if y < 0.0 => "Negative Y-axis".into(),
+        _ => "Somewhere else".into(),
+    }
+}
+
+// ─── FizzBuzz with match ─────────────────────────────────────────────
+
+fn fizzbuzz(n: u32) -> string {
+    match n % 15 {
+        0 => "FizzBuzz".into(),
+        _ => {
+            match n % 3 {
+                0 => "Fizz".into(),
+                _ => {
+                    match n % 5 {
+                        0 => "Buzz".into(),
+                        _ => format!("{}", n),
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ─── Option matching ──────────────────────────────────────────────────
+
+fn find_first_even(numbers: Vec<i32>) -> Option<i32> {
+    for n in numbers {
+        if n % 2 == 0 {
+            return Some(n)
+        }
+    }
+    return None
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────
+
+fn main() {
+    // Shape area
+    println!("=== Shapes ===")
+    let shapes = vec![
+        shape::Circle(5.0),
+        shape::Rectangle(4.0, 6.0),
+        shape::Triangle(3.0, 4.0, 5.0),
+        shape::Point,
+    ]
+
+    for s in shapes {
+        println!("{}: area = {:.2}", describe(s.clone()), area(s))
+    }
+
+    // Point classification
+    println!("\n=== Point Classification ===")
+    let points = vec![(0.0, 0.0), (3.0, 0.0), (-2.0, 5.0), (1.0, -1.0)]
+    for (x, y) in points {
+        println!("({}, {}) → {}", x, y, classify_point(x, y))
+    }
+
+    // Grades
+    println!("\n=== Grades ===")
+    let scores = vec![95, 82, 73, 61, 45]
+    for s in scores {
+        println!("Score {} → Grade {}", s, grade(s))
+    }
+
+    // Weekend check
+    println!("\n=== Days of Week ===")
+    let days = vec!["Monday", "Saturday", "Wednesday", "Sunday"]
+    for day in days {
+        let is_wknd = is_weekend(day.into())
+        if is_wknd {
+            println!("{} — 🎉 Weekend!", day)
+        } else {
+            println!("{} — 💼 Work day", day)
+        }
+    }
+
+    // FizzBuzz
+    println!("\n=== FizzBuzz (1-15) ===")
+    for i in 1..16 {
+        println!("{}: {}", i, fizzbuzz(i))
+    }
+
+    // Option finding
+    println!("\n=== Option Finding ===")
+    let nums = vec![1, 3, 5, 7, 8, 9]
+    match find_first_even(nums) {
+        Some(n) => println!("First even: {}", n),
+        None => println!("No even numbers found"),
+    }
+}

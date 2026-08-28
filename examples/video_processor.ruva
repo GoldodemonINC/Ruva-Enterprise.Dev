@@ -1,0 +1,112 @@
+// Example: Video Processing Application
+
+import ruva::video
+import ruva::video::VideoDecoder
+import ruva::video::VideoEncoder
+import ruva::video::VideoFrame
+import ruva::video::Codec
+import ruva::video::filter
+
+// Video processor class
+class VideoProcessor {
+    pub let mut decoder: VideoDecoder
+    pub let mut encoder: VideoEncoder
+
+    pub fn new(input_path: string, output_path: string) -> Result<VideoProcessor, string> {
+        // Open input video
+        let decoder = VideoDecoder::new(input_path)?
+
+        // Create output video with H.264 codec
+        let encoder = VideoEncoder::new(output_path, Codec::H264)?
+
+        return Result::Ok(Self {
+            decoder,
+            encoder,
+        })
+    }
+
+    pub fn process(&mut self) -> Result<(), string> {
+        // Get video info
+        let info = self.decoder.get_info()
+        println!("Processing video: {}x{} @ {}fps", info.width, info.height, info.frame_rate)
+
+        // Process frames
+        let mut frame_count = 0
+        loop {
+            match self.decoder.decode_frame() {
+                Result::Ok(frame) => {
+                    // Apply filters
+                    let processed = self.process_frame(frame)?
+
+                    // Write to output
+                    self.encoder.write_frame(&processed)?
+
+                    frame_count += 1
+                    if frame_count % 100 == 0 {
+                        println!("Processed {} frames", frame_count)
+                    }
+                }
+                Result::Err(_) => {
+                    // End of video
+                    break
+                }
+            }
+        }
+
+        // Flush encoder
+        self.encoder.flush()?
+
+        println!("Processed {} frames total", frame_count)
+        return Result::Ok(())
+    }
+
+    pub fn process_frame(&self, mut frame: VideoFrame) -> Result<VideoFrame, string> {
+        // Apply resize filter
+        let resize = filter::ResizeFilter::new(640, 480)
+        frame = resize.apply(&frame)?
+
+        // Apply sharpen filter
+        let sharpen = filter::SharpenFilter::new(1.5)
+        frame = sharpen.apply(&frame)?
+
+        return Result::Ok(frame)
+    }
+}
+
+// Batch processor
+class BatchProcessor {
+    pub let mut processor: VideoProcessor
+
+    pub fn new(input_path: string, output_path: string) -> Result<BatchProcessor, string> {
+        let processor = VideoProcessor::new(input_path, output_path)?
+        return Result::Ok(Self { processor })
+    }
+
+    pub fn process_directory(&mut self, input_dir: string, output_dir: string) -> Result<(), string> {
+        // Implementation would iterate through directory
+        // For now, just process a single file
+        self.processor.process()
+    }
+}
+
+fn main() {
+    // Process single video
+    let input = "input.mp4".into()
+    let output = "output.mp4".into()
+
+    match VideoProcessor::new(input, output) {
+        Result::Ok(mut processor) => {
+            match processor.process() {
+                Result::Ok(()) => {
+                    println!("Video processing complete!")
+                }
+                Result::Err(e) => {
+                    println!("Error processing video: {}", e)
+                }
+            }
+        }
+        Result::Err(e) => {
+            println!("Error opening video: {}", e)
+        }
+    }
+}

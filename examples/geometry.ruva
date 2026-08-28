@@ -1,0 +1,43 @@
+// Geometry module — loaded via `mod geometry;` from another file
+// This demonstrates file-based module loading
+
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+pub struct Circle {
+    pub center: Point,
+    pub radius: f64,
+}
+
+impl Point {
+    pub fn new(x: f64, y: f64) -> Point {
+        return Point { x, y }
+    }
+
+    pub fn distance_to(&self, other: Point) -> f64 {
+        let dx = self.x - other.x
+        let dy = self.y - other.y
+        return (dx * dx + dy * dy)
+    }
+
+    pub fn origin() -> Point {
+        return Point { x: 0.0, y: 0.0 }
+    }
+}
+
+impl Circle {
+    pub fn new(center: Point, radius: f64) -> Circle {
+        return Circle { center, radius }
+    }
+
+    pub fn area(&self) -> f64 {
+        return 3.14159 * self.radius * self.radius
+    }
+
+    pub fn contains_point(&self, p: Point) -> bool {
+        let dist = self.center.distance_to(p)
+        return dist <= self.radius * self.radius
+    }
+}

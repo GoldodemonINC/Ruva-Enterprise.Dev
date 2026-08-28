@@ -1,0 +1,504 @@
+// Ruva Game Demo - Native Performance Showcase
+// 2D Game with Sprites, Physics, and Input Handling
+
+import ruva::graphics::opengl
+import ruva::core::Vec
+import ruva::core::String
+
+// ─── Vector2D ───────────────────────────────────────────────────────────────
+
+struct Vec2 {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Vec2 {
+    pub fn new(x: f32, y: f32) -> Self {
+        return Self { x, y }
+    }
+
+    pub fn add(&self, other: &Vec2) -> Vec2 {
+        return Vec2::new(self.x + other.x, self.y + other.y)
+    }
+
+    pub fn scale(&self, factor: f32) -> Vec2 {
+        return Vec2::new(self.x * factor, self.y * factor)
+    }
+
+    pub fn length(&self) -> f32 {
+        return (self.x * self.x + self.y * self.y).sqrt()
+    }
+
+    pub fn normalize(&self) -> Vec2 {
+        let len = self.length()
+        if len > 0.0 {
+            return Vec2::new(self.x / len, self.y / len)
+        }
+        return Vec2::new(0.0, 0.0)
+    }
+}
+
+// ─── Color ──────────────────────────────────────────────────────────────────
+
+struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+    pub a: f32,
+}
+
+impl Color {
+    pub fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
+        return Self { r, g, b, a }
+    }
+
+    pub fn red() -> Color { return Color::new(1.0, 0.0, 0.0, 1.0) }
+    pub fn green() -> Color { return Color::new(0.0, 1.0, 0.0, 1.0) }
+    pub fn blue() -> Color { return Color::new(0.0, 0.0, 1.0, 1.0) }
+    pub fn white() -> Color { return Color::new(1.0, 1.0, 1.0, 1.0) }
+    pub fn black() -> Color { return Color::new(0.0, 0.0, 0.0, 1.0) }
+}
+
+// ─── Sprite ─────────────────────────────────────────────────────────────────
+
+class Sprite {
+    pub let mut position: Vec2
+    pub let mut velocity: Vec2
+    pub let mut size: Vec2
+    pub let mut color: Color
+    pub let mut is_active: bool
+
+    pub fn new(x: f32, y: f32, width: f32, height: f32, color: Color) -> Self {
+        return Self {
+            position: Vec2::new(x, y),
+            velocity: Vec2::new(0.0, 0.0),
+            size: Vec2::new(width, height),
+            color,
+            is_active: true,
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        // Update position based on velocity
+        self.position = self.position.add(&self.velocity.scale(delta_time))
+    }
+
+    pub fn render(&self, context: &opengl::Context) {
+        if !self.is_active {
+            return
+        }
+
+        // Set color
+        context.set_clear_color(self.color.r, self.color.g, self.color.b, self.color.a)
+
+        // Create quad vertices
+        let x = self.position.x
+        let y = self.position.y
+        let w = self.size.x
+        let h = self.size.y
+
+        let vertices = [
+            // Position (x, y) + Color (r, g, b, a)
+            x, y, self.color.r, self.color.g, self.color.b, self.color.a,
+            x + w, y, self.color.r, self.color.g, self.color.b, self.color.a,
+            x + w, y + h, self.color.r, self.color.g, self.color.b, self.color.a,
+            x, y + h, self.color.r, self.color.g, self.color.b, self.color.a,
+        ]
+
+        // Draw quad
+        context.draw_quad(&vertices)
+    }
+
+    pub fn collides_with(&self, other: &Sprite) -> bool {
+        if !self.is_active || !other.is_active {
+            return false
+        }
+
+        return self.position.x < other.position.x + other.size.x
+            && self.position.x + self.size.x > other.position.x
+            && self.position.y < other.position.y + other.size.y
+            && self.position.y + self.size.y > other.position.y
+    }
+}
+
+// ─── Player ─────────────────────────────────────────────────────────────────
+
+class Player {
+    pub let mut sprite: Sprite
+    pub let mut speed: f32
+    pub let mut health: i32
+    pub let mut score: i32
+
+    pub fn new(x: f32, y: f32) -> Self {
+        return Self {
+            sprite: Sprite::new(x, y, 50.0, 50.0, Color::green()),
+            speed: 300.0,
+            health: 100,
+            score: 0,
+        }
+    }
+
+    pub fn handle_input(&mut self, keys: &InputState) {
+        // Reset velocity
+        self.sprite.velocity = Vec2::new(0.0, 0.0)
+
+        // Movement
+        if keys.left {
+            self.sprite.velocity.x = -self.speed
+        }
+        if keys.right {
+            self.sprite.velocity.x = self.speed
+        }
+        if keys.up {
+            self.sprite.velocity.y = -self.speed
+        }
+        if keys.down {
+            self.sprite.velocity.y = self.speed
+        }
+
+        // Normalize diagonal movement
+        if self.sprite.velocity.x != 0.0 && self.sprite.velocity.y != 0.0 {
+            self.sprite.velocity = self.sprite.velocity.normalize().scale(self.speed)
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        self.sprite.update(delta_time)
+
+        // Keep player in bounds
+        if self.sprite.position.x < 0.0 {
+            self.sprite.position.x = 0.0
+        }
+        if self.sprite.position.y < 0.0 {
+            self.sprite.position.y = 0.0
+        }
+        if self.sprite.position.x > 800.0 - self.sprite.size.x {
+            self.sprite.position.x = 800.0 - self.sprite.size.x
+        }
+        if self.sprite.position.y > 600.0 - self.sprite.size.y {
+            self.sprite.position.y = 600.0 - self.sprite.size.y
+        }
+    }
+
+    pub fn render(&self, context: &opengl::Context) {
+        self.sprite.render(context)
+    }
+
+    pub fn take_damage(&mut self, damage: i32) {
+        self.health -= damage
+        if self.health <= 0 {
+            self.health = 0
+            self.sprite.is_active = false
+        }
+    }
+
+    pub fn add_score(&mut self, points: i32) {
+        self.score += points
+    }
+}
+
+// ─── Enemy ──────────────────────────────────────────────────────────────────
+
+class Enemy {
+    pub let mut sprite: Sprite
+    pub let mut speed: f32
+    pub let mut damage: i32
+
+    pub fn new(x: f32, y: f32, color: Color) -> Self {
+        return Self {
+            sprite: Sprite::new(x, y, 40.0, 40.0, color),
+            speed: 150.0,
+            damage: 10,
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32, player_pos: &Vec2) {
+        // Move toward player
+        let direction = Vec2::new(
+            player_pos.x - self.sprite.position.x,
+            player_pos.y - self.sprite.position.y,
+        ).normalize()
+
+        self.sprite.velocity = direction.scale(self.speed)
+        self.sprite.update(delta_time)
+    }
+
+    pub fn render(&self, context: &opengl::Context) {
+        self.sprite.render(context)
+    }
+}
+
+// ─── Projectile ─────────────────────────────────────────────────────────────
+
+class Projectile {
+    pub let mut sprite: Sprite
+    pub let mut speed: f32
+    pub let mut damage: i32
+    pub let mut lifetime: f32
+
+    pub fn new(x: f32, y: f32, direction: Vec2) -> Self {
+        return Self {
+            sprite: Sprite::new(x, y, 10.0, 10.0, Color::yellow()),
+            speed: 500.0,
+            damage: 25,
+            lifetime: 2.0,
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        self.sprite.update(delta_time)
+        self.lifetime -= delta_time
+
+        if self.lifetime <= 0.0 {
+            self.sprite.is_active = false
+        }
+    }
+
+    pub fn render(&self, context: &opengl::Context) {
+        self.sprite.render(context)
+    }
+}
+
+// ─── Input State ────────────────────────────────────────────────────────────
+
+struct InputState {
+    pub left: bool,
+    pub right: bool,
+    pub up: bool,
+    pub down: bool,
+    pub shoot: bool,
+    pub quit: bool,
+}
+
+impl InputState {
+    pub fn new() -> Self {
+        return Self {
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+            shoot: false,
+            quit: false,
+        }
+    }
+}
+
+// ─── Game ───────────────────────────────────────────────────────────────────
+
+class Game {
+    pub let mut window: opengl::Window
+    pub let mut context: opengl::Context
+    pub let mut player: Player
+    pub let mut enemies: Vec<Enemy>
+    pub let mut projectiles: Vec<Projectile>
+    pub let mut input: InputState
+    pub let mut is_running: bool
+    pub let mut last_time: f64
+
+    pub fn new() -> Result<Game, string> {
+        // Create window
+        let window = opengl::Window::new("Ruva Game Demo", 800, 600)?
+
+        // Create OpenGL context
+        let context = opengl::Context::new(&window)?
+
+        // Create player
+        let player = Player::new(400.0, 300.0)
+
+        // Create initial enemies
+        let mut enemies = Vec::new()
+        enemies.push(Enemy::new(100.0, 100.0, Color::red()))
+        enemies.push(Enemy::new(700.0, 100.0, Color::red()))
+        enemies.push(Enemy::new(100.0, 500.0, Color::red()))
+        enemies.push(Enemy::new(700.0, 500.0, Color::red()))
+
+        return Result::Ok(Self {
+            window,
+            context,
+            player,
+            enemies,
+            projectiles: Vec::new(),
+            input: InputState::new(),
+            is_running: true,
+            last_time: 0.0,
+        })
+    }
+
+    pub fn run(&mut self) {
+        // Main game loop
+        while self.is_running && !self.window.should_close() {
+            // Calculate delta time
+            let current_time = self.get_time()
+            let delta_time = (current_time - self.last_time) as f32
+            self.last_time = current_time
+
+            // Handle input
+            self.handle_input()
+
+            // Update game state
+            self.update(delta_time)
+
+            // Render
+            self.render()
+
+            // Swap buffers
+            self.window.swap_buffers()
+        }
+    }
+
+    pub fn handle_input(&mut self) {
+        // Update input state from window events
+        self.input = self.window.poll_events()
+
+        // Handle shooting
+        if self.input.shoot {
+            self.shoot()
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        // Update player
+        self.player.handle_input(&self.input)
+        self.player.update(delta_time)
+
+        // Update enemies
+        let player_pos = Vec2::new(
+            self.player.sprite.position.x,
+            self.player.sprite.position.y,
+        )
+        for enemy in &mut self.enemies {
+            enemy.update(delta_time, &player_pos)
+        }
+
+        // Update projectiles
+        for projectile in &mut self.projectiles {
+            projectile.update(delta_time)
+        }
+
+        // Check collisions
+        self.check_collisions()
+
+        // Remove inactive entities
+        self.cleanup()
+    }
+
+    pub fn shoot(&mut self) {
+        let direction = Vec2::new(0.0, -1.0) // Shoot upward
+        let projectile = Projectile::new(
+            self.player.sprite.position.x + self.player.sprite.size.x / 2.0,
+            self.player.sprite.position.y,
+            direction,
+        )
+        self.projectiles.push(projectile)
+    }
+
+    pub fn check_collisions(&mut self) {
+        // Check projectile-enemy collisions
+        for projectile in &mut self.projectiles {
+            if !projectile.sprite.is_active {
+                continue
+            }
+
+            for enemy in &mut self.enemies {
+                if !enemy.sprite.is_active {
+                    continue
+                }
+
+                if projectile.sprite.collides_with(&enemy.sprite) {
+                    projectile.sprite.is_active = false
+                    enemy.sprite.is_active = false
+                    self.player.add_score(100)
+                }
+            }
+        }
+
+        // Check player-enemy collisions
+        for enemy in &mut self.enemies {
+            if !enemy.sprite.is_active {
+                continue
+            }
+
+            if self.player.sprite.collides_with(&enemy.sprite) {
+                self.player.take_damage(enemy.damage)
+            }
+        }
+    }
+
+    pub fn cleanup(&mut self) {
+        // Remove inactive projectiles
+        self.projectiles.retain(|p| p.sprite.is_active)
+
+        // Remove inactive enemies
+        self.enemies.retain(|e| e.sprite.is_active)
+    }
+
+    pub fn render(&mut self) {
+        // Clear screen
+        self.context.clear(0.0, 0.0, 0.0, 1.0)
+
+        // Render player
+        self.player.render(&self.context)
+
+        // Render enemies
+        for enemy in &self.enemies {
+            enemy.render(&self.context)
+        }
+
+        // Render projectiles
+        for projectile in &self.projectiles {
+            projectile.render(&self.context)
+        }
+
+        // Render UI
+        self.render_ui()
+    }
+
+    pub fn render_ui(&self) {
+        // Render score
+        let score_text = format!("Score: {}", self.player.score)
+        self.context.draw_text(&score_text, 10.0, 30.0, 1.0, 1.0, 1.0)
+
+        // Render health
+        let health_text = format!("Health: {}", self.player.health)
+        self.context.draw_text(&health_text, 10.0, 60.0, 1.0, 0.0, 0.0)
+
+        // Render enemy count
+        let enemy_text = format!("Enemies: {}", self.enemies.len())
+        self.context.draw_text(&enemy_text, 10.0, 90.0, 1.0, 1.0, 0.0)
+    }
+
+    pub fn get_time(&self) -> f64 {
+        // Implementation would get current time
+        return 0.0
+    }
+}
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Game Demo ===")
+    println!("Native Performance Showcase")
+    println!()
+
+    // Initialize game
+    let mut game = match Game::new() {
+        Result::Ok(g) => g,
+        Result::Err(e) => {
+            println!("Failed to initialize game: {}", e)
+            return
+        }
+    }
+
+    println!("Game initialized!")
+    println!("Controls:")
+    println!("  Arrow keys - Move")
+    println!("  Space - Shoot")
+    println!("  Escape - Quit")
+    println!()
+
+    // Run game
+    game.run()
+
+    println!("Game Over!")
+    println!("Final Score: {}", game.player.score)
+}

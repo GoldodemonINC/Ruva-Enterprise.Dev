@@ -1,0 +1,89 @@
+// ─── FFI & Unsafe Demo ───────────────────────────────────────────────────────
+// Demonstrates Ruva's FFI, unsafe blocks, raw pointers, and memory primitives.
+
+// ─── Extern C functions ──────────────────────────────────────────────────────
+
+extern "C" {
+    fn printf(format: *const u8) -> i32;
+    fn malloc(size: u64) -> *mut u8;
+    fn free(ptr: *mut u8);
+    fn memcpy(dst: *mut u8, src: *const u8, size: u64) -> *mut u8;
+    fn strlen(s: *const u8) -> u64;
+    fn abs(x: i32) -> i32;
+    fn sqrt(x: f64) -> f64;
+
+    static mut GLOBAL_COUNTER: i32;
+    static BUFFER_SIZE: u64;
+}
+
+// ─── Unsafe functions ────────────────────────────────────────────────────────
+
+unsafe fn unsafe_add(a: i32, b: i32) -> i32 {
+    return a + b
+}
+
+pub unsafe fn raw_pointer_dance() {
+    let x: i32 = 42;
+    let ptr: *const i32 = &x;
+    let mut y: i32 = 10;
+    let mut_ptr: *mut i32 = &mut y;
+
+    // Unsafe dereference
+    unsafe {
+        let val = *ptr;
+        *mut_ptr = val + 1;
+    }
+}
+
+// ─── Structs with size/offset ────────────────────────────────────────────────
+
+pub struct Vertex {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+}
+
+pub struct Transform {
+    pub position: Vertex,
+    pub rotation: Vertex,
+    pub scale: Vertex,
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────────
+
+fn main() {
+    // Sizeof — compile-time size calculation
+    let vertex_size: i64 = sizeof(Vertex) as i64
+    let transform_size: i64 = sizeof(Transform) as i64
+
+    // Offsetof — field offset in struct
+    let x_offset: i64 = offsetof(Vertex, x) as i64
+    let r_offset: i64 = offsetof(Vertex, r) as i64
+    let pos_offset: i64 = offsetof(Transform, position) as i64
+    let rot_offset: i64 = offsetof(Transform, rotation) as i64
+
+    println!("Vertex size: {} bytes", vertex_size)
+    println!("Transform size: {} bytes", transform_size)
+    println!("Vertex.x offset: {} bytes", x_offset)
+    println!("Vertex.r offset: {} bytes", r_offset)
+    println!("Transform.position offset: {} bytes", pos_offset)
+    println!("Transform.rotation offset: {} bytes", rot_offset)
+
+    // Null pointer
+    let null_ptr: *mut u8 = null_mut()
+    println!("Null pointer created")
+
+    // Unsafe function call
+    let result = unsafe { unsafe_add(10, 20) }
+    println!("unsafe_add(10, 20) = {}", result)
+
+    // Unsafe block
+    unsafe {
+        raw_pointer_dance()
+    }
+
+    println!("FFI and unsafe demo complete!")
+}

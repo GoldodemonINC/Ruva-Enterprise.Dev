@@ -1,0 +1,224 @@
+// Data structures — linked list, binary search tree, graph
+
+// ─── Linked List ──────────────────────────────────────────────────────
+
+class list_node {
+    pub let data: i32
+    pub let mut next: list_node_ptr
+
+    pub fn new(data: i32) -> Self {
+        return Self { data: data, next: None }
+    }
+}
+
+type list_node_ptr = Option<list_node>
+
+class linked_list {
+    pub let mut head: list_node_ptr
+    pub let mut size: u32
+
+    pub fn new() -> Self {
+        return Self { head: None, size: 0 }
+    }
+
+    pub fn push_front(&mut self, data: i32) {
+        let mut node = list_node::new(data)
+        node.next = self.head.take()
+        self.head = Some(node)
+        self.size = self.size + 1
+    }
+
+    pub fn pop_front(&mut self) -> Option<i32> {
+        let taken = self.head.take()
+        match taken {
+            Some(mut node) => {
+                self.head = node.next.take()
+                self.size = self.size - 1
+                let val = node.data
+                return Some(val)
+            }
+            None => {
+                return None
+            }
+        }
+    }
+
+    pub fn len(&self) -> u32 {
+        return self.size
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.size == 0
+    }
+}
+
+// ─── Binary Search Tree ───────────────────────────────────────────────
+
+class bst_node {
+    pub let value: i32
+    pub let mut left: bst_node_ptr
+    pub let mut right: bst_node_ptr
+
+    pub fn new(value: i32) -> Self {
+        return Self { value: value, left: None, right: None }
+    }
+}
+
+type bst_node_ptr = Option<bst_node>
+
+class binary_search_tree {
+    pub let mut root: bst_node_ptr
+
+    pub fn new() -> Self {
+        return Self { root: None }
+    }
+
+    pub fn insert(&mut self, value: i32) {
+        if self.root.is_some() {
+            let root_node = self.root.as_mut().unwrap()
+            binary_search_tree::insert_into(root_node, value)
+        } else {
+            self.root = Some(bst_node::new(value))
+        }
+    }
+
+    fn insert_into(node: &mut bst_node, value: i32) {
+        if value < node.value {
+            if node.left.is_some() {
+                let left_node = node.left.as_mut().unwrap()
+                binary_search_tree::insert_into(left_node, value)
+            } else {
+                node.left = Some(bst_node::new(value))
+            }
+        } else if value > node.value {
+            if node.right.is_some() {
+                let right_node = node.right.as_mut().unwrap()
+                binary_search_tree::insert_into(right_node, value)
+            } else {
+                node.right = Some(bst_node::new(value))
+            }
+        }
+    }
+
+    pub fn contains(&self, value: i32) -> bool {
+        if self.root.is_none() {
+            return false
+        }
+        return binary_search_tree::search(self.root.as_ref().unwrap(), value)
+    }
+
+    fn search(node: &bst_node, value: i32) -> bool {
+        if value == node.value {
+            return true
+        } else if value < node.value {
+            if node.left.is_none() {
+                return false
+            }
+            return binary_search_tree::search(node.left.as_ref().unwrap(), value)
+        } else {
+            if node.right.is_none() {
+                return false
+            }
+            return binary_search_tree::search(node.right.as_ref().unwrap(), value)
+        }
+    }
+
+    pub fn inorder(&self) -> Vec<i32> {
+        let mut result = vec![]
+        if self.root.is_some() {
+            binary_search_tree::traverse_inorder(self.root.as_ref().unwrap(), &mut result)
+        }
+        return result
+    }
+
+    fn traverse_inorder(node: &bst_node, result: &mut Vec<i32>) {
+        if node.left.is_some() {
+            binary_search_tree::traverse_inorder(node.left.as_ref().unwrap(), result)
+        }
+        result.push(node.value)
+        if node.right.is_some() {
+            binary_search_tree::traverse_inorder(node.right.as_ref().unwrap(), result)
+        }
+    }
+}
+
+// ─── Graph (flat adjacency with edge list) ───────────────────────────
+
+class graph {
+    pub let mut from_nodes: Vec<u32>
+    pub let mut to_nodes: Vec<u32>
+    pub let node_count: u32
+
+    pub fn new(nodes: u32) -> Self {
+        return Self { from_nodes: vec![], to_nodes: vec![], node_count: nodes }
+    }
+
+    pub fn add_edge(&mut self, from: u32, to: u32) {
+        self.from_nodes.push(from)
+        self.to_nodes.push(to)
+    }
+
+    pub fn has_edge(&self, from: u32, to: u32) -> bool {
+        let mut i = 0
+        while i < self.from_nodes.len() {
+            if self.from_nodes[i] == from && self.to_nodes[i] == to {
+                return true
+            }
+            i = i + 1
+        }
+        return false
+    }
+
+    pub fn neighbors(&self, node: u32) -> Vec<u32> {
+        let mut result = vec![]
+        let mut i = 0
+        while i < self.from_nodes.len() {
+            if self.from_nodes[i] == node {
+                result.push(self.to_nodes[i])
+            }
+            i = i + 1
+        }
+        return result
+    }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Linked List ===")
+    let mut list = linked_list::new()
+    list.push_front(3)
+    list.push_front(2)
+    list.push_front(1)
+    println!("Size: {}", list.len())
+    match list.pop_front() {
+        Some(val) => println!("Popped: {}", val),
+        None => println!("Empty"),
+    }
+    println!("Size after pop: {}", list.len())
+
+    println!("\n=== Binary Search Tree ===")
+    let mut tree = binary_search_tree::new()
+    tree.insert(5)
+    tree.insert(3)
+    tree.insert(7)
+    tree.insert(1)
+    tree.insert(4)
+    tree.insert(6)
+    tree.insert(8)
+    println!("Contains 4: {}", tree.contains(4))
+    println!("Contains 9: {}", tree.contains(9))
+    println!("Inorder: {:?}", tree.inorder())
+
+    println!("\n=== Graph ===")
+    let mut g = graph::new(6)
+    g.add_edge(0, 1)
+    g.add_edge(0, 2)
+    g.add_edge(1, 3)
+    g.add_edge(2, 4)
+    g.add_edge(3, 5)
+    g.add_edge(4, 5)
+    println!("Neighbors of 0: {:?}", g.neighbors(0))
+    println!("Has edge 0->1: {}", g.has_edge(0, 1))
+    println!("Has edge 1->0: {}", g.has_edge(1, 0))
+}

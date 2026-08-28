@@ -1,0 +1,215 @@
+// ─── IO Module Demo ──────────────────────────────────────────────────────
+// Demonstrates file operations, paths, directories, stdout/stderr,
+// and network socket APIs from the Ruva IO standard library.
+
+import ruva::io
+
+fn main() {
+    // ─── File Operations ─────────────────────────────────────────────
+
+    // Create and write a file
+    let write_result = write_file("hello.txt".into(), "Hello, Ruva!\n".into())
+    match write_result {
+        Result::Ok(_) => println!("File written successfully"),
+        Result::Err(e) => println!("Failed to write: {}", e),
+    }
+
+    // Append to a file
+    let append_result = append_file("hello.txt".into(), "Appended line\n".into())
+    match append_result {
+        Result::Ok(_) => println!("File appended successfully"),
+        Result::Err(e) => println!("Failed to append: {}", e),
+    }
+
+    // Read a file
+    let content = read_file("hello.txt".into())
+    match content {
+        Result::Ok(text) => println!("File content: {}", text),
+        Result::Err(e) => println!("Failed to read: {}", e),
+    }
+
+    // Check if file exists
+    let exists = file_exists("hello.txt".into())
+    println!("hello.txt exists: {}", exists)
+
+    // Get file size
+    let size = file_size("hello.txt".into())
+    match size {
+        Result::Ok(s) => println!("File size: {} bytes", s),
+        Result::Err(e) => println!("Failed to get size: {}", e),
+    }
+
+    // ─── File Handle API ─────────────────────────────────────────────
+
+    // Open file and read line by line
+    let file = File::open("hello.txt".into())
+    match file {
+        Result::Ok(f) => {
+            let all = f.file_read_all()
+            match all {
+                Result::Ok(text) => println!("Read all: {}", text),
+                Result::Err(e) => println!("Read error: {}", e),
+            }
+            println!("File path: {}", f.get_path())
+            println!("File is_open: {}", f.is_open())
+        }
+        Result::Err(e) => println!("Open error: {}", e),
+    }
+
+    // ─── File Copy / Move / Delete ──────────────────────────────────
+
+    let copy_result = copy_file("hello.txt".into(), "hello_copy.txt".into())
+    match copy_result {
+        Result::Ok(_) => println!("File copied"),
+        Result::Err(e) => println!("Copy failed: {}", e),
+    }
+
+    let delete_result = remove_file("hello_copy.txt".into())
+    match delete_result {
+        Result::Ok(_) => println!("File deleted"),
+        Result::Err(e) => println!("Delete failed: {}", e),
+    }
+
+    // ─── Path Utilities ──────────────────────────────────────────────
+
+    let p = PathBuf::new("src/main.ruva".into())
+    println!("Path: {}", p.to_string())
+
+    let joined = p.join("utils.ruva".into())
+    println!("Joined: {}", joined.to_string())
+
+    let exists = p.exists()
+    println!("Path exists: {}", exists)
+
+    let is_abs = p.is_absolute()
+    println!("Is absolute: {}", is_abs)
+
+    // Path helper functions
+    let ext = path_extension("photo.jpg".into())
+    println!("Extension: {}", ext)
+
+    let stem = path_stem("photo.jpg".into())
+    println!("Stem: {}", stem)
+
+    let parent_dir = path_parent("/home/user/docs/file.txt".into())
+    println!("Parent: {}", parent_dir)
+
+    // ─── Directory Operations ────────────────────────────────────────
+
+    let create_result = create_dir("test_dir".into())
+    match create_result {
+        Result::Ok(_) => println!("Directory created"),
+        Result::Err(e) => println!("Create dir failed: {}", e),
+    }
+
+    let dir_exists = dir_exists("test_dir".into())
+    println!("test_dir exists: {}", dir_exists)
+
+    // Create nested directories
+    let nested_result = create_dir_all("test_dir/sub/nested".into())
+    match nested_result {
+        Result::Ok(_) => println!("Nested directories created"),
+        Result::Err(e) => println!("Nested create failed: {}", e),
+    }
+
+    // Read directory entries
+    let entries = read_dir_entries("test_dir".into())
+    match entries {
+        Result::Ok(dir_entries) => {
+            println!("Directory entries: {}", dir_entries.len())
+        }
+        Result::Err(e) => println!("Read dir failed: {}", e),
+    }
+
+    // Clean up directories
+    let _ = remove_dir_all("test_dir".into())
+
+    // ─── Stdout / Stderr ────────────────────────────────────────────
+
+    let out = stdout()
+    let _ = out.stdout_write("Direct stdout write\n".into())
+
+    let err = stderr()
+    let _ = err.stderr_write("Direct stderr write\n".into())
+
+    // ─── Network Stubs (API demo — not functional yet) ──────────────
+
+    // TCP Listener
+    let listener = TcpListener::bind("127.0.0.1:8080".into())
+    match listener {
+        Result::Ok(l) => {
+            println!("Listening on port {}", l.port)
+            println!("Is bound: {}", l.is_bound())
+        }
+        Result::Err(e) => println!("Bind failed: {}", e),
+    }
+
+    // TCP Stream
+    let stream = TcpStream::connect("127.0.0.1:8080".into())
+    match stream {
+        Result::Ok(s) => {
+            println!("Connected to {}", s.addr)
+            println!("Is connected: {}", s.is_connected())
+        }
+        Result::Err(e) => println!("Connect failed: {}", e),
+    }
+
+    // UDP Socket
+    let udp = UdpSocket::bind("127.0.0.1:9000".into())
+    match udp {
+        Result::Ok(u) => println!("UDP bound on port {}", u.port),
+        Result::Err(e) => println!("UDP bind failed: {}", e),
+    }
+
+    // Socket address
+    let addr = SocketAddr::new("192.168.1.1".into(), 3000)
+    println!("Address: {}:{}", addr.get_ip(), addr.get_port())
+
+    // ─── Environment ────────────────────────────────────────────────
+
+    let home = env_var_or("HOME".into(), "/home/user".into())
+    println!("Home: {}", home)
+
+    let user = env_var("USER".into())
+    match user {
+        Option::Some(u) => println!("User: {}", u),
+        Option::None => println!("User not set"),
+    }
+
+    // ─── Process Execution (stubs) ──────────────────────────────────
+
+    let mut cmd = Command::new("echo".into())
+    cmd.arg("Hello from Ruva".into())
+    let output = cmd.output()
+    match output {
+        Result::Ok(o) => println!("Command output: {}", o.stdout),
+        Result::Err(e) => println!("Command failed: {}", e),
+    }
+
+    // ─── Temp Files ─────────────────────────────────────────────────
+
+    let temp = TempFile::new()
+    match temp {
+        Result::Ok(t) => println!("Temp file: {}", t.path()),
+        Result::Err(e) => println!("Temp file failed: {}", e),
+    }
+
+    let temp_dir = TempDir::new()
+    match temp_dir {
+        Result::Ok(d) => println!("Temp dir: {}", d.path()),
+        Result::Err(e) => println!("Temp dir failed: {}", e),
+    }
+
+    // ─── File Watcher (stub) ────────────────────────────────────────
+
+    let watcher = FileWatcher::new("src".into())
+    match watcher {
+        Result::Ok(w) => {
+            println!("Watching: {}", w.path)
+            println!("Recursive: {}", w.recursive)
+        }
+        Result::Err(e) => println!("Watcher failed: {}", e),
+    }
+
+    println!("IO module demo complete!")
+}

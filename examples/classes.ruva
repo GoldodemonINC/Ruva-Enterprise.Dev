@@ -1,0 +1,50 @@
+// Class example — Ruva's Java-familiar syntax
+
+class Animal {
+    pub let name: string
+    pub let mut energy: u32
+
+    pub fn new(name: string, energy: u32) -> Self {
+        return Self { name, energy }
+    }
+
+    pub fn speak(&self) {
+        println!("{} says hello!", self.name)
+    }
+
+    pub fn eat(&mut self, food: string) {
+        self.energy += 10
+        println!("{} ate {} (energy: {})", self.name, food, self.energy)
+    }
+}
+
+class Dog {
+    pub let name: string
+    pub let mut energy: u32
+    pub let breed: string
+
+    pub fn new(name: string, breed: string) -> Self {
+        return Self { name, energy: 100, breed }
+    }
+
+    pub fn bark(&self) {
+        println!("{} ({}): Woof!", self.name, self.breed)
+    }
+
+    pub fn fetch(&mut self, item: string) {
+        if self.energy >= 10 {
+            self.energy -= 10
+            println!("{} fetched the {}!", self.name, item)
+        } else {
+            println!("{} is too tired to fetch.", self.name)
+        }
+    }
+}
+
+fn main() {
+    let mut rex = Dog::new("Rex".into(), "German Shepherd".into())
+    rex.bark()
+    rex.fetch("ball".into())
+    rex.fetch("stick".into())
+    println!("Energy: {}", rex.energy)
+}

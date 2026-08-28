@@ -1,0 +1,7 @@
+// Hello, Ruva!
+// The simplest Ruva program
+
+fn main() {
+    println!("Hello, Ruva!")
+    println!("Welcome to the language where Java meets Rust.")
+}

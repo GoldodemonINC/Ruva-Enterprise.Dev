@@ -1,0 +1,147 @@
+// Security-focused example — validation, rate limiting, safe patterns
+
+class email_address {
+    pub let local: string
+    pub let domain: string
+
+    pub fn validate(raw: string) -> bool {
+        let parts = raw.split("@")
+        if parts.len() != 2 {
+            return false
+        }
+        let local_part = parts[0].trim()
+        let domain_part = parts[1].trim()
+        if local_part.is_empty() {
+            return false
+        }
+        if domain_part.is_empty() {
+            return false
+        }
+        return true
+    }
+}
+
+class password_hasher {
+    pub fn hash_password(password: string) -> string {
+        let hashed = hash::sha256(password.as_bytes())
+        return hashed.to_hex()
+    }
+
+    pub fn verify(password: string, stored_hash: string) -> bool {
+        let computed = password_hasher::hash_password(password)
+        return computed == stored_hash
+    }
+}
+
+class rate_limiter {
+    pub let mut max_requests: u32
+    pub let mut window_seconds: u32
+    pub let mut timestamps: Vec<u64>
+
+    pub fn new(max: u32, window: u32) -> Self {
+        return Self {
+            max_requests: max,
+            window_seconds: window,
+            timestamps: vec![],
+        }
+    }
+
+    pub fn allow_request(&mut self) -> bool {
+        let now = rate_limiter::current_timestamp()
+        let cutoff = now - (self.window_seconds as u64)
+        let mut kept = vec![]
+        for &t in &self.timestamps {
+            if t > cutoff {
+                kept.push(t)
+            }
+        }
+        self.timestamps = kept
+        if self.timestamps.len() >= (self.max_requests as usize) {
+            return false
+        }
+        self.timestamps.push(now)
+        return true
+    }
+
+    fn current_timestamp() -> u64 {
+        return 0
+    }
+}
+
+class SecureConfig {
+    pub let mut api_key: string
+    pub let mut database_url: string
+    pub let mut debug_mode: bool
+
+    pub fn from_env() -> Result<SecureConfig, string> {
+        let api_key_opt = env::get("API_KEY")
+        let api_key = match api_key_opt {
+            Some(key) => key,
+            None => {
+                println!("Missing API_KEY")
+                return Err("Missing API_KEY environment variable".into())
+            }
+        }
+        let db_url_opt = env::get("DATABASE_URL")
+        let database_url = match db_url_opt {
+            Some(url) => url,
+            None => {
+                println!("Missing DATABASE_URL")
+                return Err("Missing DATABASE_URL environment variable".into())
+            }
+        }
+        println!("Config loaded")
+        let debug_mode = false
+        let mut result = SecureConfig { api_key, database_url, debug_mode }
+        return Ok(result)
+    }
+
+    pub fn mask_key(&self) -> string {
+        return "****".into()
+    }
+}
+
+class audit_log {
+    pub let mut entries: Vec<string>
+
+    pub fn new() -> Self {
+        return Self { entries: vec![] }
+    }
+
+    pub fn log_event(&mut self, user: string, action: string, ip: string) {
+        let entry = format!("[2026-08-27] {} - {} from {}", user, action, ip)
+        self.entries.push(entry)
+    }
+
+    pub fn log_failed_login(&mut self, user: string, ip: string) {
+        self.log_event(user, "FAILED_LOGIN".into(), ip)
+        println!("Security: failed login attempt from {}", ip)
+    }
+
+    pub fn log_successful_login(&mut self, user: string, ip: string) {
+        self.log_event(user, "LOGIN".into(), ip)
+    }
+}
+
+fn main() {
+    let is_valid = email_address::validate("user@example.com".into())
+    println!("Email valid: {}", is_valid)
+
+    let hasher = password_hasher {}
+    let pw_hash = hasher.hash_password("my_secret_password".into())
+    println!("Hash: {}", pw_hash)
+
+    let mut limiter = rate_limiter::new(5, 60)
+    for i in 0..7 {
+        if limiter.allow_request() {
+            println!("Request {} allowed", i)
+        } else {
+            println!("Request {} BLOCKED", i)
+        }
+    }
+
+    let mut audit = audit_log::new()
+    audit.log_successful_login("alice".into(), "192.168.1.1".into())
+    audit.log_failed_login("attacker".into(), "10.0.0.1".into())
+    println!("Audit entries: {}", audit.entries.len())
+}

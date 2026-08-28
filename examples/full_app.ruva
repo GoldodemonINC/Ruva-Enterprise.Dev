@@ -1,0 +1,219 @@
+// Full application — a mini HTTP server design in Ruva
+// Demonstrates classes, traits, error handling, and more
+
+import std::io
+import std::net::TcpListener
+
+// ─── Configuration ───────────────────────────────────────────────────
+
+#[derive(Debug, Clone)]
+struct Config {
+    pub host: string,
+    pub port: u16,
+    pub max_connections: u32,
+    pub log_level: LogLevel,
+}
+
+#[derive(Debug, Clone)]
+enum LogLevel {
+    Debug,
+    Info,
+    Warn,
+    Error,
+}
+
+impl Config {
+    pub fn default() -> Self {
+        return Self {
+            host: "127.0.0.1".into(),
+            port: 8080,
+            max_connections: 100,
+            log_level: LogLevel::Info,
+        }
+    }
+
+    pub fn development() -> Self {
+        return Self {
+            host: "0.0.0.0".into(),
+            port: 3000,
+            max_connections: 50,
+            log_level: LogLevel::Debug,
+        }
+    }
+}
+
+// ─── Request / Response ──────────────────────────────────────────────
+
+struct Request {
+    pub method: string,
+    pub path: string,
+    pub headers: Vec<(string, string)>,
+    pub body: Option<string>,
+}
+
+struct Response {
+    pub status: u16,
+    pub headers: Vec<(string, string)>,
+    pub body: string,
+}
+
+impl Response {
+    pub fn ok(body: string) -> Self {
+        return Self {
+            status: 200,
+            headers: vec![("Content-Type".into(), "text/plain".into())],
+            body,
+        }
+    }
+
+    pub fn not_found() -> Self {
+        return Self {
+            status: 404,
+            headers: vec![],
+            body: "Not Found".into(),
+        }
+    }
+
+    pub fn json(body: string) -> Self {
+        return Self {
+            status: 200,
+            headers: vec![("Content-Type".into(), "application/json".into())],
+            body,
+        }
+    }
+}
+
+// ─── Router ──────────────────────────────────────────────────────────
+
+trait Handler {
+    fn handle(&self, req: &Request) -> Response
+}
+
+struct Router {
+    routes: Vec<(string, Box<dyn Handler>)>,
+}
+
+impl Router {
+    pub fn new() -> Self {
+        return Self { routes: Vec::new() }
+    }
+
+    pub fn get(&mut self, path: &str, handler: impl Handler) {
+        self.routes.push(("GET".into(), Box::new(handler)))
+    }
+
+    pub fn route(&self, req: &Request) -> Response {
+        for (method, handler) in &self.routes {
+            if *method == req.method {
+                return handler.handle(req)
+            }
+        }
+        return Response::not_found()
+    }
+}
+
+// ─── Handler Implementations ─────────────────────────────────────────
+
+struct HomeHandler;
+
+impl Handler for HomeHandler {
+    fn handle(&self, _req: &Request) -> Response {
+        return Response::ok("Welcome to Ruva HTTP Server!".into())
+    }
+}
+
+struct ApiHandler;
+
+impl Handler for ApiHandler {
+    fn handle(&self, req: &Request) -> Response {
+        let body = format!("{{\"path\": \"{}\", \"method\": \"{}\"}}", req.path, req.method)
+        return Response::json(body)
+    }
+}
+
+// ─── Middleware ───────────────────────────────────────────────────────
+
+trait Middleware {
+    fn before(&self, req: &mut Request) -> bool   // return false to abort
+    fn after(&self, req: &Request, res: &mut Response)
+}
+
+struct LoggerMiddleware;
+
+impl Middleware for LoggerMiddleware {
+    fn before(&self, req: &mut Request) -> bool {
+        println!("→ {} {}", req.method, req.path)
+        return true
+    }
+
+    fn after(&self, _req: &Request, res: &mut Response) {
+        println!("← {} {}", res.status, res.body.len())
+    }
+}
+
+// ─── Server ──────────────────────────────────────────────────────────
+
+class Server {
+    pub let config: Config,
+    let mut running: bool,
+
+    pub fn new(config: Config) -> Self {
+        return Self { config, running: false }
+    }
+
+    pub fn start(&mut self) -> Result<(), string> {
+        println!("Starting server on {}:{}", self.config.host, self.config.port)
+        self.running = true
+
+        // Simulated server loop
+        let mut request_count = 0u32
+
+        while self.running && request_count < self.config.max_connections {
+            request_count += 1
+
+            // Simulate handling a request
+            let req = Request {
+                method: "GET".into(),
+                path: "/".into(),
+                headers: vec![],
+                body: None,
+            }
+
+            println!("Request #{}: {} {}", request_count, req.method, req.path)
+        }
+
+        println!("Server stopped after {} requests", request_count)
+        return Ok(())
+    }
+
+    pub fn stop(&mut self) {
+        println!("Shutting down server...")
+        self.running = false
+    }
+
+    pub fn is_running(&self) -> bool {
+        return self.running
+    }
+}
+
+// ─── Main ────────────────────────────────────────────────────────────
+
+fn main() {
+    // Create configuration
+    let config = Config::development()
+
+    // Set up router
+    let mut router = Router::new()
+    router.get("/", HomeHandler)
+    router.get("/api", ApiHandler)
+
+    // Create and start server
+    let mut server = Server::new(config)
+
+    try {
+        server.start()?
+        println!("Server completed successfully!")
+    } catch (err) {
+        eprintln!("Server error: {}", err)
+    }
+}

@@ -1,0 +1,450 @@
+// Ruva Standard Library - Video Module
+// Safe video encoding and decoding
+
+// ─── Video Codec Types ──────────────────────────────────────────────────────
+
+enum Codec {
+    H264,
+    H265,
+    VP8,
+    VP9,
+    AV1,
+    MPEG4,
+}
+
+enum PixelFormat {
+    YUV420,
+    YUV422,
+    YUV444,
+    RGB24,
+    RGBA32,
+    NV12,
+    NV21,
+}
+
+enum AudioFormat {
+    F32,
+    F64,
+    I16,
+    I32,
+}
+
+enum ContainerFormat {
+    MP4,
+    MKV,
+    AVI,
+    MOV,
+    WebM,
+    FLV,
+}
+
+// ─── Frame Types ────────────────────────────────────────────────────────────
+
+pub struct VideoFrame {
+    pub width: u32,
+    pub height: u32,
+    pub format: PixelFormat,
+    pub pts: i64,
+    pub dts: i64,
+    pub duration: i64,
+}
+
+pub struct AudioFrame {
+    pub sample_rate: u32,
+    pub channels: u32,
+    pub format: AudioFormat,
+    pub pts: i64,
+    pub duration: i64,
+}
+
+pub struct VideoInfo {
+    pub width: u32,
+    pub height: u32,
+    pub frame_rate: f64,
+    pub bitrate: u32,
+    pub codec: Codec,
+}
+
+pub struct AudioInfo {
+    pub sample_rate: u32,
+    pub channels: u32,
+    pub bitrate: u32,
+    pub codec: Codec,
+}
+
+pub struct Packet {
+    pub pts: i64,
+    pub dts: i64,
+    pub duration: i64,
+    pub stream_index: u32,
+    pub is_keyframe: bool,
+}
+
+// ─── Video Decoder ──────────────────────────────────────────────────────────
+
+pub struct VideoDecoder {
+    pub codec: Codec,
+    pub width: u32,
+    pub height: u32,
+    pub frame_rate: f64,
+    pub bitrate: u32,
+}
+
+impl VideoFrame {
+    pub fn new(width: u32, height: u32, format: PixelFormat) -> VideoFrame {
+        return VideoFrame { width, height, format, pts: 0, dts: 0, duration: 0 }
+    }
+
+    pub fn get_width(&self) -> u32 {
+        return self.width
+    }
+
+    pub fn get_height(&self) -> u32 {
+        return self.height
+    }
+
+    pub fn get_pts(&self) -> i64 {
+        return self.pts
+    }
+
+    pub fn set_pts(&mut self, pts: i64) {
+        self.pts = pts
+    }
+
+    pub fn get_size(&self) -> usize {
+        return self.width as usize * self.height as usize * 3
+    }
+}
+
+impl AudioFrame {
+    pub fn new(sample_rate: u32, channels: u32, format: AudioFormat) -> AudioFrame {
+        return AudioFrame { sample_rate, channels, format, pts: 0, duration: 0 }
+    }
+
+    pub fn get_sample_rate(&self) -> u32 {
+        return self.sample_rate
+    }
+
+    pub fn get_channels(&self) -> u32 {
+        return self.channels
+    }
+
+    pub fn get_pts(&self) -> i64 {
+        return self.pts
+    }
+
+    pub fn set_pts(&mut self, pts: i64) {
+        self.pts = pts
+    }
+}
+
+impl VideoDecoder {
+    pub fn new(path: string) -> Result<VideoDecoder, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn get_info(&self) -> VideoInfo {
+        return VideoInfo {
+            width: self.width,
+            height: self.height,
+            frame_rate: self.frame_rate,
+            bitrate: self.bitrate,
+            codec: self.codec.clone(),
+        }
+    }
+
+    pub fn decode_frame(&mut self) -> Result<VideoFrame, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek(&mut self, timestamp: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn reset(&mut self) {
+    }
+
+    pub fn flush(&mut self) {
+    }
+}
+
+// ─── Video Encoder ──────────────────────────────────────────────────────────
+
+pub struct VideoEncoder {
+    pub codec: Codec,
+    pub width: u32,
+    pub height: u32,
+    pub frame_rate: f64,
+    pub bitrate: u32,
+}
+
+impl VideoEncoder {
+    pub fn new(path: string, codec: Codec) -> Result<VideoEncoder, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_bitrate(&mut self, bitrate: u32) {
+        self.bitrate = bitrate
+    }
+
+    pub fn set_frame_rate(&mut self, frame_rate: f64) {
+        self.frame_rate = frame_rate
+    }
+
+    pub fn write_frame(&mut self, frame: VideoFrame) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn flush(&mut self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn close(&mut self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+// ─── Audio Decoder ──────────────────────────────────────────────────────────
+
+pub struct AudioDecoder {
+    pub codec: Codec,
+    pub sample_rate: u32,
+    pub channels: u32,
+    pub bitrate: u32,
+}
+
+impl AudioDecoder {
+    pub fn new(path: string) -> Result<AudioDecoder, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn get_info(&self) -> AudioInfo {
+        return AudioInfo {
+            sample_rate: self.sample_rate,
+            channels: self.channels,
+            bitrate: self.bitrate,
+            codec: self.codec.clone(),
+        }
+    }
+
+    pub fn decode_frame(&mut self) -> Result<AudioFrame, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek(&mut self, timestamp: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn reset(&mut self) {
+    }
+
+    pub fn flush(&mut self) {
+    }
+}
+
+// ─── Audio Encoder ──────────────────────────────────────────────────────────
+
+pub struct AudioEncoder {
+    pub codec: Codec,
+    pub sample_rate: u32,
+    pub channels: u32,
+    pub bitrate: u32,
+}
+
+impl AudioEncoder {
+    pub fn new(path: string, codec: Codec) -> Result<AudioEncoder, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_bitrate(&mut self, bitrate: u32) {
+        self.bitrate = bitrate
+    }
+
+    pub fn write_frame(&mut self, frame: AudioFrame) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn flush(&mut self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn close(&mut self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+// ─── Muxer/Demuxer ──────────────────────────────────────────────────────────
+
+pub struct Muxer {
+    pub format: ContainerFormat,
+}
+
+pub struct Demuxer {
+    pub format: ContainerFormat,
+}
+
+impl Muxer {
+    pub fn new(path: string, format: ContainerFormat) -> Result<Muxer, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn write_packet(&mut self, packet: Packet) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn close(&mut self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+impl Demuxer {
+    pub fn new(path: string) -> Result<Demuxer, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn get_format(&self) -> ContainerFormat {
+        return self.format.clone()
+    }
+
+    pub fn read_packet(&mut self) -> Result<Packet, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek(&mut self, timestamp: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn close(&mut self) {
+    }
+}
+
+// ─── Filters ────────────────────────────────────────────────────────────────
+
+mod filter {
+    pub struct ResizeFilter {
+        pub width: u32,
+        pub height: u32,
+    }
+
+    pub struct CropFilter {
+        pub x: u32,
+        pub y: u32,
+        pub width: u32,
+        pub height: u32,
+    }
+
+    pub struct RotateFilter {
+        pub angle: f64,
+    }
+
+    pub struct BlurFilter {
+        pub radius: f64,
+    }
+
+    pub struct SharpenFilter {
+        pub amount: f64,
+    }
+
+    pub struct BrightnessFilter {
+        pub factor: f64,
+    }
+
+    pub struct ContrastFilter {
+        pub factor: f64,
+    }
+
+    pub struct GrayscaleFilter {
+    }
+
+    pub struct InvertFilter {
+    }
+
+    pub struct FlipFilter {
+        pub horizontal: bool,
+        pub vertical: bool,
+    }
+
+    pub struct TextOverlayFilter {
+        pub text: string,
+        pub x: f64,
+        pub y: f64,
+    }
+
+    pub struct ImageOverlayFilter {
+        pub x: f64,
+        pub y: f64,
+        pub opacity: f64,
+    }
+
+    impl ResizeFilter {
+        pub fn new(width: u32, height: u32) -> ResizeFilter {
+            return ResizeFilter { width, height }
+        }
+    }
+
+    impl CropFilter {
+        pub fn new(x: u32, y: u32, width: u32, height: u32) -> CropFilter {
+            return CropFilter { x, y, width, height }
+        }
+    }
+
+    impl RotateFilter {
+        pub fn new(angle: f64) -> RotateFilter {
+            return RotateFilter { angle }
+        }
+    }
+
+    impl BlurFilter {
+        pub fn new(radius: f64) -> BlurFilter {
+            return BlurFilter { radius }
+        }
+    }
+
+    impl SharpenFilter {
+        pub fn new(amount: f64) -> SharpenFilter {
+            return SharpenFilter { amount }
+        }
+    }
+
+    impl BrightnessFilter {
+        pub fn new(factor: f64) -> BrightnessFilter {
+            return BrightnessFilter { factor }
+        }
+    }
+
+    impl ContrastFilter {
+        pub fn new(factor: f64) -> ContrastFilter {
+            return ContrastFilter { factor }
+        }
+    }
+
+    impl GrayscaleFilter {
+        pub fn new() -> GrayscaleFilter {
+            return GrayscaleFilter {}
+        }
+    }
+
+    impl InvertFilter {
+        pub fn new() -> InvertFilter {
+            return InvertFilter {}
+        }
+    }
+
+    impl FlipFilter {
+        pub fn new(horizontal: bool, vertical: bool) -> FlipFilter {
+            return FlipFilter { horizontal, vertical }
+        }
+    }
+
+    impl TextOverlayFilter {
+        pub fn new(text: string, x: f64, y: f64) -> TextOverlayFilter {
+            return TextOverlayFilter { text, x, y }
+        }
+    }
+
+    impl ImageOverlayFilter {
+        pub fn new(x: f64, y: f64, opacity: f64) -> ImageOverlayFilter {
+            return ImageOverlayFilter { x, y, opacity }
+        }
+    }
+}

@@ -1,0 +1,152 @@
+// Mini HTTP server — request/response, routing, middleware
+
+// ─── HTTP Request/Response ────────────────────────────────────────────
+
+class http_request {
+    pub let method: string
+    pub let path: string
+    pub let body: string
+
+    pub fn new(method: string, path: string) -> Self {
+        return Self {
+            method: method,
+            path: path,
+            body: "".into(),
+        }
+    }
+
+    pub fn with_body(mut self, body: string) -> Self {
+        self.body = body
+        return self
+    }
+}
+
+class http_response {
+    pub let status: u32
+    pub let body: string
+    pub let content_type: string
+
+    pub fn new(status: u32, body: string, content_type: string) -> Self {
+        return Self {
+            status: status,
+            body: body,
+            content_type: content_type,
+        }
+    }
+
+    pub fn ok(body: string) -> Self {
+        return http_response::new(200, body, "text/plain".into())
+    }
+
+    pub fn not_found() -> Self {
+        return http_response::new(404, "Not Found".into(), "text/plain".into())
+    }
+
+    pub fn json(body: string) -> Self {
+        return http_response::new(200, body, "application/json".into())
+    }
+
+    pub fn html(body: string) -> Self {
+        return http_response::new(200, body, "text/html".into())
+    }
+
+    pub fn status_text(&self) -> string {
+        match self.status {
+            200 => "OK".into(),
+            201 => "Created".into(),
+            400 => "Bad Request".into(),
+            401 => "Unauthorized".into(),
+            403 => "Forbidden".into(),
+            404 => "Not Found".into(),
+            500 => "Internal Server Error".into(),
+            _ => "Unknown".into(),
+        }
+    }
+}
+
+// ─── Router ───────────────────────────────────────────────────────────
+
+class router {
+    pub let mut route_methods: Vec<string>
+    pub let mut route_paths: Vec<string>
+
+    pub fn new() -> Self {
+        return Self { route_methods: vec![], route_paths: vec![] }
+    }
+
+    pub fn get(&mut self, path: string) {
+        self.route_methods.push("GET".into())
+        self.route_paths.push(path)
+    }
+
+    pub fn post(&mut self, path: string) {
+        self.route_methods.push("POST".into())
+        self.route_paths.push(path)
+    }
+
+    pub fn handle(&self, req: http_request) -> http_response {
+        let mut i = 0
+        while i < self.route_methods.len() {
+            if self.route_methods[i] == req.method && self.route_paths[i] == req.path {
+                return router::dispatch(req)
+            }
+            i = i + 1
+        }
+        return http_response::not_found()
+    }
+
+    fn dispatch(req: http_request) -> http_response {
+        if req.method == "GET" && req.path == "/" {
+            return http_response::html("<h1>Welcome to Ruva HTTP</h1>".into())
+        }
+        if req.method == "GET" && req.path == "/health" {
+            return http_response::json("{\"status\": \"ok\"}".into())
+        }
+        if req.method == "GET" && req.path == "/time" {
+            return http_response::json("{\"time\": \"2026-08-27\"}".into())
+        }
+        if req.method == "POST" && req.path == "/echo" {
+            return http_response::ok(req.body)
+        }
+        return http_response::not_found()
+    }
+}
+
+// ─── Logger ───────────────────────────────────────────────────────────
+
+class logger {
+    pub fn log(method: string, path: string, status: u32) {
+        println!("[2026-08-27] {} {} -> {}", method, path, status)
+    }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────
+
+fn main() {
+    let mut app = router::new()
+    app.get("/".into())
+    app.get("/health".into())
+    app.get("/time".into())
+    app.post("/echo".into())
+
+    // Simulate requests
+    let req1 = http_request::new("GET".into(), "/".into())
+    let resp1 = app.handle(req1.clone())
+    logger::log(req1.method, req1.path, resp1.status)
+    println!("  Body: {}\n", resp1.body)
+
+    let req2 = http_request::new("GET".into(), "/health".into())
+    let resp2 = app.handle(req2.clone())
+    logger::log(req2.method, req2.path, resp2.status)
+    println!("  Body: {}\n", resp2.body)
+
+    let req3 = http_request::new("POST".into(), "/echo".into()).with_body("Hello, Ruva!".into())
+    let resp3 = app.handle(req3.clone())
+    logger::log(req3.method, req3.path, resp3.status)
+    println!("  Body: {}\n", resp3.body)
+
+    let req4 = http_request::new("GET".into(), "/missing".into())
+    let resp4 = app.handle(req4.clone())
+    logger::log(req4.method, req4.path, resp4.status)
+    println!("  Body: {}\n", resp4.body)
+}

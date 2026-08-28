@@ -1,0 +1,141 @@
+// Testing examples — pure functions, calculator class, string utils
+
+fn add(a: i32, b: i32) -> i32 {
+    return a + b
+}
+
+fn multiply(a: i32, b: i32) -> i32 {
+    return a * b
+}
+
+fn factorial(n: u32) -> u64 {
+    if n <= 1 {
+        return 1
+    }
+    let mut result: u64 = 1
+    let mut i: u64 = 2
+    while i <= (n as u64) {
+        result = result * i
+        i = i + 1
+    }
+    return result
+}
+
+fn is_palindrome(s: string) -> bool {
+    let bytes = s.as_bytes()
+    let len = bytes.len()
+    let mut i = 0
+    while i < len / 2 {
+        if bytes[i] != bytes[len - 1 - i] {
+            return false
+        }
+        i = i + 1
+    }
+    return true
+}
+
+fn fizzbuzz(n: u32) -> string {
+    if n % 15 == 0 {
+        return "FizzBuzz".into()
+    } else if n % 3 == 0 {
+        return "Fizz".into()
+    } else if n % 5 == 0 {
+        return "Buzz".into()
+    } else {
+        return format!("{}", n)
+    }
+}
+
+fn string_length(s: string) -> u32 {
+    return s.len() as u32
+}
+
+fn contains_char(s: string, target: string) -> bool {
+    return s.contains(target.as_str())
+}
+
+class calculator {
+    pub let mut history_ops: Vec<string>
+    pub let mut history_vals: Vec<f64>
+
+    pub fn new() -> Self {
+        return Self { history_ops: vec![], history_vals: vec![] }
+    }
+
+    pub fn add(&mut self, a: f64, b: f64) -> f64 {
+        let result = a + b
+        self.history_ops.push("add".into())
+        self.history_vals.push(result)
+        return result
+    }
+
+    pub fn subtract(&mut self, a: f64, b: f64) -> f64 {
+        let result = a - b
+        self.history_ops.push("sub".into())
+        self.history_vals.push(result)
+        return result
+    }
+
+    pub fn multiply_calc(&mut self, a: f64, b: f64) -> f64 {
+        let result = a * b
+        self.history_ops.push("mul".into())
+        self.history_vals.push(result)
+        return result
+    }
+
+    pub fn divide(&mut self, a: f64, b: f64) -> Result<f64, string> {
+        if b == 0.0 {
+            return Err("Division by zero".into())
+        }
+        let result = a / b
+        self.history_ops.push("div".into())
+        self.history_vals.push(result)
+        return Ok(result)
+    }
+
+    pub fn history_length(&self) -> u32 {
+        return self.history_ops.len() as u32
+    }
+}
+
+fn main() {
+    println!("=== Arithmetic ===")
+    println!("2 + 3 = {}", add(2, 3))
+    println!("4 * 5 = {}", multiply(4, 5))
+
+    println!("\n=== Factorial ===")
+    let cases = vec![0, 1, 5, 10, 20]
+    for n in cases {
+        println!("{}! = {}", n, factorial(n))
+    }
+
+    println!("\n=== Palindrome ===")
+    let words = vec!["racecar", "hello", "madam", "ruva"]
+    for word in words {
+        println!("\"{}\" -> {}", word, is_palindrome(word.into()))
+    }
+
+    println!("\n=== FizzBuzz (1-15) ===")
+    for i in 1..16 {
+        println!("{}: {}", i, fizzbuzz(i))
+    }
+
+    println!("\n=== String Utils ===")
+    println!("Length of \"hello\": {}", string_length("hello".into()))
+    println!("Contains 'ell' in \"hello\": {}", contains_char("hello".into(), "ell".into()))
+
+    println!("\n=== Calculator ===")
+    let mut calc = calculator::new()
+    println!("10 + 5 = {}", calc.add(10.0, 5.0))
+    println!("10 - 3 = {}", calc.subtract(10.0, 3.0))
+    println!("4 x 7 = {}", calc.multiply_calc(4.0, 7.0))
+    match calc.divide(10.0, 3.0) {
+        Ok(r) => println!("10 / 3 = {:.2}", r),
+        Err(e) => println!("Error: {}", e),
+    }
+    match calc.divide(10.0, 0.0) {
+        Ok(r) => println!("10 / 0 = {}", r),
+        Err(e) => println!("Expected error: {}", e),
+    }
+    println!("History length: {}", calc.history_length())
+}

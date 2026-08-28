@@ -1,0 +1,63 @@
+// Control flow — Ruva's clean syntax
+
+fn main() {
+    // If as expression
+    let x = 42
+    let description = if x > 100 { "large" } else if x > 10 { "medium" } else { "small" }
+    println!("{} is {}", x, description)
+
+    // For loop with range
+    println!("Counting:")
+    for i in 0..5 {
+        println!("  {}", i)
+    }
+
+    // While loop
+    let mut n = 16
+    let mut steps = 0
+    while n > 1 {
+        n /= 2
+        steps += 1
+    }
+    println!("Halving 16 took {} steps", steps)
+
+    // Infinite loop with break value
+    let mut i = 0
+    let result = loop {
+        i += 1
+        if i * i > 100 {
+            break i
+        }
+    }
+    println!("First i where i*i > 100: {}", result)
+
+    // Pattern matching with ranges
+    let score = 85
+    let grade = match score {
+        90..=100 => "A",
+        80..=89 => "B",
+        70..=79 => "C",
+        60..=69 => "D",
+        _ => "F",
+    }
+    println!("Score {} = grade {}", score, grade)
+
+    // Or patterns
+    let day = "Saturday"
+    let day_type = match day {
+        "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" => "Weekday",
+        "Saturday" | "Sunday" => "Weekend",
+        _ => "Unknown",
+    }
+    println!("{} is a {}", day, day_type)
+
+    // Destructuring
+    let point = (3.0, 4.0, 5.0)
+    let (px, py, pz) = point
+    println!("Point: x={}, y={}, z={}", px, py, pz)
+
+    // Shadowing
+    let x = "hello"
+    let x = x.len()
+    println!("Length of 'hello': {}", x)
+}

@@ -1,0 +1,91 @@
+// Generics & Traits — reusable, type-safe code
+
+// Generic stack
+struct Stack<T> {
+    items: Vec<T>,
+}
+
+impl<T> Stack<T> {
+    pub fn new() -> Self {
+        return Self { items: Vec::new() }
+    }
+
+    pub fn push(&mut self, item: T) {
+        self.items.push(item)
+    }
+
+    pub fn pop(&mut self) -> Option<T> {
+        return self.items.pop()
+    }
+
+    pub fn peek(&self) -> Option<&T> {
+        return self.items.last()
+    }
+
+    pub fn size(&self) -> usize {
+        return self.items.len()
+    }
+}
+
+// Trait definition
+trait Printable {
+    fn print(&self)
+}
+
+// Struct
+struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl Point {
+    pub fn new(x: f64, y: f64) -> Self {
+        return Self { x, y }
+    }
+
+    pub fn distance_to(&self, other: &Point) -> f64 {
+        let dx = self.x - other.x
+        let dy = self.y - other.y
+        return (dx * dx + dy * dy).sqrt()
+    }
+}
+
+// Implement trait for Point
+impl Printable for Point {
+    fn print(&self) {
+        println!("Point({}, {})", self.x, self.y)
+    }
+}
+
+// Generic function with trait bound
+fn print_all<T: Printable>(items: &[T]) {
+    for item in items {
+        item.print()
+    }
+}
+
+fn main() {
+    // Use generic Stack with integers
+    let mut int_stack = Stack::new()
+    int_stack.push(1)
+    int_stack.push(2)
+    int_stack.push(3)
+    println!("Int stack size: {}", int_stack.size())
+    println!("Popped: {}", int_stack.pop().unwrap())
+
+    // Use generic Stack with strings
+    let mut str_stack = Stack::new()
+    str_stack.push("hello".into())
+    str_stack.push("world".into())
+    println!("String stack size: {}", str_stack.size())
+
+    // Use Point with trait
+    let p1 = Point::new(0.0, 0.0)
+    let p2 = Point::new(3.0, 4.0)
+    p1.print()
+    println!("Distance: {}", p1.distance_to(&p2))
+
+    // Generic function
+    let points = [p1, p2]
+    print_all(&points)
+}

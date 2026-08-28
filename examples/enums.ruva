@@ -1,0 +1,65 @@
+// Enums & Pattern Matching — algebraic data types
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(u8, u8, u8),
+}
+
+enum TrafficLight {
+    Red(u32),
+    Yellow(u32),
+    Green(u32),
+}
+
+fn color_name(c: &Color) -> string {
+    match c {
+        Color::Red => "red".into(),
+        Color::Green => "green".into(),
+        Color::Blue => "blue".into(),
+        Color::Custom(r, g, b) => format!("rgb({}, {}, {})", r, g, b),
+    }
+}
+
+fn wait_time(light: &TrafficLight) -> u32 {
+    match light {
+        TrafficLight::Red(t) => *t,
+        TrafficLight::Yellow(t) => *t,
+        TrafficLight::Green(t) => *t,
+    }
+}
+
+fn describe(light: &TrafficLight) {
+    match light {
+        TrafficLight::Red(t) => println!("Stop! ({}s remaining)", t),
+        TrafficLight::Yellow(t) => println!("Caution! ({}s remaining)", t),
+        TrafficLight::Green(t) => println!("Go! ({}s remaining)", t),
+    }
+}
+
+fn main() {
+    // Color enum
+    let red = Color::Red
+    let custom = Color::Custom(255, 128, 0)
+    println!("{}: {}", color_name(&red), color_name(&custom))
+
+    // Traffic light
+    let light = TrafficLight::Green(30)
+    describe(&light)
+    println!("Wait time: {}s", wait_time(&light))
+
+    // Match with multiple patterns
+    let x = 42
+    match x {
+        0 => println!("zero"),
+        1 | 2 | 3 => println!("small"),
+        4..=10 => println!("medium"),
+        _ => println!("large: {}", x),
+    }
+
+    // Destructuring tuples
+    let point = (3.0, 4.0)
+    let (px, py) = point
+    println!("({}, {})", px, py)
+}

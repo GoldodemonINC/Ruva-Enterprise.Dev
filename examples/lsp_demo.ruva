@@ -1,0 +1,170 @@
+// ─── LSP Demo ───────────────────────────────────────────────────────────────
+// This example demonstrates features that the Ruva LSP provides:
+// - Hover information on functions, structs, enums, classes
+// - Go-to-definition for all symbol types
+// - Completion suggestions for keywords and symbols
+// - Document symbols for outline view
+
+// ─── Functions ──────────────────────────────────────────────────────────────
+
+pub fn add(a: i32, b: i32) -> i32 {
+    return a + b
+}
+
+pub fn subtract(a: i32, b: i32) -> i32 {
+    return a - b
+}
+
+pub fn multiply(a: i32, b: i32) -> i32 {
+    return a * b
+}
+
+pub fn greet(name: string) {
+    println!("Hello, {}", name)
+}
+
+// ─── Structs ────────────────────────────────────────────────────────────────
+
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+pub struct Rect {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+pub enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom,
+}
+
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+// ─── Classes ────────────────────────────────────────────────────────────────
+
+pub class Dog {
+    pub let name: string
+    pub let breed: string
+    pub let age: i32
+
+    pub fn bark(&self) {
+        println!("{}", self.name + " says: Woof!")
+    }
+
+    pub fn get_info(&self) {
+        println!("{} ({}), age {}", self.name, self.breed, self.age)
+    }
+}
+
+pub class Calculator {
+    pub let history: i32
+
+    pub fn new() -> Calculator {
+        return Calculator {
+            history: 0,
+        }
+    }
+
+    pub fn add(&self, a: i32, b: i32) -> i32 {
+        let result = a + b
+        return result
+    }
+
+    pub fn subtract(&self, a: i32, b: i32) -> i32 {
+        let result = a - b
+        return result
+    }
+}
+
+// ─── Module (inline) ────────────────────────────────────────────────────────
+
+mod math {
+    pub fn abs(x: i32) -> i32 {
+        if x < 0 {
+            return 0 - x
+        }
+        return x
+    }
+
+    pub fn max(a: i32, b: i32) -> i32 {
+        if a > b {
+            return a
+        }
+        return b
+    }
+
+    pub fn min(a: i32, b: i32) -> i32 {
+        if a < b {
+            return a
+        }
+        return b
+    }
+}
+
+// ─── Type aliases ───────────────────────────────────────────────────────────
+
+type UserID = i64
+type Score = f64
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
+fn main() {
+    // LSP provides completion for all these keywords and symbols
+    let x = add(1, 2)
+    let y = subtract(10, 3)
+    let z = multiply(4, 5)
+
+    // LSP hover shows: fn greet(name: string)
+    greet("World")
+
+    // LSP go-to-definition works for struct creation
+    let p = Point {
+        x: 1.0,
+        y: 2.0,
+    }
+
+    // LSP hover shows: struct Rect (4 fields)
+    let r = Rect {
+        x: 0.0,
+        y: 0.0,
+        width: 10.0,
+        height: 20.0,
+    }
+
+    // LSP completion suggests enum variants
+    let c = Color::Red
+    let d = Direction::Up
+
+    // LSP hover shows class info
+    let dog = Dog {
+        name: "Rex",
+        breed: "Labrador",
+        age: 5,
+    }
+    dog.bark()
+    dog.get_info()
+
+    // LSP hover on methods
+    let calc = Calculator::new()
+    let sum = calc.add(10, 20)
+
+    // LSP module completion
+    let a = math::abs(-42)
+    let m = math::max(10, 20)
+
+    println!("Results: {}, {}, {}, {}", x, y, z, sum)
+    println!("Math: abs={}, max={}", a, m)
+}

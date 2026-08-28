@@ -1,0 +1,235 @@
+// Systems programming — bit manipulation, ring buffer, memory pool, VM
+
+fn set_bit(value: u32, bit: u32) -> u32 {
+    return value | (1 << bit)
+}
+
+fn clear_bit(value: u32, bit: u32) -> u32 {
+    return value & (0xFFFFFFFF ^ (1 << bit))
+}
+
+fn toggle_bit(value: u32, bit: u32) -> u32 {
+    return value ^ (1 << bit)
+}
+
+fn is_bit_set(value: u32, bit: u32) -> bool {
+    return (value & (1 << bit)) != 0
+}
+
+fn count_ones(value: u32) -> u32 {
+    let mut count = 0
+    let mut v = value
+    while v > 0 {
+        count = count + (v & 1)
+        v = v >> 1
+    }
+    return count
+}
+
+class ring_buffer {
+    pub let mut buffer: Vec<i32>
+    pub let capacity: u32
+    pub let mut head: u32
+    pub let mut tail: u32
+    pub let mut count: u32
+
+    pub fn new(cap: u32) -> Self {
+        let mut buf = vec![]
+        for _ in 0..cap {
+            buf.push(0)
+        }
+        return Self { capacity: cap, buffer: buf, head: 0, tail: 0, count: 0 }
+    }
+
+    pub fn push(&mut self, item: i32) -> Result<(), string> {
+        if self.count >= self.capacity {
+            return Err("Buffer full".into())
+        }
+        self.buffer[self.head as usize] = item
+        self.head = (self.head + 1) % self.capacity
+        self.count = self.count + 1
+        return Ok(())
+    }
+
+    pub fn pop(&mut self) -> Option<i32> {
+        if self.count == 0 {
+            return None
+        }
+        let item = self.buffer[self.tail as usize]
+        self.tail = (self.tail + 1) % self.capacity
+        self.count = self.count - 1
+        return Some(item)
+    }
+
+    pub fn is_full(&self) -> bool {
+        return self.count >= self.capacity
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.count == 0
+    }
+}
+
+class memory_block {
+    pub let size: u32
+    pub let mut data: Vec<u8>
+    pub let mut used: u32
+
+    pub fn new(size: u32) -> Self {
+        let mut data = vec![]
+        for _ in 0..size {
+            data.push(0)
+        }
+        return Self { size: size, data: data, used: 0 }
+    }
+
+    pub fn allocate(&mut self, bytes: u32) -> Option<u32> {
+        if self.used + bytes > self.size {
+            return None
+        }
+        let offset = self.used
+        self.used = self.used + bytes
+        return Some(offset)
+    }
+
+    pub fn free_all(&mut self) {
+        self.used = 0
+    }
+
+    pub fn usage_percent(&self) -> f64 {
+        return (self.used as f64 / self.size as f64) * 100.0
+    }
+}
+
+fn crc32(data: Vec<u8>) -> u32 {
+    let mut crc: u32 = 0xFFFFFFFF
+    for byte in data {
+        crc = crc ^ (byte as u32)
+        let mut j = 0
+        while j < 8 {
+            if crc & 1 == 1 {
+                crc = (crc >> 1) ^ 0xEDB88320
+            } else {
+                crc = crc >> 1
+            }
+            j = j + 1
+        }
+    }
+    return crc ^ 0xFFFFFFFF
+}
+
+class simple_vm {
+    pub let mut stack: Vec<i32>
+    pub let mut memory: Vec<i32>
+
+    pub fn new() -> Self {
+        let mut mem = vec![]
+        for _ in 0..256 {
+            mem.push(0)
+        }
+        return Self { stack: vec![], memory: mem }
+    }
+
+    pub fn push_value(&mut self, value: i32) {
+        self.stack.push(value)
+    }
+
+    pub fn pop(&mut self) -> Result<i32, string> {
+        let result = self.stack.pop()
+        match result {
+            Some(val) => {
+                return Ok(val)
+            }
+            None => {
+                return Err("Stack underflow".into())
+            }
+        }
+    }
+
+    pub fn add_op(&mut self) -> Result<(), string> {
+        let b = self.pop()?
+        let a = self.pop()?
+        self.push_value(a + b)
+        return Ok(())
+    }
+
+    pub fn sub_op(&mut self) -> Result<(), string> {
+        let b = self.pop()?
+        let a = self.pop()?
+        self.push_value(a - b)
+        return Ok(())
+    }
+
+    pub fn mul_op(&mut self) -> Result<(), string> {
+        let b = self.pop()?
+        let a = self.pop()?
+        self.push_value(a * b)
+        return Ok(())
+    }
+}
+
+fn main() {
+    println!("=== Bit Operations ===")
+    let mut v: u32 = 0
+    v = set_bit(v, 3)
+    v = set_bit(v, 7)
+    println!("Bit 3 set: {}", is_bit_set(v, 3))
+    println!("Bit 5 set: {}", is_bit_set(v, 5))
+    println!("Ones count: {}", count_ones(v))
+    v = toggle_bit(v, 3)
+    println!("After toggle bit 3: ones={}", count_ones(v))
+
+    println!("\n=== Ring Buffer ===")
+    let mut rb = ring_buffer::new(4)
+    rb.push(10).unwrap()
+    rb.push(20).unwrap()
+    rb.push(30).unwrap()
+    println!("Full: {}", rb.is_full())
+    match rb.push(40) {
+        Ok(()) => println!("Pushed 40"),
+        Err(e) => println!("Error: {}", e),
+    }
+    match rb.push(50) {
+        Ok(()) => println!("Pushed 50"),
+        Err(e) => println!("Buffer full: {}", e),
+    }
+    while !rb.is_empty() {
+        match rb.pop() {
+            Some(val) => println!("Popped: {}", val),
+            None => {}
+        }
+    }
+
+    println!("\n=== Memory Pool ===")
+    let mut pool = memory_block::new(1024)
+    println!("Initial usage: {}%", pool.usage_percent())
+    pool.allocate(256)
+    println!("After 256 bytes: {}%", pool.usage_percent())
+    pool.allocate(512)
+    println!("After 512 more: {}%", pool.usage_percent())
+    match pool.allocate(512) {
+        Some(offset) => println!("Allocated at offset: {}", offset),
+        None => println!("Allocation failed (not enough space)"),
+    }
+    pool.free_all()
+    println!("After free: {}%", pool.usage_percent())
+
+    println!("\n=== CRC32 ===")
+    let data = "Hello, Ruva!".as_bytes().to_vec()
+    println!("CRC32: {:#010x}", crc32(data))
+
+    println!("\n=== Simple VM ===")
+    let mut vm = simple_vm::new()
+    vm.push_value(10)
+    vm.push_value(20)
+    vm.add_op().unwrap()
+    println!("10 + 20 = {}", vm.pop().unwrap())
+    vm.push_value(100)
+    vm.push_value(42)
+    vm.sub_op().unwrap()
+    println!("100 - 42 = {}", vm.pop().unwrap())
+    vm.push_value(7)
+    vm.push_value(6)
+    vm.mul_op().unwrap()
+    println!("7 x 6 = {}", vm.pop().unwrap())
+}

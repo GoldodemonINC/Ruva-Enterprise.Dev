@@ -1,0 +1,128 @@
+// Example: 2D Game with Graphics and Anticheat
+
+import ruva::graphics::opengl
+import ruva::graphics::vulkan
+import ruva::anticheat::memory
+import ruva::anticheat::process
+import ruva::anticheat::debug
+import ruva::anticheat::tamper
+
+// Game entity
+class Entity {
+    pub let mut x: f32
+    pub let mut y: f32
+    pub let mut width: f32
+    pub let mut height: f32
+    pub let mut velocity_x: f32
+    pub let mut velocity_y: f32
+
+    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
+        return Self {
+            x,
+            y,
+            width,
+            height,
+            velocity_x: 0.0,
+            velocity_y: 0.0,
+        }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        self.x += self.velocity_x * delta_time
+        self.y += self.velocity_y * delta_time
+    }
+
+    pub fn render(&self, context: &opengl::Context) {
+        // Safe rendering - no buffer overflows
+        let vertices = [
+            self.x, self.y,
+            self.x + self.width, self.y,
+            self.x + self.width, self.y + self.height,
+            self.x, self.y + self.height,
+        ]
+        context.draw_triangles(&vertices)
+    }
+}
+
+// Game class
+class Game {
+    pub let mut window: opengl::Window
+    pub let mut context: opengl::Context
+    pub let mut entities: Vec<Entity>
+    pub let mut anti_debug: debug::AntiDebug
+    pub let mut integrity: tamper::CodeIntegrity
+
+    pub fn new() -> Result<Game, string> {
+        // Create window
+        let window = opengl::Window::new("Ruva Game", 1920, 1080)?
+
+        // Create OpenGL context
+        let context = opengl::Context::new(&window)?
+
+        // Initialize anticheat
+        let anti_debug = debug::AntiDebug::new()
+        let integrity = tamper::CodeIntegrity::new()
+
+        return Result::Ok(Self {
+            window,
+            context,
+            entities: Vec::new(),
+            anti_debug,
+            integrity,
+        })
+    }
+
+    pub fn run(&mut self) {
+        // Start anticheat monitoring
+        self.anti_debug.start_monitoring()
+
+        // Main game loop
+        while !self.window.should_close() {
+            // Check for debugger
+            if self.anti_debug.check() {
+                println!("Debugger detected! Exiting...")
+                break
+            }
+
+            // Verify code integrity
+            let violations = self.integrity.verify()
+            if violations.len() > 0 {
+                println!("Code tampering detected! Exiting...")
+                break
+            }
+
+            // Update entities
+            for entity in &mut self.entities {
+                entity.update(0.016)  // 60fps
+            }
+
+            // Render
+            self.context.clear(0.0, 0.0, 0.0, 1.0)
+            for entity in &self.entities {
+                entity.render(&self.context)
+            }
+            self.window.swap_buffers()
+        }
+
+        // Stop anticheat monitoring
+        self.anti_debug.stop_monitoring()
+    }
+}
+
+fn main() {
+    // Initialize game
+    let mut game = match Game::new() {
+        Result::Ok(g) => g,
+        Result::Err(e) => {
+            println!("Failed to initialize game: {}", e)
+            return
+        }
+    }
+
+    // Add some entities
+    game.entities.push(Entity::new(100.0, 100.0, 50.0, 50.0))
+    game.entities.push(Entity::new(200.0, 200.0, 75.0, 75.0))
+
+    // Run game
+    game.run()
+}

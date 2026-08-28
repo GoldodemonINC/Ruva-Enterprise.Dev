@@ -1,0 +1,79 @@
+// ─── Standard Library Demo ───────────────────────────────────────────────
+// Demonstrates importing and using the Ruva core standard library.
+
+// Import the core standard library
+import ruva::core
+
+fn main() {
+    // Use Option type from stdlib
+    let maybe_value: Option<i64> = Option::Some(42)
+    let no_value: Option<i64> = Option::None
+
+    // Check if value exists
+    let is_some = maybe_value.is_some()
+    let is_none = no_value.is_none()
+
+    println!("maybe_value.is_some() = {}", is_some)
+    println!("no_value.is_none() = {}", is_none)
+
+    // Use Result type from stdlib
+    let ok_result: Result<i64, string> = Result::Ok(100)
+    let err_result: Result<i64, string> = Result::Err("something went wrong")
+
+    println!("ok_result.is_ok() = {}", ok_result.is_ok())
+    println!("err_result.is_err() = {}", err_result.is_err())
+
+    // Use math functions from stdlib
+    let x = abs(-42)
+    let big = max(10, 20)
+    let small = min(10, 20)
+    let clamped = clamp(15, 0, 10)
+    let squared = pow(3, 4)
+    let ev = is_even(7)
+
+    println!("abs(-42) = {}", x)
+    println!("max(10, 20) = {}", big)
+    println!("min(10, 20) = {}", small)
+    println!("clamp(15, 0, 10) = {}", clamped)
+    println!("pow(3, 4) = {}", squared)
+    println!("is_even(7) = {}", ev)
+
+    // Use integer utilities
+    let digits = digit_count(12345)
+    let reversed = reverse_num(12345)
+    let pal = is_palindrome_num(121)
+
+    println!("digit_count(12345) = {}", digits)
+    println!("reverse_num(12345) = {}", reversed)
+    println!("is_palindrome_num(121) = {}", pal)
+
+    // Use sqrt approximation
+    let root = sqrt(25.0)
+    println!("sqrt(25.0) = {}", root)
+
+    // Use comparison helpers
+    let sorted = sort_asc(5, 3)
+    println!("sort_asc(5, 3) = ({}, {})", sorted.first, sorted.second)
+
+    // Use RNG for random numbers
+    let mut rng = Rng::new(12345)
+    let r1 = rng.next_i64()
+    let r2 = rng.range(1, 100)
+    println!("rng.next_i64() = {}", r1)
+    println!("rng.range(1, 100) = {}", r2)
+
+    // Use Pair
+    let p = Pair::new(10, "hello")
+    println!("Pair({}, {})", p.first, p.second)
+
+    // Option and Result chaining
+    let result = Option::Some(5)
+    let doubled = result.map(double_it)
+    println!("Option::Some(5).map(double_it) = is_some={}", doubled.is_some())
+
+    println!("All stdlib functions working!")
+}
+
+fn double_it(x: i64) -> i64 {
+    return x * 2
+}
