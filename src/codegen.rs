@@ -624,17 +624,32 @@ edition = "2021"
                 }
             }
             Stmt::If { condition, then_body, else_body } => {
-                self.write(&format!("if "));
+                self.write_indent();
+                self.write("if ");
                 self.gen_expr(condition);
                 self.output.push(' ');
-                self.gen_block(then_body);
+                if let Some(ref else_kind) = else_body {
+                    // Write then body WITHOUT closing brace so we can attach else
+                    self.output.push_str("{\n");
+                    self.indent += 1;
+                    for stmt in &then_body.stmts {
+                        self.gen_stmt(stmt);
+                    }
+                    if let Some(ref expr) = then_body.expr {
+                        self.write_indent();
+                        self.gen_expr(expr);
+                        self.output.push('\n');
+                    }
+                    self.indent -= 1;
+                } else {
+                    self.gen_block(then_body);
+                }
 
                 if let Some(else_kind) = else_body {
                     match else_kind {
                         ElseKind::If(cond, body) => {
                             self.write_indent();
-                            self.output.push_str("} else ");
-                            self.write("if ");
+                            self.output.push_str("} else if ");
                             self.gen_expr(cond);
                             self.output.push(' ');
                             self.gen_block(body);
@@ -1022,6 +1037,7 @@ edition = "2021"
             }
 
             Expr::If { condition, then_body, else_body } => {
+                self.write_indent();
                 self.output.push_str("if ");
                 self.gen_expr(condition);
                 self.output.push(' ');
