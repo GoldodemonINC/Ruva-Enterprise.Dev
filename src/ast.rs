@@ -140,6 +140,7 @@ pub enum Item {
     Impl(ImplBlock),
     Trait(TraitDef),
     TypeAlias(TypeAliasDef),
+    Const(ConstDef),
     Import(ImportDef),
     Use(UseDef),
     Attribute(Attribute),
@@ -279,6 +280,16 @@ pub struct TypeAliasDef {
     pub name: String,
     pub generics: Vec<GenericParam>,
     pub ty: Type,
+}
+
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
+pub struct ConstDef {
+    pub is_pub: bool,
+    pub name: String,
+    pub ty: Option<Type>,
+    pub value: Expr,
+    pub span: Span,
 }
 
 // ─── Legacy Imports ──────────────────────────────────────────────────────────
@@ -496,6 +507,11 @@ pub enum Expr {
     Null,
     /// Array literal [1, 2, 3]
     Array(Vec<Expr>),
+    /// Repeat array literal [0; 100]
+    ArrayRepeat {
+        value: Box<Expr>,
+        size: Box<Expr>,
+    },
     /// Tuple literal (1, "two", 3.0)
     Tuple(Vec<Expr>),
     /// Range 1..10 or 1..=10

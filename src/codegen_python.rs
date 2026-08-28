@@ -69,6 +69,12 @@ impl PythonCodeGen {
             Item::Impl(imp) => self.gen_impl(imp),
             Item::Trait(t) => self.gen_trait(t),
             Item::TypeAlias(ta) => self.gen_type_alias(ta),
+            Item::Const(c) => {
+                self.output.push_str(&c.name);
+                self.output.push_str(" = ");
+                self.gen_expr(&c.value);
+                self.writeln("");
+            }
             Item::Import(imp) => self.gen_import(imp),
             Item::Use(u) => self.gen_use(u),
             Item::Attribute(attr) => self.gen_attribute(attr),
@@ -666,6 +672,14 @@ impl PythonCodeGen {
                     self.gen_expr(el);
                 }
                 self.output.push(']');
+            }
+
+            Expr::ArrayRepeat { value, size } => {
+                // Python repeat: [value] * size
+                self.output.push('[');
+                self.gen_expr(value);
+                self.output.push_str("] * ");
+                self.gen_expr(size);
             }
 
             Expr::Tuple(elements) => {

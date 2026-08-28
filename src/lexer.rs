@@ -282,11 +282,29 @@ impl<'a> Lexer<'a> {
                             }
                             // Read until matching }
                             let mut depth = 1u32;
+                            let mut paren = 0u32;
+                            let mut bracket = 0u32;
                             let mut expr = String::new();
                             while depth > 0 {
                                 match self.advance() {
                                     Some(b'{') => { depth += 1; expr.push('{'); }
                                     Some(b'}') => { depth -= 1; if depth > 0 { expr.push('}'); } }
+                                    Some(b'(') => { paren += 1; expr.push('('); }
+                                    Some(b')') => { if paren > 0 { paren -= 1; } expr.push(')'); }
+                                    Some(b'[') => { bracket += 1; expr.push('['); }
+                                    Some(b']') => { if bracket > 0 { bracket -= 1; } expr.push(']'); }
+                                    Some(b':') if depth == 1 && paren == 0 && bracket == 0 => {
+                                        // Format specifier ({value:02x}, {value:.2f}): skip to the closing brace
+                                        while let Some(c) = self.advance() {
+                                            if c == b'}' {
+                                                depth = 0;
+                                                break;
+                                            }
+                                        }
+                                        if depth > 0 {
+                                            bail!("Unterminated f-string format specifier at {}:{}", self.line, self.col);
+                                        }
+                                    }
                                     Some(c) => expr.push(c as char),
                                     None => bail!("Unterminated f-string expression at {}:{}", self.line, self.col),
                                 }

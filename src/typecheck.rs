@@ -50,6 +50,11 @@ pub struct TypeChecker {
     scopes: Vec<Scope>,
     functions: std::collections::HashMap<String, FunctionSig>,
     struct_fields: std::collections::HashMap<String, Vec<(String, Ty)>>,
+    type_aliases: std::collections::HashMap<String, Ty>,
+    /// Methods keyed by receiver type: TypeName -> method name -> signature
+    class_methods: std::collections::HashMap<String, std::collections::HashMap<String, FunctionSig>>,
+    /// Enclosing class while checking its methods (used to resolve `self.field`)
+    current_class: Option<String>,
     diagnostics: Vec<Diagnostic>,
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
@@ -100,6 +105,9 @@ impl TypeChecker {
             }],
             functions: std::collections::HashMap::new(),
             struct_fields: std::collections::HashMap::new(),
+            type_aliases: std::collections::HashMap::new(),
+            class_methods: std::collections::HashMap::new(),
+            current_class: None,
             diagnostics: vec![],
             current_return_type: None,
             in_unsafe_block: false,
@@ -154,13 +162,15 @@ impl TypeChecker {
                 }).collect();
                 self.struct_fields.insert(c.name.clone(), fields);
                 self.define_var(c.name.clone(), Ty::Named(c.name.clone()), c.span.line);
-                // Register methods
+                // Register methods keyed by the receiver type so same-named
+                // methods on different classes don't collide
                 for m in &c.methods {
                     let params: Vec<(String, Ty)> = m.params.iter().map(|p| {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
                     let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    self.class_methods.entry(c.name.clone()).or_default()
+                        .insert(m.name.clone(), FunctionSig { params, return_type: ret });
                 }
             }
             Item::Struct(s) => {
@@ -184,12 +194,18 @@ impl TypeChecker {
                 }
             }
             Item::Impl(imp) => {
+                let target = self.type_name(&imp.self_type);
                 for m in &imp.methods {
                     let params: Vec<(String, Ty)> = m.params.iter().map(|p| {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
                     let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    if let Some(ref tname) = target {
+                        self.class_methods.entry(tname.clone()).or_default()
+                            .insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    } else {
+                        self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    }
                 }
             }
             Item::Trait(t) => {
@@ -198,7 +214,8 @@ impl TypeChecker {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
                     let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    self.class_methods.entry(t.name.clone()).or_default()
+                        .insert(m.name.clone(), FunctionSig { params, return_type: ret });
                 }
             }
             Item::Use(u) => {
@@ -218,7 +235,15 @@ impl TypeChecker {
                 }
             }
             Item::TypeAlias(ta) => {
-                self.define_var(ta.name.clone(), self.ast_type_to_ty(&ta.ty), 0);
+                // Register `type X = Y` so declared types referencing X resolve to Y
+                let resolved = self.ast_type_to_ty(&ta.ty);
+                self.type_aliases.insert(ta.name.clone(), resolved.clone());
+                self.define_var(ta.name.clone(), resolved, 0);
+            }
+            Item::Const(c) => {
+                let ty = c.ty.as_ref().map(|t| self.ast_type_to_ty(t))
+                    .unwrap_or_else(|| self.infer_type(&c.value));
+                self.define_var(c.name.clone(), ty, 0);
             }
             Item::Module(m) => {
                 self.define_var(m.name.clone(), Ty::Named(m.name.clone()), 0);
@@ -303,16 +328,22 @@ impl TypeChecker {
             Item::Class(c) => {
                 self.current_line = c.span.line;
                 self.current_col = c.span.col;
+                let saved_class = self.current_class.take();
+                self.current_class = Some(c.name.clone());
                 for method in &c.methods {
                     self.check_function(method);
                 }
+                self.current_class = saved_class;
             }
             Item::Impl(imp) => {
                 self.current_line = imp.span.line;
                 self.current_col = imp.span.col;
+                let saved_class = self.current_class.take();
+                self.current_class = self.type_name(&imp.self_type);
                 for method in &imp.methods {
                     self.check_function(method);
                 }
+                self.current_class = saved_class;
             }
             Item::Trait(t) => {
                 for method in &t.methods {
@@ -452,7 +483,8 @@ impl TypeChecker {
                     self.check_expr(e);
                     if let Some(ref expected) = self.current_return_type.clone() {
                         let actual = self.infer_type(e);
-                        if !self.ty_is_inferred(&actual) && !self.types_compatible(expected, &actual) {
+                        if !self.ty_is_inferred(&actual) && !self.types_compatible(expected, &actual)
+                            && !self.ty_mentions_impl(expected) {
                             self.error(
                                 format!("Return type mismatch: expected '{}', got '{}'",
                                     self.ty_to_string(expected), self.ty_to_string(&actual)),
@@ -614,7 +646,11 @@ impl TypeChecker {
                         BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Rem => {
                             let left_numeric = self.ty_is_numeric(&left_ty);
                             let right_numeric = self.ty_is_numeric(&right_ty);
-                            if !left_numeric || !right_numeric {
+                            let string_concat = matches!(op, BinOp::Add)
+                                && self.ty_is_string(&left_ty) && self.ty_is_string(&right_ty);
+                            if string_concat {
+                                // "a" + "b" is string concatenation, not arithmetic
+                            } else if !left_numeric || !right_numeric {
                                 self.error(
                                     format!("Arithmetic operator '{}' requires numeric operands, got '{}' and '{}'",
                                         op, self.ty_to_string(&left_ty), self.ty_to_string(&right_ty)),
@@ -670,7 +706,8 @@ impl TypeChecker {
                             for (i, (param_name, param_ty)) in sig.params.iter().enumerate() {
                                 if !self.ty_is_inferred(param_ty) {
                                     let arg_ty = self.infer_type(&args[i]);
-                                    if !self.ty_is_inferred(&arg_ty) && !self.types_compatible(param_ty, &arg_ty) {
+                                    if !self.ty_is_inferred(&arg_ty) && !self.types_compatible(param_ty, &arg_ty)
+                                        && !self.ty_mentions_impl(param_ty) {
                                         self.error(
                                             format!("Argument '{}' to '{}' has type '{}', expected '{}'",
                                                 param_name, name, self.ty_to_string(&arg_ty), self.ty_to_string(param_ty)),
@@ -689,7 +726,7 @@ impl TypeChecker {
                     self.check_expr(arg);
                 }
                 // Check method exists and argument count
-                if let Some(sig) = self.functions.get(method).cloned() {
+                if let Some(sig) = self.method_sig(object, method) {
                     let expected = sig.params.iter().filter(|(name, _)| name != "self").count();
                     let actual = args.len();
                     if expected != actual {
@@ -705,7 +742,8 @@ impl TypeChecker {
                         for (i, (param_name, param_ty)) in non_self_params.iter().enumerate() {
                             if !self.ty_is_inferred(param_ty) {
                                 let arg_ty = self.infer_type(&args[i]);
-                                if !self.ty_is_inferred(&arg_ty) && !self.types_compatible(param_ty, &arg_ty) {
+                                if !self.ty_is_inferred(&arg_ty) && !self.types_compatible(param_ty, &arg_ty)
+                                    && !self.ty_mentions_impl(param_ty) {
                                     self.error(
                                         format!("Argument '{}' to method '{}' has type '{}', expected '{}'",
                                             param_name, method, self.ty_to_string(&arg_ty), self.ty_to_string(param_ty)),
@@ -800,6 +838,10 @@ impl TypeChecker {
                 for el in elements {
                     self.check_expr(el);
                 }
+            }
+            Expr::ArrayRepeat { value, size } => {
+                self.check_expr(value);
+                self.check_expr(size);
             }
             Expr::Range { start, end, .. } => {
                 self.check_expr(start);
@@ -927,7 +969,23 @@ impl TypeChecker {
             Expr::NullCoalesce { left, .. } => self.infer_type(left),
             Expr::Assert { .. } | Expr::AssertEq { .. } | Expr::AssertNe { .. } => Ty::Primitive("()".into()),
 
-            Expr::Ident(name) => self.lookup_var_type(name),
+            Expr::Ident(name) => {
+                // A local variable shadows any function of the same name.
+                let var_ty = self.lookup_var_type(name);
+                if !matches!(&var_ty, Ty::Named(n) if n == name) {
+                    return var_ty;
+                }
+                // `name` refers to a function (registered as Ty::Named(name)):
+                // a bare function name used as a value has its function-pointer type,
+                // e.g. passing `double` where `fn(i32) -> i32` is expected.
+                if let Some(sig) = self.functions.get(name) {
+                    return Ty::FnPointer {
+                        params: sig.params.iter().map(|(_, t)| t.clone()).collect(),
+                        ret: Box::new(sig.return_type.clone().unwrap_or(Ty::Unit)),
+                    };
+                }
+                var_ty
+            },
 
             Expr::Binary { op, left, right: _ } => {
                 match op {
@@ -962,12 +1020,21 @@ impl TypeChecker {
                     if let Some(sig) = self.functions.get(name) {
                         return sig.return_type.clone().unwrap_or(Ty::Unit);
                     }
+                } else if let Expr::Path(parts) = function.as_ref() {
+                    // Type::constructor(...) — resolve via the type's methods
+                    if parts.len() >= 2 {
+                        if let Some(methods) = self.class_methods.get(&parts[0]) {
+                            if let Some(sig) = methods.get(parts.last().unwrap()) {
+                                return sig.return_type.clone().unwrap_or(Ty::Unit);
+                            }
+                        }
+                    }
                 }
                 Ty::Inferred
             }
 
-            Expr::MethodCall { object: _, method, args: _ } => {
-                if let Some(sig) = self.functions.get(method) {
+            Expr::MethodCall { object, method, args: _ } => {
+                if let Some(sig) = self.method_sig(object, method) {
                     return sig.return_type.clone().unwrap_or(Ty::Unit);
                 }
                 // Built-in methods
@@ -983,6 +1050,16 @@ impl TypeChecker {
                     if let Some(fields) = self.struct_fields.get(name) {
                         if let Some((_, fty)) = fields.iter().find(|(n, _)| n == field) {
                             return fty.clone();
+                        }
+                    }
+                }
+                // self.field resolves through the current class's fields
+                if matches!(object.as_ref(), Expr::Self_) {
+                    if let Some(cls) = &self.current_class {
+                        if let Some(fields) = self.struct_fields.get(cls) {
+                            if let Some((_, fty)) = fields.iter().find(|(n, _)| n == field) {
+                                return fty.clone();
+                            }
                         }
                     }
                 }
@@ -1017,9 +1094,11 @@ impl TypeChecker {
             Expr::Cast { ty, .. } => self.ast_type_to_ty(ty),
 
             Expr::If { then_body, .. } => {
-                // For now, use the then_body type if it's a trailing expression
+                // Use the then_body type: trailing expression, or last statement
                 if let Some(ref expr) = then_body.expr {
                     self.infer_type(expr)
+                } else if let Some(Stmt::Expr(e)) = then_body.stmts.last() {
+                    self.infer_type(e)
                 } else {
                     Ty::Unit
                 }
@@ -1028,12 +1107,31 @@ impl TypeChecker {
             Expr::Block(block) => {
                 if let Some(ref expr) = block.expr {
                     self.infer_type(expr)
+                } else if let Some(Stmt::Expr(e)) = block.stmts.last() {
+                    self.infer_type(e)
                 } else {
                     Ty::Unit
                 }
             }
 
-            Expr::Path(parts) => Ty::Named(parts.join("::")),
+            Expr::Path(parts) => {
+                // Enum variant reference like Status::Active resolves to the parent enum type.
+                // This makes `let s = Status::Active` have type `Status`, so it can be
+                // passed to functions expecting `&Status`.
+                if parts.len() >= 2 {
+                    let parent = parts[0].as_str();
+                    // Only collapse to the parent type when the first segment is a known
+                    // type (enum, struct, class, or built-in generic). Module-style paths
+                    // (e.g. std::io::read) keep their full name.
+                    if self.is_known_type(parent) {
+                        Ty::Named(parent.to_string())
+                    } else {
+                        Ty::Named(parts.join("::"))
+                    }
+                } else {
+                    Ty::Named(parts.join("::"))
+                }
+            }
 
             Expr::Array(items) => {
                 if let Some(first) = items.first() {
@@ -1041,6 +1139,10 @@ impl TypeChecker {
                 } else {
                     Ty::Array(Box::new(Ty::Inferred))
                 }
+            }
+
+            Expr::ArrayRepeat { value, .. } => {
+                Ty::Array(Box::new(self.infer_type(value)))
             }
 
             Expr::Tuple(items) => {
@@ -1122,6 +1224,10 @@ impl TypeChecker {
     fn ast_type_to_ty(&self, ast_ty: &Type) -> Ty {
         match ast_ty {
             Type::Name(name) => {
+                // Resolve user-defined type aliases (type Meter = f64)
+                if let Some(alias_ty) = self.type_aliases.get(name) {
+                    return alias_ty.clone();
+                }
                 // Normalize common type aliases
                 match name.as_str() {
                     "string" => Ty::Primitive("string".into()),
@@ -1195,9 +1301,12 @@ impl TypeChecker {
         let a = self.resolve(a);
         let b = self.resolve(b);
 
-        // Normalize string/String
+        // Normalize string/String (literals infer as Primitive("string"); signatures use
+        // either lowercase "string" or capitalized "String", which parses as Named)
         let a = if matches!(&a, Ty::Primitive(s) if s == "string") { Ty::Primitive("String".into()) } else { a };
         let b = if matches!(&b, Ty::Primitive(s) if s == "string") { Ty::Primitive("String".into()) } else { b };
+        let a = if matches!(&a, Ty::Named(s) if s == "String" || s == "string" || s == "str") { Ty::Primitive("String".into()) } else { a };
+        let b = if matches!(&b, Ty::Named(s) if s == "String" || s == "string" || s == "str") { Ty::Primitive("String".into()) } else { b };
 
         if a == b { return true; }
 
@@ -1207,15 +1316,33 @@ impl TypeChecker {
 
         // Option variants (None, Some, Ok, Err) are compatible with their Option/Result types
         let a_is_option = matches!(&a, Ty::Generic(s, _) if s == "Option")
-            || matches!(&a, Ty::Named(s) if s == "Option" || s.starts_with("Option::"));
+            || matches!(&a, Ty::Named(s) if s == "Option" || s == "None" || s == "Some" || s.starts_with("Option::"));
         let b_is_option = matches!(&b, Ty::Generic(s, _) if s == "Option")
-            || matches!(&b, Ty::Named(s) if s == "Option" || s.starts_with("Option::"));
+            || matches!(&b, Ty::Named(s) if s == "Option" || s == "None" || s == "Some" || s.starts_with("Option::"));
         if a_is_option && b_is_option { return true; }
         let a_is_result = matches!(&a, Ty::Generic(s, _) if s == "Result")
-            || matches!(&a, Ty::Named(s) if s == "Result" || s.starts_with("Result::"));
+            || matches!(&a, Ty::Named(s) if s == "Result" || s == "Ok" || s == "Err" || s.starts_with("Result::"));
         let b_is_result = matches!(&b, Ty::Generic(s, _) if s == "Result")
-            || matches!(&b, Ty::Named(s) if s == "Result" || s.starts_with("Result::"));
+            || matches!(&b, Ty::Named(s) if s == "Result" || s == "Ok" || s == "Err" || s.starts_with("Result::"));
         if a_is_result && b_is_result { return true; }
+
+        // Single-letter generic type variables (T, K, V, E, U, N) are unconstrained: match anything.
+        // Note: generic params in signatures parse as plain Names (e.g. Named("T")).
+        if let Ty::Generic(name, args) = &a {
+            if args.is_empty() && name.len() == 1 && name.chars().next().unwrap().is_uppercase() { return true; }
+        }
+        if let Ty::Generic(name, args) = &b {
+            if args.is_empty() && name.len() == 1 && name.chars().next().unwrap().is_uppercase() { return true; }
+        }
+        if let Ty::Named(name) = &a {
+            if name.len() == 1 && name.chars().next().unwrap().is_uppercase() { return true; }
+        }
+        if let Ty::Named(name) = &b {
+            if name.len() == 1 && name.chars().next().unwrap().is_uppercase() { return true; }
+        }
+        // A bare type name matches its generic instantiation: Vec vs Vec<T>, Pair vs Pair<A, B>
+        if let (Ty::Named(n), Ty::Generic(g, _)) = (&a, &b) { if n == g { return true; } }
+        if let (Ty::Generic(g, _), Ty::Named(n)) = (&a, &b) { if n == g { return true; } }
 
         match (&a, &b) {
             // Allow numeric coercion between primitive numeric types
@@ -1226,9 +1353,14 @@ impl TypeChecker {
                 let b_is_num = numeric.contains(&b.as_str());
                 a_is_num && b_is_num
             }
-            (Ty::Reference(a_inner, a_mut), Ty::Reference(b_inner, b_mut)) => {
-                a_mut == b_mut && self.types_compatible(a_inner, b_inner)
+            // &T coerces to *const T / *mut T (FFI) and vice versa
+            (Ty::RawPointer(a_inner, _), Ty::Reference(b_inner, _))
+            | (Ty::Reference(a_inner, _), Ty::RawPointer(b_inner, _)) => {
+                self.types_compatible(a_inner, b_inner)
             }
+            // Auto-ref / auto-deref: &T accepts T, &str accepts string, etc.
+            (Ty::Reference(a_inner, _), b) => self.types_compatible(a_inner, b),
+            (a, Ty::Reference(b_inner, _)) => self.types_compatible(a, b_inner),
             (Ty::RawPointer(a_inner, a_mut), Ty::RawPointer(b_inner, b_mut)) => {
                 a_mut == b_mut && self.types_compatible(a_inner, b_inner)
             }
@@ -1239,6 +1371,18 @@ impl TypeChecker {
             (Ty::Tuple(a_types), Ty::Tuple(b_types)) => {
                 a_types.len() == b_types.len()
                     && a_types.iter().zip(b_types.iter()).all(|(a, b)| self.types_compatible(a, b))
+            }
+            (Ty::Array(a_inner), Ty::Array(b_inner)) => self.types_compatible(a_inner, b_inner),
+            (Ty::Slice(a_inner), Ty::Slice(b_inner)) => self.types_compatible(a_inner, b_inner),
+            (Ty::Array(a_inner), Ty::Slice(b_inner)) | (Ty::Slice(a_inner), Ty::Array(b_inner)) => {
+                self.types_compatible(a_inner, b_inner)
+            }
+            // Vec<T> derefs/coerces to [T] (and vice versa)
+            (Ty::Slice(inner), Ty::Generic(name, args)) if name == "Vec" && args.len() == 1 => {
+                self.types_compatible(inner, &args[0])
+            }
+            (Ty::Generic(name, args), Ty::Slice(inner)) if name == "Vec" && args.len() == 1 => {
+                self.types_compatible(&args[0], inner)
             }
             (Ty::FnPointer { params: a_p, ret: a_r }, Ty::FnPointer { params: b_p, ret: b_r }) => {
                 a_p.len() == b_p.len()
@@ -1272,6 +1416,59 @@ impl TypeChecker {
             | "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
             | "f32" | "f64"
         ))
+    }
+
+    fn ty_is_string(&self, ty: &Ty) -> bool {
+        matches!(ty, Ty::Primitive(s) if s == "string" || s == "String")
+            || matches!(ty, Ty::Named(s) if s == "String" || s == "string")
+    }
+
+    /// Resolve a method's signature by the receiver's type first (so same-named
+    /// methods on different classes don't collide), falling back to the global
+    /// function table (builtins, free functions used as methods).
+    fn method_sig(&self, object: &Expr, method: &str) -> Option<FunctionSig> {
+        let receiver_ty = self.infer_type(object);
+        let class = match &receiver_ty {
+            Ty::Named(n) => Some(n.clone()),
+            Ty::Reference(inner, _) => match inner.as_ref() {
+                Ty::Named(n) => Some(n.clone()),
+                _ => None,
+            },
+            Ty::Generic(n, _) => Some(n.clone()),
+            _ => None,
+        };
+        if let Some(cls) = class {
+            if let Some(methods) = self.class_methods.get(&cls) {
+                if let Some(sig) = methods.get(method) {
+                    return Some(sig.clone());
+                }
+            }
+        }
+        self.functions.get(method).cloned()
+    }
+
+    /// Extract the base type name from a type AST node (impl target etc.)
+    fn type_name(&self, ty: &Type) -> Option<String> {
+        match ty {
+            Type::Name(n) => Some(n.clone()),
+            Type::Path(p) => p.last().cloned(),
+            Type::Generic { name, .. } => Some(name.clone()),
+            Type::Reference { inner, .. } | Type::RawPointer { inner, .. } => self.type_name(inner),
+            _ => None,
+        }
+    }
+
+    /// Does this type mention an `impl Trait` anywhere (e.g. `&impl Area`, `&[impl Drawable]`)?
+    /// Such parameters accept any concrete type, since we don't track trait impls.
+    fn ty_mentions_impl(&self, ty: &Ty) -> bool {
+        match ty {
+            Ty::Named(s) => s.starts_with("impl "),
+            Ty::Reference(inner, _) | Ty::RawPointer(inner, _) => self.ty_mentions_impl(inner),
+            Ty::Array(inner) | Ty::Slice(inner) => self.ty_mentions_impl(inner),
+            Ty::Generic(_, args) => args.iter().any(|t| self.ty_mentions_impl(t)),
+            Ty::Tuple(types) => types.iter().any(|t| self.ty_mentions_impl(t)),
+            _ => false,
+        }
     }
 
     fn ty_is_raw_pointer(&self, ty: &Ty) -> bool {
@@ -1454,6 +1651,13 @@ impl TypeChecker {
             }
             Pattern::Mut(name) => vec![name.clone()],
             Pattern::Reference(inner) => self.pattern_names(inner),
+            Pattern::Or(patterns) => {
+                let mut names = vec![];
+                for p in patterns {
+                    names.extend(self.pattern_names(p));
+                }
+                names
+            }
             _ => vec![],
         }
     }
@@ -1680,5 +1884,183 @@ mod tests {
             }
         "#);
         assert!(has_warning(&diagnostics, "Condition should be bool"));
+    }
+
+    fn errors_only(diagnostics: &[Diagnostic]) -> Vec<String> {
+        diagnostics.iter()
+            .filter(|d| d.kind == DiagnosticKind::Error)
+            .map(|d| d.message.clone())
+            .collect()
+    }
+
+    #[test]
+    fn test_enum_match_bindings() {
+        let diagnostics = check_source(r#"
+            enum Shape {
+                Circle(f64),
+                Rect(f64, f64),
+            }
+            fn area(s: &Shape) -> f64 {
+                match s {
+                    Shape::Circle(r) => 3.14 * r * r,
+                    Shape::Rect(w, h) => w * h,
+                }
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_enum_variant_path_type() {
+        // `let s = Status::Active` should infer the parent enum type
+        let diagnostics = check_source(r#"
+            enum Status { Active, Inactive }
+            fn is_active(s: &Status) -> bool {
+                return true
+            }
+            fn main() {
+                let s = Status::Active
+                is_active(&s)
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_or_pattern_in_match() {
+        let diagnostics = check_source(r#"
+            enum Day { Mon, Tue, Wed }
+            fn is_weekend(d: Day) -> bool {
+                match d {
+                    Day::Mon | Day::Tue => false,
+                    Day::Wed => true,
+                }
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_string_string_compat() {
+        // `String` in a signature must accept string literals (Primitive("string"))
+        let diagnostics = check_source(r#"
+            fn greet(name: String) -> String {
+                return name
+            }
+            fn main() {
+                greet("Alice")
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_none_return_compat() {
+        let diagnostics = check_source(r#"
+            fn find(x: i32) -> Option<i32> {
+                if x > 0 {
+                    return Option::Some(x)
+                }
+                return Option::None
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_methods_do_not_collide() {
+        // Same-named methods on different classes must resolve by receiver type
+        let diagnostics = check_source(r#"
+            class Dog {
+                pub fn speak(&self) -> string {
+                    return "woof"
+                }
+            }
+            class Cat {
+                pub fn speak(&self, loud: bool) -> string {
+                    return "meow"
+                }
+            }
+            fn main() {
+                let d = Dog {}
+                let c = Cat {}
+                d.speak()
+                c.speak(true)
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_array_repeat_literal() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let items = [0; 100]
+                let x = items[0]
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_tuple_field_access() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let point = (3.0, 4.0)
+                let x = point.0
+                let y = point.1
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_const_item() {
+        let diagnostics = check_source(r#"
+            const MAX_SIZE: i32 = 1024
+            fn main() {
+                println!("{}", MAX_SIZE)
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_type_alias_resolution() {
+        let diagnostics = check_source(r#"
+            type Meter = f64
+            fn main() {
+                let distance: Meter = 100.0
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
+    }
+
+    #[test]
+    fn test_fn_value_passing() {
+        // A bare function name passed where a fn pointer is expected
+        let diagnostics = check_source(r#"
+            fn double(x: i32) -> i32 {
+                return x * 2
+            }
+            fn apply(f: fn(i32) -> i32, x: i32) -> i32 {
+                return f(x)
+            }
+            fn main() {
+                apply(double, 5)
+            }
+        "#);
+        let errs = errors_only(&diagnostics);
+        assert!(errs.is_empty(), "Unexpected errors: {:?}", errs);
     }
 }

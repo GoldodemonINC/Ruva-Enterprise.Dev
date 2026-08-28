@@ -1,10 +1,15 @@
 fn main() {
-    'outer: for i in 0..5 {
+    for i in 0..5 {
+        let mut skip = false
         for j in 0..5 {
             if i == j {
-                continue 'outer
+                skip = true
+                break
             }
             print!("({},{}) ", i, j)
+        }
+        if skip {
+            continue
         }
     }
     println!("")

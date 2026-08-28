@@ -168,12 +168,26 @@ edition = "2021"
             Item::Impl(imp) => self.gen_impl(imp),
             Item::Trait(t) => self.gen_trait(t),
             Item::TypeAlias(ta) => self.gen_type_alias(ta),
+            Item::Const(c) => self.gen_const(c),
             Item::Import(imp) => self.gen_import(imp),
             Item::Use(u) => self.gen_use(u),
             Item::Attribute(attr) => self.gen_attribute(attr),
             Item::Module(m) => self.gen_module(m),
             Item::ExternBlock(eb) => self.gen_extern_block(eb),
         }
+    }
+
+    fn gen_const(&mut self, c: &ConstDef) {
+        let ty_str = c.ty.as_ref().map(|t| self.type_str(t));
+        self.output.push_str("const ");
+        self.output.push_str(&c.name);
+        if let Some(ref ts) = ty_str {
+            self.output.push_str(": ");
+            self.output.push_str(ts);
+        }
+        self.output.push_str(" = ");
+        self.gen_expr(&c.value);
+        self.output.push_str(";\n");
     }
 
     // ─── Functions ───────────────────────────────────────────────────────
@@ -744,6 +758,15 @@ edition = "2021"
                     }
                     self.gen_expr(el);
                 }
+                self.output.push(']');
+            }
+
+            Expr::ArrayRepeat { value, size } => {
+                // Rust repeat array syntax: [value; size]
+                self.output.push('[');
+                self.gen_expr(value);
+                self.output.push_str("; ");
+                self.gen_expr(size);
                 self.output.push(']');
             }
 

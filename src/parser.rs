@@ -117,6 +117,7 @@ impl Parser {
             Token::Impl => Ok(Item::Impl(self.parse_impl_block()?)),
             Token::Trait => Ok(Item::Trait(self.parse_trait(is_pub)?)),
             Token::Type => Ok(Item::TypeAlias(self.parse_type_alias(is_pub)?)),
+            Token::Const => Ok(Item::Const(self.parse_const_item(is_pub)?)),
             Token::Mod => Ok(Item::Module(self.parse_mod(is_pub)?)),
             Token::Extern => Ok(Item::ExternBlock(self.parse_extern_block()?)),
             Token::LBrace if is_unsafe => {
@@ -634,6 +635,21 @@ impl Parser {
 
     // ─── Type Alias ──────────────────────────────────────────────────────
 
+    fn parse_const_item(&mut self, is_pub: bool) -> Result<ConstDef> {
+        self.expect(&Token::Const)?;
+        let (name, span) = self.expect_ident()?;
+        let ty = if self.at(&Token::Colon) {
+            self.advance();
+            Some(self.parse_type()?)
+        } else {
+            None
+        };
+        self.expect(&Token::Eq)?;
+        let value = self.parse_expr()?;
+        if self.at(&Token::Semicolon) { self.advance(); }
+        Ok(ConstDef { is_pub, name, ty, value, span })
+    }
+
     fn parse_type_alias(&mut self, is_pub: bool) -> Result<TypeAliasDef> {
         self.expect(&Token::Type)?;
         let (name, _) = self.expect_ident()?;
@@ -1079,6 +1095,7 @@ impl Parser {
             self.peek(),
             Token::Int(_) | Token::Float(_) | Token::Str(_) | Token::Char(_)
             | Token::Bool(_) | Token::Null | Token::Ident(_) | Token::Self_ | Token::SelfType
+            | Token::FStringStart
             | Token::LParen | Token::LBracket | Token::LBrace
             |            Token::Not | Token::Amp | Token::Star | Token::Minus | Token::Pipe
             | Token::If | Token::Match | Token::Loop
@@ -1319,7 +1336,17 @@ impl Parser {
         let mut arms = Vec::new();
 
         while !self.at(&Token::RBrace) && !self.at(&Token::Eof) {
-            let pattern = self.parse_pattern()?;
+            // Parse or-pattern alternatives: A | B | C
+            let mut alternatives = vec![self.parse_pattern()?];
+            while self.at(&Token::Pipe) {
+                self.advance();
+                alternatives.push(self.parse_pattern()?);
+            }
+            let pattern = if alternatives.len() > 1 {
+                Pattern::Or(alternatives)
+            } else {
+                alternatives.into_iter().next().unwrap()
+            };
             let guard = if self.at(&Token::If) {
                 self.advance();
                 Some(self.parse_expr()?)
@@ -1573,7 +1600,14 @@ impl Parser {
             match self.peek() {
                 Token::Dot => {
                     self.advance();
-                    let (field_name, _) = self.expect_ident()?;
+                    // Numeric tuple field access: point.0, point.1
+                    let field_name = if let Token::Int(n) = self.peek().clone() {
+                        self.advance();
+                        n.to_string()
+                    } else {
+                        let (name, _) = self.expect_ident()?;
+                        name
+                    };
 
                     // Check if this is a method call: obj.method(args)
                     if self.at(&Token::LParen) {
@@ -1624,6 +1658,21 @@ impl Parser {
                         name: Box::new(expr),
                         fields,
                     };
+                }
+                Token::DoubleColon => {
+                    // Static call / associated method: Self::new(...), Type::method(...)
+                    // Fold into a Path so the normal call handling takes over.
+                    self.advance();
+                    let (seg, _) = self.expect_ident()?;
+                    let mut parts = match &expr {
+                        Expr::Self_ => vec!["Self".to_string()],
+                        Expr::Ident(n) => vec![n.clone()],
+                        Expr::Path(p) => p.clone(),
+                        _ => bail!("Unexpected '::' after expression at {}:{}",
+                            self.peek_span().line, self.peek_span().col),
+                    };
+                    parts.push(seg);
+                    expr = Expr::Path(parts);
                 }
                 Token::LParen => {
                     self.advance();
@@ -1914,6 +1963,20 @@ impl Parser {
                 let mut elements = Vec::new();
                 while !self.at(&Token::RBracket) && !self.at(&Token::Eof) {
                     elements.push(self.parse_expr()?);
+                    if self.at(&Token::Semicolon) {
+                        // Repeat array literal: [value; size]
+                        self.advance();
+                        let size = self.parse_expr()?;
+                        self.expect(&Token::RBracket)?;
+                        if elements.len() != 1 {
+                            bail!("Repeat array literal must have exactly one value at {}:{}",
+                                self.peek_span().line, self.peek_span().col);
+                        }
+                        return Ok(Expr::ArrayRepeat {
+                            value: Box::new(elements.remove(0)),
+                            size: Box::new(size),
+                        });
+                    }
                     if self.at(&Token::Comma) { self.advance(); }
                 }
                 self.expect(&Token::RBracket)?;
