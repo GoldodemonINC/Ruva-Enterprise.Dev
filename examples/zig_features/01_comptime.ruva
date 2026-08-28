@@ -1,0 +1,10 @@
+// Zig-style comptime block
+// Code inside runs at compile time
+
+fn main() {
+    comptime {
+        let x = 2 + 3
+        println!("Comptime result: {}", x)
+    }
+    println!("Runtime code")
+}

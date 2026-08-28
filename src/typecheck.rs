@@ -911,6 +911,31 @@ impl TypeChecker {
                     self.check_expr(msg);
                 }
             }
+            Expr::TryCatch(tc) => {
+                for stmt in &tc.try_body.stmts {
+                    self.check_stmt(stmt);
+                }
+                for clause in &tc.catch_clauses {
+                    for stmt in &clause.body.stmts {
+                        self.check_stmt(stmt);
+                    }
+                }
+            }
+            Expr::Throw(th) => {
+                self.check_expr(&th.value);
+            }
+            Expr::Comptime(ct) => {
+                for stmt in &ct.body.stmts {
+                    self.check_stmt(stmt);
+                }
+            }
+            Expr::ListComp(lc) => {
+                self.check_expr(&lc.iterable);
+                self.check_expr(&lc.element);
+                if let Some(ref cond) = lc.condition {
+                    self.check_expr(cond);
+                }
+            }
         }
     }
 
@@ -1117,6 +1142,10 @@ impl TypeChecker {
             }
             Expr::Sizeof(_) => Ty::Primitive("usize".into()),
             Expr::Offsetof { .. } => Ty::Primitive("usize".into()),
+            Expr::TryCatch(_) => Ty::Inferred,
+            Expr::Throw(_) => Ty::Inferred,
+            Expr::Comptime(_) => Ty::Inferred,
+            Expr::ListComp(_) => Ty::Array(Box::new(Ty::Inferred)),
         }
     }
 

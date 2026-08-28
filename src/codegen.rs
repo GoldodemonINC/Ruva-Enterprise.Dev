@@ -173,6 +173,13 @@ edition = "2021"
             Item::Attribute(attr) => self.gen_attribute(attr),
             Item::Module(m) => self.gen_module(m),
             Item::ExternBlock(eb) => self.gen_extern_block(eb),
+            Item::Interface(iface) => self.gen_interface(iface),
+            Item::Package(pkg) => self.gen_package(pkg),
+            Item::Comptime(ct) => self.gen_comptime(ct),
+            Item::Decorated(dec) => self.gen_decorated(dec),
+            Item::TryCatch(tc) => self.gen_try_catch(tc),
+            Item::Throw(th) => self.gen_throw(th),
+            Item::ListComp(lc) => self.gen_list_comp(lc),
         }
     }
 
@@ -963,6 +970,19 @@ edition = "2021"
                 self.output.push(')');
             }
 
+            Expr::TryCatch(tc) => {
+                self.gen_try_catch(tc);
+            }
+            Expr::Throw(th) => {
+                self.gen_throw(th);
+            }
+            Expr::Comptime(ct) => {
+                self.gen_comptime(ct);
+            }
+            Expr::ListComp(lc) => {
+                self.gen_list_comp(lc);
+            }
+
             Expr::If { condition, then_body, else_body } => {
                 self.output.push_str("if ");
                 self.gen_expr(condition);
@@ -1183,6 +1203,136 @@ edition = "2021"
         let result = self.output[saved_len..].to_string();
         self.output.truncate(saved_len);
         result
+    }
+
+    // ─── Java Features (Rust codegen) ──────────────────────────────
+
+    fn gen_interface(&mut self, iface: &InterfaceDef) {
+        // Rust doesn't have interfaces — generate as a trait
+        let vis = if iface.is_pub { "pub " } else { "" };
+        self.writeln(&format!("{}trait {} {{", vis, iface.name));
+        self.indent += 1;
+        for method in &iface.methods {
+            let params: Vec<String> = method.params.iter().map(|p| {
+                format!("{}: {}", p.name, self.type_str(&p.ty))
+            }).collect();
+            let ret = match &method.return_type {
+                Some(t) => format!(" -> {}", self.type_str(t)),
+                None => String::new(),
+            };
+            if let Some(ref body) = method.default_body {
+                self.writeln(&format!("fn {}({}){} {{", method.name, params.join(", "), ret));
+                self.indent += 1;
+                for stmt in &body.stmts {
+                    self.gen_stmt(stmt);
+                }
+                if let Some(ref expr) = body.expr {
+                    self.write_indent();
+                    self.gen_expr(expr);
+                    self.output.push('\n');
+                }
+                self.indent -= 1;
+                self.writeln("}");
+            } else {
+                self.writeln(&format!("fn {}({}){};", method.name, params.join(", "), ret));
+            }
+        }
+        self.indent -= 1;
+        self.writeln("}");
+        self.writeln("");
+    }
+
+    fn gen_package(&mut self, pkg: &PackageDef) {
+        // Map Java packages to Rust module paths — generate as comments
+        self.writeln(&format!("// package {}", pkg.path.join(".")));
+    }
+
+    fn gen_comptime(&mut self, ct: &ComptimeBlock) {
+        // Zig comptime → generate as const evaluation
+        self.writeln("const __comptime_result = (|| {");
+        self.indent += 1;
+        for stmt in &ct.body.stmts {
+            self.gen_stmt(stmt);
+        }
+        if let Some(ref expr) = ct.body.expr {
+            self.write_indent();
+            self.gen_expr(expr);
+            self.output.push('\n');
+        }
+        self.indent -= 1;
+        self.writeln("})();");
+    }
+
+    fn gen_decorated(&mut self, dec: &DecoratedDef) {
+        for decorator in &dec.decorators {
+            self.write_indent();
+            self.output.push('#');
+            self.gen_expr(decorator);
+            self.output.push('\n');
+        }
+        self.gen_item(&dec.definition);
+    }
+
+    fn gen_try_catch(&mut self, tc: &TryCatchExpr) {
+        // Generate Rust match on catch results
+        self.writeln("match (|| {");
+        self.indent += 1;
+        for stmt in &tc.try_body.stmts {
+            self.gen_stmt(stmt);
+        }
+        if let Some(ref expr) = tc.try_body.expr {
+            self.write_indent();
+            self.gen_expr(expr);
+            self.output.push('\n');
+        }
+        self.indent -= 1;
+        self.writeln("})() {");
+        self.indent += 1;
+        self.writeln("Ok(val) => val,");
+        self.writeln("Err(e) => {");
+        self.indent += 1;
+        for clause in &tc.catch_clauses {
+            if let Some(ref var_name) = clause.var_name {
+                self.writeln(&format!("let {} = e;", var_name));
+            }
+            for stmt in &clause.body.stmts {
+                self.gen_stmt(stmt);
+            }
+            if let Some(ref expr) = clause.body.expr {
+                self.write_indent();
+                self.gen_expr(expr);
+                self.output.push('\n');
+            }
+        }
+        self.indent -= 1;
+        self.writeln("}");
+        self.indent -= 1;
+        self.writeln("}");
+    }
+
+    fn gen_throw(&mut self, th: &ThrowExpr) {
+        self.output.push_str("return Err(");
+        self.gen_expr(&th.value);
+        self.output.push_str(".into())");
+    }
+
+    fn gen_list_comp(&mut self, lc: &ListCompExpr) {
+        // Generate Rust iterator chain
+        self.output.push_str("(");
+        self.gen_expr(&lc.iterable);
+        self.output.push_str(".iter()");
+        if let Some(ref cond) = lc.condition {
+            self.output.push_str(".filter(|&");
+            self.output.push_str(&lc.variable);
+            self.output.push_str("| ");
+            self.gen_expr(cond);
+            self.output.push_str(")");
+        }
+        self.output.push_str(".map(|");
+        self.output.push_str(&lc.variable);
+        self.output.push_str("| ");
+        self.gen_expr(&lc.element);
+        self.output.push_str(").collect::<Vec<_>>())");
     }
 }
 

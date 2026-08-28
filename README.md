@@ -1,34 +1,72 @@
 # Ruva
 
-**Java security. Rust speed. Zero compromise.**
+**Rust safety. Java familiarity. Zig precision. Python simplicity.**
 
-A compiled language that combines Java's familiar OOP syntax with Rust's
-memory safety and native performance. Ruva transpiles to multiple backends
-— Rust, Zig, or Python — giving you the right tool for every job.
+A compiled language that blends the best of four languages:
+- **Rust (50%)**: Ownership, pattern matching, zero-cost abstractions, memory safety
+- **Java (20%)**: Classes, interfaces, exception handling, familiar OOP syntax
+- **Zig (15%)**: Comptime evaluation, explicit control, no hidden allocations
+- **Python (15%)**: Decorators, list comprehensions, clean syntax
 
-> *"Write safe, fast code in Java syntax. Choose your backend: Rust for speed,
-> Zig for embedded, Python for security."*
+Ruva transpiles to multiple backends — Rust, Zig, or Python — giving you
+the right tool for every job.
+
+> *"Write safe, fast code that feels familiar. Choose your backend."*
 
 ---
 
-## The Vision
+## Language DNA
 
-| What Ruva Takes from Java | What Ruva Takes from Rust |
-|--------------------------|---------------------------|
-| `class` syntax | Memory safety (no segfaults) |
-| OOP patterns | Ownership model (no data races) |
-| Familiar keywords | Zero-cost abstractions (no overhead) |
-| Encapsulation | No garbage collector (no GC pauses) |
-| Method syntax | Pattern matching (no switch fallthrough) |
+Ruva blends the best features from four languages:
 
-**The formula:**
+### Rust (50%) — The Foundation
+| Feature | Source |
+|---------|--------|
+| Ownership & borrowing | Prevents memory bugs |
+| Pattern matching | Exhaustive match arms |
+| Zero-cost abstractions | No runtime overhead |
+| Enums (ADTs) | Algebraic data types |
+| Closures | First-class functions |
+| Generics | Type-safe reusable code |
+| `unsafe` blocks | When you need raw control |
+| Raw pointers | FFI and systems programming |
+
+### Java (20%) — The Familiarity
+| Feature | Source |
+|---------|--------|
+| `class` syntax | OOP done right |
+| `interface` definitions | Contract-based design |
+| `try`/`catch`/`finally` | Exception handling |
+| `package` declarations | Module organization |
+| `pub` visibility | Encapsulation |
+| `impl` blocks | Methods on types |
+| `static` methods | Class-level operations |
+
+### Zig (15%) — The Precision
+| Feature | Source |
+|---------|--------|
+| `comptime` blocks | Compile-time evaluation |
+| Explicit error handling | No hidden control flow |
+| `?T` optional types | Null safety without Option |
+| No hidden allocations | Memory-conscious design |
+| `|err|` error handling | Explicit error propagation |
+
+### Python (15%) — The Simplicity
+| Feature | Source |
+|---------|--------|
+| `@decorator` syntax | Metaprogramming made easy |
+| List comprehensions | `[x for x in items if x > 0]` |
+| `f"string {interpolation}"` | Clean string building |
+| Clean indentation-like syntax | Readable by default |
+| Dynamic typing option | When types aren't needed |
+
+### The Formula
 
 ```
-Java's familiar OOP  +  Rust's safety & speed  =  Ruva
-         ↓                        ↓
-    Easy to learn          Hard to break
-    Easy to read           Fast to run
-    Easy to maintain       Safe by default
+Rust (50%) + Java (20%) + Zig (15%) + Python (15%) = Ruva
+    ↓              ↓            ↓            ↓
+ Memory-safe   Familiar    Explicit    Simple
+  & fast        OOP        control     & clean
 ```
 
 ---

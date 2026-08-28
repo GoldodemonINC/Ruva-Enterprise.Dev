@@ -1,0 +1,8 @@
+// Java-style package declaration
+// Transpiles to a Rust module comment
+
+package com.example.myapp
+
+fn main() {
+    println!("Package declaration example")
+}

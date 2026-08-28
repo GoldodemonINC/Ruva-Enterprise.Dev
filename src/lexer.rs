@@ -224,6 +224,14 @@ impl<'a> Lexer<'a> {
             "assert" => Token::Ident("assert".into()),
             "expect" => Token::Ident("expect".into()),
             "print" => Token::Ident("print".into()),
+            "interface" => Token::Interface,
+            "abstract" => Token::Abstract,
+            "synchronized" => Token::Synchronized,
+            "package" => Token::Package,
+            "try" => Token::Try,
+            "finally" => Token::Finally,
+            "throw" => Token::Throw,
+            "comptime" => Token::Comptime,
             _ => Token::Ident(ident),
         }
     }
