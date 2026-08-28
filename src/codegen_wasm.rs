@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::ast::*;
 use crate::backend::CodeGenerator;
 use std::fmt::Write;
@@ -429,7 +430,7 @@ impl WasmCodeGen {
         }
     }
 
-    fn gen_const(&mut self, c: &ConstDef) {
+    fn gen_const(&mut self, _c: &ConstDef) {
         // WASM doesn't have top-level constants; skip
     }
 }

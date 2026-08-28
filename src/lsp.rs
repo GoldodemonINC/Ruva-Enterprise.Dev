@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 // ─── Ruva LSP Server ────────────────────────────────────────────────────────
 // Language Server Protocol implementation for the Ruva language.
 // Provides: text document sync, hover info, go-to-definition, completion.

@@ -9,6 +9,7 @@ use crate::ast::*;
 /// - Multi-language interop (FFI safety, boundary checking)
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum SecurityLevel {
     Safe,
     Trusted,
@@ -16,6 +17,7 @@ pub enum SecurityLevel {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Annotation {
     Safe,
     Trusted,
@@ -28,6 +30,7 @@ pub enum Annotation {
     ConnectionIsolated,
 }
 
+#[allow(dead_code)]
 impl Annotation {
     pub fn from_attribute(name: &str) -> Option<Self> {
         match name {
@@ -45,15 +48,18 @@ impl Annotation {
     }
 }
 
+#[allow(dead_code)]
 pub struct FeatureFlags {
     pub security_level: SecurityLevel,
     pub annotations: Vec<Annotation>,
 }
 
+#[allow(dead_code)]
 pub struct FeatureChecker {
     pub flags: FeatureFlags,
 }
 
+#[allow(dead_code)]
 impl FeatureChecker {
     pub fn new() -> Self {
         Self {
@@ -75,6 +81,7 @@ impl FeatureChecker {
 
 /// Codegen hints for advanced features
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum CodegenHint {
     UseAtomic,
     UseSafeMemory,

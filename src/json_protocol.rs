@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 // ─── Simple JSON Implementation ─────────────────────────────────────────────
 // Zero-dependency JSON parser and serializer for the LSP wire protocol.
 

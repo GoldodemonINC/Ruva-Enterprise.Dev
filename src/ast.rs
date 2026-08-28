@@ -11,6 +11,7 @@ pub struct Span {
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 pub enum Token {
     // Literals
     Int(i64),
@@ -144,6 +145,7 @@ pub struct Program {
 
 /// Top-level items
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Item {
     Function(FunctionDef),
     Struct(StructDef),

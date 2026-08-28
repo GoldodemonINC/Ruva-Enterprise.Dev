@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::ast::*;
 use crate::backend::CodeGenerator;
 
@@ -619,7 +620,6 @@ impl CCodeGen {
             Expr::Offsetof { struct_type, field } => {
                 out.push_str(&format!("offsetof({}, {})", Self::safe_name(struct_type), Self::safe_name(field)));
             }
-            Expr::FString(_) => {}
             Expr::TryCatch(_) | Expr::Throw(_) | Expr::Comptime(_) | Expr::ListComp(_) => {
                 out.push_str("/* unhandled expr */ 0");
             }

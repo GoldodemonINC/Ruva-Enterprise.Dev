@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::ast::*;
 use crate::lexer::Lexer;
 use anyhow::{bail, Result};

@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::ast::*;
 use crate::backend::CodeGenerator;
 use std::fmt::Write;
@@ -596,8 +597,8 @@ impl CppCodeGen {
                 let es: Vec<String> = elements.iter().map(|e| self.gen_expr_str(e)).collect();
                 format!("std::make_tuple({})", es.join(", "))
             }
-            Expr::Range { start, end, inclusive } => {
-                let op = if *inclusive { "<=" } else { "<" };
+            Expr::Range { start: _, end: _, inclusive } => {
+                let _op = if *inclusive { "<=" } else { "<" };
                 format!("/* range */ 0")
             }
             Expr::Cast { expr, ty } => format!("static_cast<{}>({})", self.cpp_type_str(ty), self.gen_expr_str(expr)),
@@ -658,7 +659,7 @@ impl CppCodeGen {
             Expr::NullCoalesce { left, right } => {
                 format!("({}).value_or({})", self.gen_expr_str(left), self.gen_expr_str(right))
             }
-            Expr::Assert { condition, message } => {
+            Expr::Assert { condition, message: _ } => {
                 format!("assert({})", self.gen_expr_str(condition))
             }
             Expr::AssertEq { left, right, .. } => {
