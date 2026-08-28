@@ -1081,12 +1081,14 @@ impl PythonCodeGen {
                 format!("({})", inner.join(", "))
             }
             Pattern::Enum { path, fields } => {
-                let variant = path.last().cloned().unwrap_or_default();
+                // path already contains the variant name as its last element,
+                // so just join with "." — no need to append variant separately.
+                let path_str = path.join(".");
                 if fields.is_empty() {
-                    format!("{}.{}", path.join("."), variant)
+                    path_str
                 } else {
                     let field_strs: Vec<String> = fields.iter().map(|f| self.pattern_str(f)).collect();
-                    format!("{}.{}({})", path.join("."), variant, field_strs.join(", "))
+                    format!("{}({})", path_str, field_strs.join(", "))
                 }
             }
             Pattern::Struct { path, fields } => {
@@ -1281,5 +1283,31 @@ mod tests {
         let gen = PythonCodeGen::new();
         assert_eq!(gen.target_name(), "python");
         assert_eq!(gen.file_extension(), ".py");
+    }
+
+    #[test]
+    fn test_python_enum_no_double_variant() {
+        let src = r#"
+            enum Status {
+                Active,
+                Inactive
+            }
+
+            fn check(s: Status) {
+                match s {
+                    Status::Active => println!("active")
+                    Status::Inactive => println!("inactive")
+                }
+            }
+        "#;
+        let output = transpile_to_python(src);
+        // Must NOT produce doubled variants like "Status.Active.Active"
+        assert!(!output.contains("Status.Active.Active"),
+            "doubled variant found in output");
+        assert!(!output.contains("Status.Inactive.Inactive"),
+            "doubled variant found in output");
+        // Should produce correct Python enum patterns
+        assert!(output.contains("Status.Active"));
+        assert!(output.contains("Status.Inactive"));
     }
 }
