@@ -1,7 +1,6 @@
-const MAX_SIZE: i32 = 1024
-const PI: f64 = 3.14159
-const APP_NAME: string = "Ruva"
-
 fn main() {
+    let MAX_SIZE: i32 = 1024
+    let PI: f64 = 3.14159
+    let APP_NAME = "Ruva"
     println!("MAX={}, PI={}, APP={}", MAX_SIZE, PI, APP_NAME)
 }
