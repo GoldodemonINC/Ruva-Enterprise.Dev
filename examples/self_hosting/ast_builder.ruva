@@ -1,0 +1,342 @@
+// Self-Hosting AST Builder — AST node definitions for a Ruva compiler
+// Using .ruva to build the core data structures of a Ruva compiler
+
+import std::io
+import std::string
+
+// ─── Span (Source Location) ─────────────────────────────────────────────────
+
+struct Span {
+    pub line: u32
+    pub col: u32
+    pub len: u32
+
+    pub fn new(line: u32, col: u32, len: u32) -> Self {
+        return Self { line, col, len }
+    }
+}
+
+// ─── Type Annotation ────────────────────────────────────────────────────────
+
+enum TypeAnnotation {
+    Simple(string)
+    Generic(string, Vec<TypeAnnotation>)
+    Reference(Box<TypeAnnotation>)
+    MutableRef(Box<TypeAnnotation>)
+    Slice(Box<TypeAnnotation>)
+    Tuple(Vec<TypeAnnotation>)
+    FnPointer(Vec<TypeAnnotation>, Box<TypeAnnotation>)
+    Array(Box<TypeAnnotation>, u32)
+    Unit
+}
+
+// ─── Expression Nodes ───────────────────────────────────────────────────────
+
+enum Expr {
+    // Literals
+    IntLit(i64, Span)
+    FloatLit(f64, Span)
+    StringLit(string, Span)
+    BoolLit(bool, Span)
+    CharLit(char, Span)
+    NullLit(Span)
+
+    // Identifiers
+    Ident(string, Span)
+    SelfRef(Span)
+    SuperRef(Span)
+    Path(Vec<string>, Span)
+
+    // Operators
+    BinaryOp(Box<Expr>, BinOp, Box<Expr>, Span)
+    UnaryOp(UnOp, Box<Expr>, Span)
+    Assign(Box<Expr>, Box<Expr>, Span)
+
+    // Function calls
+    Call(Box<Expr>, Vec<Expr>, Span)
+    MethodCall(Box<Expr>, string, Vec<Expr>, Span)
+    Index(Box<Expr>, Box<Expr>, Span)
+
+    // Struct/class literals
+    StructLit(string, Vec<(string, Expr)>, Span)
+    FieldAccess(Box<Expr>, string, Span)
+
+    // Collections
+    ArrayLit(Vec<Expr>, Span)
+    TupleLit(Vec<Expr>, Span)
+
+    // Control flow
+    If(Box<Expr>, Vec<Stmt>, Option<Vec<Stmt>>, Span)
+    Match(Box<Expr>, Vec<MatchArm>, Span)
+    Lambda(Vec<Param>, Option<TypeAnnotation>, Vec<Stmt>, Span)
+
+    // Closures
+    ListComp(Box<Expr>, string, Box<Expr>, Option<Box<Expr>>, Span)
+}
+
+enum BinOp {
+    Add
+    Sub
+    Mul
+    Div
+    Mod
+    Eq
+    Neq
+    Lt
+    Gt
+    Le
+    Ge
+    And
+    Or
+    BitAnd
+    BitOr
+    BitXor
+    Shl
+    Shr
+}
+
+enum UnOp {
+    Neg
+    Not
+    Deref
+}
+
+// ─── Statement Nodes ────────────────────────────────────────────────────────
+
+enum Stmt {
+    ExprStmt(Expr)
+    Let(string, Option<TypeAnnotation>, Expr, Span)
+    Const(string, Option<TypeAnnotation>, Expr, Span)
+    Return(Option<Expr>, Span)
+    Break(Span)
+    Continue(Span)
+    Block(Vec<Stmt>, Span)
+    ForLoop(string, Expr, Vec<Stmt>, Span)
+    WhileLoop(Expr, Vec<Stmt>, Span)
+    Loop(Vec<Stmt>, Span)
+    MatchStmt(Expr, Vec<MatchArm>, Span)
+    Throw(Expr, Span)
+    TryCatch(Vec<Stmt>, string, Vec<Stmt>, Span)
+}
+
+struct MatchArm {
+    pub pattern: Pattern
+    pub guard: Option<Expr>
+    pub body: Expr
+}
+
+enum Pattern {
+    Literal(Expr)
+    Ident(string)
+    Wildcard
+    Tuple(Vec<Pattern>)
+    Struct(string, Vec<(string, Option<Pattern>)>)
+    EnumVariant(string, Option<Box<Pattern>>)
+    Range(Box<Expr>, Box<Expr>)
+    Or(Vec<Pattern>)
+}
+
+// ─── Definition Nodes ───────────────────────────────────────────────────────
+
+struct Param {
+    pub name: string
+    pub ty: TypeAnnotation
+    pub is_mut: bool
+}
+
+struct FnDef {
+    pub name: string
+    pub params: Vec<Param>
+    pub return_type: Option<TypeAnnotation>
+    pub body: Vec<Stmt>
+    pub is_pub: bool
+    pub is_async: bool
+    pub span: Span
+}
+
+struct StructDef {
+    pub name: string
+    pub fields: Vec<FieldDef>
+    pub is_pub: bool
+    pub span: Span
+}
+
+struct FieldDef {
+    pub name: string
+    pub ty: TypeAnnotation
+    pub is_pub: bool
+    pub is_mut: bool
+}
+
+struct EnumDef {
+    pub name: string
+    pub variants: Vec<EnumVariantDef>
+    pub is_pub: bool
+    pub span: Span
+}
+
+struct EnumVariantDef {
+    pub name: string
+    pub fields: Option<Vec<TypeAnnotation>>
+    pub span: Span
+}
+
+struct TraitDef {
+    pub name: string
+    pub methods: Vec<FnDef>
+    pub is_pub: bool
+    pub span: Span
+}
+
+struct ImplBlock {
+    pub ty: TypeAnnotation
+    pub trait_name: Option<string>
+    pub methods: Vec<FnDef>
+    pub span: Span
+}
+
+struct ClassDef {
+    pub name: string
+    pub fields: Vec<FieldDef>
+    pub methods: Vec<FnDef>
+    pub superclass: Option<string>
+    pub is_pub: bool
+    pub span: Span
+}
+
+struct Import {
+    pub path: Vec<string>
+    pub alias: Option<string>
+    pub span: Span
+}
+
+struct Module {
+    pub name: string
+    pub imports: Vec<Import>
+    pub definitions: Vec<Def>
+    pub span: Span
+}
+
+enum Def {
+    Fn(FnDef)
+    Struct(StructDef)
+    Enum(EnumDef)
+    Trait(TraitDef)
+    Impl(ImplBlock)
+    Class(ClassDef)
+    Module(Module)
+    TypeAlias(string, TypeAnnotation, Span)
+    Const(string, TypeAnnotation, Expr, Span)
+}
+
+// ─── AST Builder Helpers ────────────────────────────────────────────────────
+
+fn int_literal(value: i64, line: u32, col: u32) -> Expr {
+    return Expr::IntLit(value, Span::new(line, col, 1))
+}
+
+fn string_literal(value: string, line: u32, col: u32) -> Expr {
+    return Expr::StringLit(value, Span::new(line, col, 1))
+}
+
+fn ident(name: string, line: u32, col: u32) -> Expr {
+    return Expr::Ident(name, Span::new(line, col, 1))
+}
+
+fn binary(left: Expr, op: BinOp, right: Expr) -> Expr {
+    return Expr::BinaryOp(Box::new(left), op, Box::new(right), Span::new(0, 0, 0))
+}
+
+fn call(callee: Expr, args: Vec<Expr>) -> Expr {
+    return Expr::Call(Box::new(callee), args, Span::new(0, 0, 0))
+}
+
+fn method_call(object: Expr, method: string, args: Vec<Expr>) -> Expr {
+    return Expr::MethodCall(Box::new(object), method, args, Span::new(0, 0, 0))
+}
+
+fn let_stmt(name: string, value: Expr) -> Stmt {
+    return Stmt::Let(name, Option::None, value, Span::new(0, 0, 0))
+}
+
+fn return_stmt(value: Expr) -> Stmt {
+    return Stmt::Return(Option::Some(value), Span::new(0, 0, 0))
+}
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Self-Hosting AST Builder ===")
+    println!()
+
+    // Build AST for: fn add(a: i32, b: i32) -> i32 { return a + b }
+    let add_fn = FnDef {
+        name: "add".into(),
+        params: vec![
+            Param { name: "a".into(), ty: TypeAnnotation::Simple("i32".into()), is_mut: false },
+            Param { name: "b".into(), ty: TypeAnnotation::Simple("i32".into()), is_mut: false },
+        ],
+        return_type: Option::Some(TypeAnnotation::Simple("i32".into())),
+        body: vec![
+            return_stmt(binary(
+                ident("a".into(), 1, 1),
+                BinOp::Add,
+                ident("b".into(), 1, 5),
+            )),
+        ],
+        is_pub: true,
+        is_async: false,
+        span: Span::new(1, 1, 30),
+    }
+
+    println!("Built function: {} ({} params)", add_fn.name, add_fn.params.len())
+    println!("  pub: {}, async: {}", add_fn.is_pub, add_fn.is_async)
+    println!()
+
+    // Build AST for: struct Point { x: f64, y: f64 }
+    let point_struct = StructDef {
+        name: "Point".into(),
+        fields: vec![
+            FieldDef { name: "x".into(), ty: TypeAnnotation::Simple("f64".into()), is_pub: true, is_mut: false },
+            FieldDef { name: "y".into(), ty: TypeAnnotation::Simple("f64".into()), is_pub: true, is_mut: false },
+        ],
+        is_pub: true,
+        span: Span::new(1, 1, 30),
+    }
+
+    println!("Built struct: {} ({} fields)", point_struct.name, point_struct.fields.len())
+    for field in &point_struct.fields {
+        println!("  pub {}: {}", field.name, "f64")
+    }
+    println!()
+
+    // Build AST for: enum Color { Red, Green, Blue }
+    let color_enum = EnumDef {
+        name: "Color".into(),
+        variants: vec![
+            EnumVariantDef { name: "Red".into(), fields: Option::None, span: Span::new(0, 0, 0) },
+            EnumVariantDef { name: "Green".into(), fields: Option::None, span: Span::new(0, 0, 0) },
+            EnumVariantDef { name: "Blue".into(), fields: Option::None, span: Span::new(0, 0, 0) },
+        ],
+        is_pub: true,
+        span: Span::new(1, 1, 30),
+    }
+
+    println!("Built enum: {} ({} variants)", color_enum.name, color_enum.variants.len())
+
+    // Build a complex expression: add(x + 1, y * 2)
+    let complex_expr = call(
+        ident("add".into(), 1, 1),
+        vec![
+            binary(ident("x".into(), 1, 5), BinOp::Add, int_literal(1, 1, 9)),
+            binary(ident("y".into(), 1, 12), BinOp::Mul, int_literal(2, 1, 16)),
+        ],
+    )
+
+    println!()
+    println!("Built expression: add(x + 1, y * 2)")
+    println!("  Expression variants: FnDef, StructDef, EnumDef, Expr")
+    println!("  Total node types: 20+ (Expr, Stmt, Def, Pattern, TypeAnnotation)")
+    println!()
+    println!("AST builder functional — ready for parser integration.")
+}

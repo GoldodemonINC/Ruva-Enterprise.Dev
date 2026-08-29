@@ -1,0 +1,477 @@
+// Self-Hosting Lexer — Tokenizer for a Ruva-like language
+// Using .ruva to build a Ruva lexer
+
+import std::io
+import std::string
+
+// ─── Token Types ────────────────────────────────────────────────────────────
+
+enum TokenKind {
+    // Literals
+    Integer(f64)
+    Float(f64)
+    StringLit(string)
+    CharLit(char)
+    BoolLit(bool)
+    Identifier(string)
+
+    // Keywords
+    KwFn
+    KwLet
+    KwConst
+    KwMut
+    KwStruct
+    KwEnum
+    KwTrait
+    KwImpl
+    KwClass
+    KwPub
+    KwReturn
+    KwIf
+    KwElse
+    KwWhile
+    KwFor
+    KwLoop
+    KwMatch
+    KwIn
+    KwImport
+    KwAs
+    KwSelf
+    KwSuper
+    KwTrue
+    KwFalse
+    KwNull
+    KwAsync
+    KwAwait
+    KwType
+    KwModule
+    KwInterface
+
+    // Operators
+    Plus
+    Minus
+    Star
+    Slash
+    Percent
+    Amp
+    Pipe
+    Caret
+    Tilde
+    Bang
+    Eq
+    EqEq
+    Neq
+    Lt
+    Gt
+    Le
+    Ge
+    AmpAmp
+    PipePipe
+    BangEq
+    LtEq
+    GtEq
+    PlusEq
+    MinusEq
+    StarEq
+    SlashEq
+    Arrow
+    FatArrow
+    DoubleColon
+    Colon
+    Semicolon
+    Comma
+    Dot
+    DotDot
+    Hash
+    At
+
+    // Delimiters
+    LParen
+    RParen
+    LBrace
+    RBrace
+    LBracket
+    RBracket
+    LtLt
+    GtGt
+
+    // Special
+    Eof
+    Newline
+    Comment(string)
+    DocComment(string)
+}
+
+// ─── Source Location ────────────────────────────────────────────────────────
+
+struct Loc {
+    pub line: u32
+    pub col: u32
+    pub offset: u32
+
+    pub fn new(line: u32, col: u32, offset: u32) -> Self {
+        return Self { line, col, offset }
+    }
+}
+
+// ─── Token ──────────────────────────────────────────────────────────────────
+
+struct Token {
+    pub kind: TokenKind
+    pub loc: Loc
+    pub value: string
+
+    pub fn new(kind: TokenKind, loc: Loc, value: string) -> Self {
+        return Self { kind, loc, value }
+    }
+}
+
+// ─── Lexer ──────────────────────────────────────────────────────────────────
+
+struct Lexer {
+    pub source: Vec<u8>
+    pub pos: u32
+    pub line: u32
+    pub col: u32
+    pub tokens: Vec<Token>
+}
+
+impl Lexer {
+    pub fn new(source: string) -> Self {
+        return Self {
+            source: source.into_bytes(),
+            pos: 0,
+            line: 1,
+            col: 1,
+            tokens: Vec::new(),
+        }
+    }
+
+    pub fn peek(&self) -> u8 {
+        if self.pos < self.source.len() as u32 {
+            return self.source[self.pos as usize]
+        }
+        return 0
+    }
+
+    pub fn peek_ahead(&self, offset: u32) -> u8 {
+        let target = self.pos + offset
+        if target < self.source.len() as u32 {
+            return self.source[target as usize]
+        }
+        return 0
+    }
+
+    pub fn advance(&mut self) -> u8 {
+        let ch = self.peek()
+        self.pos += 1
+        if ch == b'\n' {
+            self.line += 1
+            self.col = 1
+        } else {
+            self.col += 1
+        }
+        return ch
+    }
+
+    pub fn skip_whitespace(&mut self) {
+        while self.pos < self.source.len() as u32 {
+            let ch = self.peek()
+            if ch == b' ' || ch == b'\t' || ch == b'\r' || ch == b'\n' {
+                self.advance()
+            } else if ch == b'/' && self.peek_ahead(1) == b'/' {
+                self.skip_line_comment()
+            } else if ch == b'/' && self.peek_ahead(1) == b'*' {
+                self.skip_block_comment()
+            } else {
+                break
+            }
+        }
+    }
+
+    fn skip_line_comment(&mut self) {
+        while self.pos < self.source.len() as u32 && self.peek() != b'\n' {
+            self.advance()
+        }
+    }
+
+    fn skip_block_comment(&mut self) {
+        self.advance() // skip /
+        self.advance() // skip *
+        while self.pos < self.source.len() as u32 {
+            if self.peek() == b'*' && self.peek_ahead(1) == b'/' {
+                self.advance()
+                self.advance()
+                return
+            }
+            self.advance()
+        }
+    }
+
+    pub fn read_number(&mut self) -> TokenKind {
+        let start = self.pos
+        let mut is_float = false
+
+        while self.peek() >= b'0' && self.peek() <= b'9' {
+            self.advance()
+        }
+
+        if self.peek() == b'.' && self.peek_ahead(1) >= b'0' && self.peek_ahead(1) <= b'9' {
+            is_float = true
+            self.advance() // skip .
+            while self.peek() >= b'0' && self.peek() <= b'9' {
+                self.advance()
+            }
+        }
+
+        let value = self.source[start as usize..self.pos as usize]
+        let text = string::from_utf8(value)
+
+        if is_float {
+            return TokenKind::Float(text.parse_f64())
+        }
+        return TokenKind::Integer(text.parse_f64())
+    }
+
+    pub fn read_string(&mut self, quote: u8) -> TokenKind {
+        self.advance() // skip opening quote
+        let mut result = String::new()
+
+        while self.pos < self.source.len() as u32 {
+            let ch = self.peek()
+            if ch == quote {
+                self.advance()
+                return TokenKind::StringLit(result)
+            } else if ch == b'\\' {
+                self.advance()
+                let escaped = self.advance()
+                match escaped {
+                    b'n' => result.push('\n'),
+                    b't' => result.push('\t'),
+                    b'\\' => result.push('\\'),
+                    b'0' => result.push('\0'),
+                    _ => result.push(escaped as char),
+                }
+            } else {
+                result.push(self.advance() as char)
+            }
+        }
+
+        return TokenKind::StringLit(result)
+    }
+
+    pub fn read_identifier(&mut self) -> TokenKind {
+        let start = self.pos
+
+        while self.peek() >= b'a' && self.peek() <= b'z'
+            || self.peek() >= b'A' && self.peek() <= b'Z'
+            || self.peek() >= b'0' && self.peek() <= b'9'
+            || self.peek() == b'_'
+        {
+            self.advance()
+        }
+
+        let text = string::from_utf8(self.source[start as usize..self.pos as usize])
+
+        // Check keywords
+        match text.as_str() {
+            "fn" => return TokenKind::KwFn,
+            "let" => return TokenKind::KwLet,
+            "const" => return TokenKind::KwConst,
+            "mut" => return TokenKind::KwMut,
+            "struct" => return TokenKind::KwStruct,
+            "enum" => return TokenKind::KwEnum,
+            "trait" => return TokenKind::KwTrait,
+            "impl" => return TokenKind::KwImpl,
+            "class" => return TokenKind::KwClass,
+            "pub" => return TokenKind::KwPub,
+            "return" => return TokenKind::KwReturn,
+            "if" => return TokenKind::KwIf,
+            "else" => return TokenKind::KwElse,
+            "while" => return TokenKind::KwWhile,
+            "for" => return TokenKind::KwFor,
+            "loop" => return TokenKind::KwLoop,
+            "match" => return TokenKind::KwMatch,
+            "in" => return TokenKind::KwIn,
+            "import" => return TokenKind::KwImport,
+            "as" => return TokenKind::KwAs,
+            "self" => return TokenKind::KwSelf,
+            "super" => return TokenKind::KwSuper,
+            "true" => return TokenKind::KwTrue,
+            "false" => return TokenKind::KwFalse,
+            "null" => return TokenKind::KwNull,
+            "async" => return TokenKind::KwAsync,
+            "await" => return TokenKind::KwAwait,
+            "type" => return TokenKind::KwType,
+            "module" => return TokenKind::KwModule,
+            "interface" => return TokenKind::KwInterface,
+            _ => return TokenKind::Identifier(text),
+        }
+    }
+
+    pub fn next_token(&mut self) -> Token {
+        self.skip_whitespace()
+
+        let loc = Loc::new(self.line, self.col, self.pos)
+
+        if self.pos >= self.source.len() as u32 {
+            return Token::new(TokenKind::Eof, loc, "".into())
+        }
+
+        let ch = self.peek()
+
+        // Numbers
+        if ch >= b'0' && ch <= b'9' {
+            let kind = self.read_number()
+            return Token::new(kind, loc, "".into())
+        }
+
+        // Strings
+        if ch == b'"' {
+            let kind = self.read_string(b'"')
+            return Token::new(kind, loc, "".into())
+        }
+
+        // Char literals
+        if ch == b'\'' {
+            self.advance()
+            let c = self.advance()
+            self.advance() // skip closing '
+            return Token::new(TokenKind::CharLit(c as char), loc, "".into())
+        }
+
+        // Identifiers and keywords
+        if ch >= b'a' && ch <= b'z' || ch >= b'A' && ch <= b'Z' || ch == b'_' {
+            let kind = self.read_identifier()
+            return Token::new(kind, loc, "".into())
+        }
+
+        // Two-character operators
+        let next = self.peek_ahead(1)
+        let kind = match (ch, next) {
+            (b'=', b'=') => TokenKind::EqEq,
+            (b'!', b'=') => TokenKind::BangEq,
+            (b'<', b'=') => TokenKind::Le,
+            (b'>', b'=') => TokenKind::Ge,
+            (b'<', b'<') => TokenKind::LtLt,
+            (b'>', b'>') => TokenKind::GtGt,
+            (b'+', b'=') => TokenKind::PlusEq,
+            (b'-', b'=') => TokenKind::MinusEq,
+            (b'*', b'=') => TokenKind::StarEq,
+            (b'/', b'=') => TokenKind::SlashEq,
+            (b'-', b'>') => TokenKind::Arrow,
+            (b'=', b'>') => TokenKind::FatArrow,
+            (b':', b':') => TokenKind::DoubleColon,
+            (b'&', b'&') => TokenKind::AmpAmp,
+            (b'|', b'|') => TokenKind::PipePipe,
+            (b'.', b'.') => TokenKind::DotDot,
+            _ => TokenKind::Eof, // will be overridden
+        }
+
+        if kind != TokenKind::Eof {
+            self.advance()
+            self.advance()
+            return Token::new(kind, loc, "".into())
+        }
+
+        // Single-character operators
+        self.advance()
+        let single = match ch {
+            b'+' => TokenKind::Plus,
+            b'-' => TokenKind::Minus,
+            b'*' => TokenKind::Star,
+            b'/' => TokenKind::Slash,
+            b'%' => TokenKind::Percent,
+            b'&' => TokenKind::Amp,
+            b'|' => TokenKind::Pipe,
+            b'^' => TokenKind::Caret,
+            b'~' => TokenKind::Tilde,
+            b'!' => TokenKind::Bang,
+            b'=' => TokenKind::Eq,
+            b'<' => TokenKind::Lt,
+            b'>' => TokenKind::Gt,
+            b':' => TokenKind::Colon,
+            b';' => TokenKind::Semicolon,
+            b',' => TokenKind::Comma,
+            b'.' => TokenKind::Dot,
+            b'#' => TokenKind::Hash,
+            b'@' => TokenKind::At,
+            b'(' => TokenKind::LParen,
+            b')' => TokenKind::RParen,
+            b'{' => TokenKind::LBrace,
+            b'}' => TokenKind::RBrace,
+            b'[' => TokenKind::LBracket,
+            b']' => TokenKind::RBracket,
+            b'\n' => TokenKind::Newline,
+            _ => TokenKind::Eof,
+        }
+
+        return Token::new(single, loc, "".into())
+    }
+
+    pub fn tokenize(&mut self) -> Vec<Token> {
+        loop {
+            let token = self.next_token()
+            let is_eof = matches!(token.kind, TokenKind::Eof)
+            self.tokens.push(token)
+            if is_eof {
+                break
+            }
+        }
+        return self.tokens
+    }
+}
+
+// ─── Token Printer ──────────────────────────────────────────────────────────
+
+fn format_token(token: &Token) -> string {
+    match &token.kind {
+        TokenKind::Integer(v) => return format!("INT({})", v),
+        TokenKind::Float(v) => return format!("FLOAT({})", v),
+        TokenKind::StringLit(s) => return format!("STRING(\"{}\")", s),
+        TokenKind::Identifier(s) => return format!("ID({})", s),
+        TokenKind::KwFn => return "KW(fn)".into(),
+        TokenKind::KwStruct => return "KW(struct)".into(),
+        TokenKind::KwClass => return "KW(class)".into(),
+        TokenKind::EqEq => return "OP(==)".into(),
+        TokenKind::Arrow => return "OP(->)".into(),
+        _ => return "TOKEN".into(),
+    }
+}
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Self-Hosting Lexer ===")
+    println!()
+
+    let source = r#"
+class Lexer {
+    pub fn new(source: string) -> Self {
+        return Self { source, pos: 0 }
+    }
+
+    pub fn next_token(&mut self) -> Token {
+        self.skip_whitespace()
+        if self.peek() >= b'0' && self.peek() <= b'9' {
+            return self.read_number()
+        }
+        return self.read_identifier()
+    }
+}
+"#
+
+    let mut lexer = Lexer::new(source.into())
+    let tokens = lexer.tokenize()
+
+    println!("Source: {} bytes", source.len())
+    println!("Tokens: {}", tokens.len())
+    println!()
+
+    for token in &tokens {
+        println!("  [{:>3}:{:>3}] {}", token.loc.line, token.loc.col, format_token(token))
+    }
+
+    println!()
+    println!("Lexer produced {} tokens successfully.", tokens.len())
+}

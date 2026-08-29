@@ -6,7 +6,7 @@
 set -e
 
 echo "=========================================="
-echo "  Ruva vs Rust vs C++ vs Java vs C"
+echo "  Ruva vs Rust vs C++ vs Java vs C vs Zig vs Python"
 echo "  CPU Benchmark Suite"
 echo "=========================================="
 echo ""
@@ -50,6 +50,22 @@ echo "Running Java benchmark..."
 java CpuBenchmark > ../results/java.txt 2>&1
 cd ..
 
+# ─── Compile and Run Zig Benchmark ──────────────────────────────────────────
+
+echo "Compiling Zig benchmark..."
+cd zig
+zig build-exe cpu_benchmark.zig -O ReleaseFast 2>/dev/null || zig cc -O3 cpu_benchmark.zig -o cpu_benchmark 2>/dev/null
+echo "Running Zig benchmark..."
+./cpu_benchmark > ../results/zig.txt 2>&1 || echo "Zig benchmark skipped (zig not installed)"
+cd ..
+
+# ─── Run Python Benchmark ───────────────────────────────────────────────────
+
+echo "Running Python benchmark..."
+cd python
+python3 cpu_benchmark.py > ../results/python.txt 2>&1 || echo "Python benchmark skipped (python3 not installed)"
+cd ..
+
 # ─── Compile and Run Ruva Benchmark ──────────────────────────────────────────
 
 echo "Transpiling and compiling Ruva benchmark..."
@@ -86,6 +102,22 @@ echo "--- Java ---"
 cat results/java.txt
 echo ""
 
+echo "--- Zig ---"
+if [ -f results/zig.txt ]; then
+    cat results/zig.txt
+else
+    echo "Skipped (zig not installed)"
+fi
+echo ""
+
+echo "--- Python ---"
+if [ -f results/python.txt ]; then
+    cat results/python.txt
+else
+    echo "Skipped (python3 not installed)"
+fi
+echo ""
+
 echo "--- Ruva ---"
 if [ -f results/ruva.txt ]; then
     cat results/ruva.txt
@@ -119,6 +151,21 @@ printf "%-11s| %s\n" "Rust" "$rust_total"
 printf "%-11s| %s\n" "C++" "$cpp_total"
 printf "%-11s| %s\n" "C" "$c_total"
 printf "%-11s| %s\n" "Java" "$java_total"
+
+if [ -f results/zig.txt ]; then
+    zig_total=$(grep "Total:" results/zig.txt | awk '{print $2}')
+else
+    zig_total="N/A"
+fi
+
+if [ -f results/python.txt ]; then
+    python_total=$(grep "Total:" results/python.txt | awk '{print $2}')
+else
+    python_total="N/A"
+fi
+
+printf "%-11s| %s\n" "Zig" "$zig_total"
+printf "%-11s| %s\n" "Python" "$python_total"
 printf "%-11s| %s\n" "Ruva" "$ruva_total"
 echo ""
 
