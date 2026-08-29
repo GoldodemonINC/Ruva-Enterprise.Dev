@@ -1,12 +1,7 @@
-#![allow(dead_code)]
-
 mod ast;
 mod backend;
 mod codegen;
-mod codegen_c;
-mod codegen_cpp;
 mod codegen_python;
-mod codegen_wasm;
 mod codegen_zig;
 mod colors;
 mod debug;

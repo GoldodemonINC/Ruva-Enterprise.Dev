@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 // ─── Ruva LSP Server ────────────────────────────────────────────────────────
 // Language Server Protocol implementation for the Ruva language.
 // Provides: text document sync, hover info, go-to-definition, completion.
@@ -25,6 +24,7 @@ pub struct TextRange {
 }
 
 impl TextRange {
+    #[allow(dead_code)]
     pub fn end_pos(&self) -> Position {
         self.end.clone()
     }
@@ -33,12 +33,14 @@ impl TextRange {
 #[derive(Debug, Clone)]
 pub struct TextDocumentItem {
     pub uri: String,
+    #[allow(dead_code)]
     pub language_id: String,
     pub version: i64,
     pub text: String,
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct VersionedTextDocumentIdentifier {
     pub uri: String,
     pub version: i64,
@@ -60,6 +62,7 @@ pub struct CompletionItem {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct HoverContent {
     pub contents: String,
     pub range: Option<TextRange>,
@@ -93,6 +96,7 @@ pub struct SymbolLocation {
     pub line: usize,
     pub character: usize,
     pub length: usize,
+    #[allow(dead_code)]
     pub kind: SymbolKind,
 }
 
@@ -213,6 +217,7 @@ impl DocumentStore {
         offset // past end of document
     }
 
+    #[allow(dead_code)]
     pub fn get_version(&self, uri: &str) -> Option<i64> {
         self.versions.get(uri).copied()
     }
@@ -680,6 +685,7 @@ impl DocumentStore {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_symbol_index(&self, uri: &str) -> Option<&SymbolIndex> {
         self.symbol_index.get(uri)
     }
@@ -717,6 +723,7 @@ impl DocumentStore {
     }
 
     /// Apply a rename to all documents and return the new text for each document.
+    #[allow(dead_code)]
     pub fn apply_rename(&mut self, uri: &str, word: &str, new_name: &str) -> HashMap<String, String> {
         let locations = self.find_rename_locations(uri, word);
         let mut edits: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();
@@ -754,6 +761,7 @@ impl DocumentStore {
         results
     }
 
+    #[allow(dead_code)]
     pub fn get_all_symbols(&self, uri: &str) -> Vec<(String, String, usize, usize)> {
         // Returns (name, kind, line, col) for all symbols in the document
         let mut symbols = Vec::new();
@@ -882,6 +890,7 @@ pub struct LspServer {
     store: DocumentStore,
     root_uri: Option<String>,
     initialized: bool,
+    #[allow(dead_code)]
     request_id: i64,
 }
 
@@ -1016,6 +1025,7 @@ impl LspServer {
         let _ = out.flush();
     }
 
+    #[allow(dead_code)]
     fn send_notification(&mut self, method: &str, params: JsonValue) {
         let notification = JsonValue::Object(vec![
             ("jsonrpc".to_string(), JsonValue::Str("2.0".to_string())),

@@ -618,7 +618,7 @@ impl CodeGen {
                 self.write("if ");
                 self.gen_expr(condition);
                 self.output.push(' ');
-                if let Some(ref else_kind) = else_body {
+                if let Some(ref _else_kind) = else_body {
                     // Write then body WITHOUT closing brace so we can attach else
                     self.output.push_str("{\n");
                     self.indent += 1;
