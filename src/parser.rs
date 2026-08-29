@@ -916,12 +916,17 @@ impl Parser {
 
     fn parse_generic_params(&mut self) -> Result<Vec<GenericParam>> {
         self.expect(&Token::Lt)?;
+        let saved = self.generic_depth;
         self.generic_depth += 1;
-        let mut params = Vec::new();
+        let result = self.parse_generic_params_inner();
+        self.generic_depth = saved;
+        result
+    }
 
+    fn parse_generic_params_inner(&mut self) -> Result<Vec<GenericParam>> {
+        let mut params = Vec::new();
         while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
             let (name, _) = self.expect_ident()?;
-
             let bounds = if self.at(&Token::Colon) {
                 self.advance();
                 let mut bounds = Vec::new();
@@ -934,17 +939,25 @@ impl Parser {
             } else {
                 Vec::new()
             };
-
             if self.at(&Token::Comma) {
                 self.advance();
             }
-
             params.push(GenericParam { name, bounds });
         }
-
         self.expect(&Token::Gt)?;
-        self.generic_depth -= 1;
         Ok(params)
+    }
+
+    fn parse_generic_args(&mut self) -> Result<Vec<Type>> {
+        let mut args = Vec::new();
+        while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
+            args.push(self.parse_type()?);
+            if self.at(&Token::Comma) {
+                self.advance();
+            }
+        }
+        self.expect(&Token::Gt)?;
+        Ok(args)
     }
 
     fn skip_where_clause(&mut self) -> Result<()> {
@@ -1076,16 +1089,11 @@ impl Parser {
                 // Check for generic arguments: Vec<T>, Option<T>, etc.
                 if self.at(&Token::Lt) {
                     self.advance();
+                    let saved = self.generic_depth;
                     self.generic_depth += 1;
-                    let mut args = Vec::new();
-                    while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
-                        args.push(self.parse_type()?);
-                        if self.at(&Token::Comma) {
-                            self.advance();
-                        }
-                    }
-                    self.expect(&Token::Gt)?;
-                    self.generic_depth -= 1;
+                    let args_result = self.parse_generic_args();
+                    self.generic_depth = saved;
+                    let args = args_result?;
                     Type::Generic { name, args }
                 } else if self.at(&Token::DoubleColon) {
                     // Path: std::io::Error
@@ -1097,16 +1105,11 @@ impl Parser {
                         // Check for generic args on the last segment
                         if self.at(&Token::Lt) {
                             self.advance();
+                            let saved = self.generic_depth;
                             self.generic_depth += 1;
-                            let mut args = Vec::new();
-                            while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
-                                args.push(self.parse_type()?);
-                                if self.at(&Token::Comma) {
-                                    self.advance();
-                                }
-                            }
-                            self.expect(&Token::Gt)?;
-                            self.generic_depth -= 1;
+                            let args_result = self.parse_generic_args();
+                            self.generic_depth = saved;
+                            let args = args_result?;
                             // Return Generic type with full path as name
                             let full_name = path.join("::");
                             return Ok(Type::Generic { name: full_name, args });
@@ -2629,5 +2632,102 @@ mod tests {
         let mut parser = Parser::new(src).unwrap();
         let program = parser.parse_program().unwrap();
         assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_generic_depth_same_parser_after_error() {
+        // CRITICAL: generic_depth must reset on the SAME parser after a failed parse.
+        // The existing test uses a new parser — that's too easy.
+        let mut parser = Parser::new("fn bad() -> Vec<!!!> {}"  ).unwrap();
+        let _ = parser.parse_program(); // fails, but generic_depth may be non-zero
+
+        // Reuse the SAME parser — if generic_depth leaked, parsing breaks.
+        parser.pos = 0; // reset position (simulates what a real caller might do)
+        // Actually, we can't reset pos on a real parser. Instead, verify the state:
+        assert_eq!(parser.generic_depth, 0, "generic_depth leaked after failed parse");
+    }
+
+    #[test]
+    fn test_quadruple_nested_generics() {
+        let src = "fn foo() -> Vec<Vec<Vec<Vec<i64>>>> {}";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_shift_not_split_outside_generics() {
+        // >> in expressions must remain as Shr, not split.
+        let src = "fn main() { let x = 1 >> 2 }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_shift_after_generic_type() {
+        // >> used as shift AFTER a generic type — must not be split.
+        let src = "fn main() { let x: Vec<i32> = f(1 >> 2) }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_mixed_nested_generics() {
+        // HashMap<String, Vec<Vec<T>>> — tests both multi-arg and nested generics.
+        let src = "fn foo() -> HashMap<String, Vec<Vec<i64>>> {}";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_empty_generic_args() {
+        // Vec<> — empty generic args are valid (produces empty args list).
+        let src = "fn foo() -> Vec<> {}";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_unclosed_generic_bracket() {
+        // Vec<T — missing closing >, should error.
+        let src = "fn foo() -> Vec<T {}";
+        let mut parser = Parser::new(src).unwrap();
+        let result = parser.parse_program();
+        assert!(result.is_err(), "Unclosed generic should fail");
+    }
+
+    #[test]
+    fn test_generic_in_struct_field() {
+        // Generic type in struct field, not just function return.
+        let src = "struct Foo { items: Vec<Vec<i32>> }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_generic_in_impl_block() {
+        // Generic type inside an impl block.
+        let src = "impl Foo { fn bar() -> Vec<Vec<i32>> { Vec::new() } }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_multiple_functions_with_generics() {
+        // Ensure generic_depth resets between function definitions.
+        let src = r#"
+            fn a() -> Vec<Vec<i32>> { Vec::new() }
+            fn b() -> i32 { 42 }
+            fn c() -> Vec<i32> { Vec::new() }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 3);
     }
 }
