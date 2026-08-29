@@ -51,6 +51,7 @@ impl JsonValue {
         }
     }
 
+    #[allow(dead_code)]
     pub fn is_null(&self) -> bool {
         matches!(self, JsonValue::Null)
     }
@@ -97,6 +98,7 @@ impl JsonParser {
         c
     }
 
+    #[allow(dead_code)]
     fn expect_char(&mut self, expected: char) -> bool {
         self.skip_whitespace();
         if self.peek() == Some(expected) {

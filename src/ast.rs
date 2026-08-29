@@ -255,6 +255,7 @@ pub struct ClassDef {
 #[derive(Debug, Clone)]
 pub struct ClassField {
     pub is_pub: bool,
+    #[allow(dead_code)]
     pub is_mut: bool,
     pub name: String,
     pub ty: Type,
@@ -387,6 +388,7 @@ pub enum ExternItem {
         is_pub: bool,
         name: String,
         ty: Type,
+        #[allow(dead_code)]
         value: Option<Expr>,
     },
 }
@@ -398,8 +400,10 @@ pub enum ExternItem {
 pub struct InterfaceDef {
     pub is_pub: bool,
     pub name: String,
+    #[allow(dead_code)]
     pub generics: Vec<GenericParam>,
     pub methods: Vec<InterfaceMethod>,
+    #[allow(dead_code)]
     pub span: Span,
 }
 
@@ -416,12 +420,14 @@ pub struct InterfaceMethod {
 pub struct TryCatchExpr {
     pub try_body: Block,
     pub catch_clauses: Vec<CatchClause>,
+    #[allow(dead_code)]
     pub finally_body: Option<Block>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CatchClause {
     pub var_name: Option<String>,
+    #[allow(dead_code)]
     pub var_type: Option<Type>,
     pub body: Block,
 }
