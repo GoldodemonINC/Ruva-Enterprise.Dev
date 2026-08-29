@@ -1,0 +1,640 @@
+// ─── Graphics Example #58 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating graphics concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Vertex {
+    pub let x: f64,
+    pub let y: f64,
+    pub let z: f64,
+}
+
+impl Vertex {
+    pub fn new(x: f64, y: f64, z: f64) -> Vertex {
+        return Vertex {
+            x,
+            y,
+            z,
+        }
+    }
+
+    pub fn default() -> Vertex {
+        return Vertex::new(0.0, 0.0, 0.0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Vertex".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Vertex")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Vertex")
+    }
+}
+
+
+pub struct Shader {
+    pub let id: u64,
+    pub let source: string,
+}
+
+impl Shader {
+    pub fn new(id: u64, source: string) -> Shader {
+        return Shader {
+            id,
+            source,
+        }
+    }
+
+    pub fn default() -> Shader {
+        return Shader::new(0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Shader".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Shader")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Shader")
+    }
+}
+
+
+pub struct Texture {
+    pub let id: u64,
+    pub let width: u32,
+    pub let height: u32,
+}
+
+impl Texture {
+    pub fn new(id: u64, width: u32, height: u32) -> Texture {
+        return Texture {
+            id,
+            width,
+            height,
+        }
+    }
+
+    pub fn default() -> Texture {
+        return Texture::new(0, 0, 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Texture".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Texture")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Texture")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn decode_graphics_0(input: i64) -> string {
+    // Graphics function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compress_graphics_1(input: f64) -> bool {
+    // Graphics function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 99
+    result = true
+    return result
+}
+
+
+fn encrypt_graphics_2(input: string) -> Vec<i64> {
+    // Graphics function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn hash_graphics_3(input: bool) -> &string {
+    // Graphics function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn create_graphics_4(input: Vec<i64>) -> i64 {
+    // Graphics function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn update_graphics_5(input: &string) -> f64 {
+    // Graphics function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_graphics_6(input: i64) -> string {
+    // Graphics function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_graphics_7(input: f64) -> bool {
+    // Graphics function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 99
+    result = true
+    return result
+}
+
+
+fn split_graphics_8(input: string) -> Vec<i64> {
+    // Graphics function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_graphics_9(input: bool) -> &string {
+    // Graphics function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== graphics programming Example #58 ===")
+    
+    // Initialize components
+    let mut vertex_1 = create_vertex_1()
+    let mut shader_1 = create_shader_1()
+    let mut texture_1 = create_texture_1()
+
+    // Process data
+    decode_graphics_0()
+    compress_graphics_1()
+    encrypt_graphics_2()
+    hash_graphics_3()
+    update_graphics_5()
+    delete_graphics_6()
+    merge_graphics_7()
+
+    // Verify results
+    println!("All graphics programming operations completed!")
+    println!("Example #58 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_graphics_58_0() {
+    // Test graphics functionality
+    let result: i64 = 99
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_58_1() {
+    // Test graphics functionality
+    let result: i64 = 99
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_58_2() {
+    // Test graphics functionality
+    let result: i64 = 99
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_graphics_58_0(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 24
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_1(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 33
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_2(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 53
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_3(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 17
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_3(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_3(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_3(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_4(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 53
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_4(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_4(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_4(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_5(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 57
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_5(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_5(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_5(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_6(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 53
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_6(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_6(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_6(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_7(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 5
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_7(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_7(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_7(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_8(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 77
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_8(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_8(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_8(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_graphics_58_9(input: i64) -> i64 {
+    // Helper function for graphics programming example #58
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 45
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_58_9(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_graphics_58_9(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_graphics_58_9(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

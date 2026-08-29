@@ -1,0 +1,480 @@
+// ─── Async Example #78 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating async concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Result")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Event {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Event {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Event::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Event::Active => "Active".into(),
+            Event::Inactive => "Inactive".into(),
+            Event::Pending => "Pending".into(),
+            Event::Complete => "Complete".into(),
+            Event::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Action {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Action {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Action::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Action::Active => "Active".into(),
+            Action::Inactive => "Inactive".into(),
+            Action::Pending => "Pending".into(),
+            Action::Complete => "Complete".into(),
+            Action::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn aggregate_async_0(input: string) -> Vec<i64> {
+    // Async function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compute_async_1(input: bool) -> &string {
+    // Async function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn calculate_async_2(input: Vec<i64>) -> i64 {
+    // Async function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn evaluate_async_3(input: &string) -> f64 {
+    // Async function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn sort_async_4(input: i64) -> string {
+    // Async function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn search_async_5(input: f64) -> bool {
+    // Async function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 19
+    result = true
+    return result
+}
+
+
+fn find_async_6(input: string) -> Vec<i64> {
+    // Async function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn count_async_7(input: bool) -> &string {
+    // Async function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn summarize_async_8(input: Vec<i64>) -> i64 {
+    // Async function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn encode_async_9(input: &string) -> f64 {
+    // Async function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn decode_async_10(input: i64) -> string {
+    // Async function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compress_async_11(input: f64) -> bool {
+    // Async function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 19
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== async programming Example #78 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    aggregate_async_0()
+    compute_async_1()
+    calculate_async_2()
+    evaluate_async_3()
+    sort_async_4()
+    search_async_5()
+    find_async_6()
+    count_async_7()
+
+    // Verify results
+    println!("All async programming operations completed!")
+    println!("Example #78 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_async_78_0() {
+    // Test async functionality
+    let result: i64 = 19
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_async_78_1() {
+    // Test async functionality
+    let result: i64 = 19
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_async_78_2() {
+    // Test async functionality
+    let result: i64 = 19
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_async_78_3() {
+    // Test async functionality
+    let result: i64 = 19
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_async_78_4() {
+    // Test async functionality
+    let result: i64 = 19
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

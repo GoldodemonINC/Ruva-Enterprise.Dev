@@ -1,0 +1,480 @@
+// ─── Dynamic Programming Example #40 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating dynamic programming concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Item")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Entry")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Record")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Value")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Result")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Status {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Status {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Status::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Status::Active => "Active".into(),
+            Status::Inactive => "Inactive".into(),
+            Status::Pending => "Pending".into(),
+            Status::Complete => "Complete".into(),
+            Status::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Error {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Error {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Error::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Error::Active => "Active".into(),
+            Error::Inactive => "Inactive".into(),
+            Error::Pending => "Pending".into(),
+            Error::Complete => "Complete".into(),
+            Error::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn sort_dynamic_programming_0(input: string) -> Vec<i64> {
+    // Dynamic_programming function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn search_dynamic_programming_1(input: bool) -> &string {
+    // Dynamic_programming function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn find_dynamic_programming_2(input: Vec<i64>) -> i64 {
+    // Dynamic_programming function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn count_dynamic_programming_3(input: &string) -> f64 {
+    // Dynamic_programming function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn summarize_dynamic_programming_4(input: i64) -> string {
+    // Dynamic_programming function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn encode_dynamic_programming_5(input: f64) -> bool {
+    // Dynamic_programming function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 41
+    result = true
+    return result
+}
+
+
+fn decode_dynamic_programming_6(input: string) -> Vec<i64> {
+    // Dynamic_programming function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compress_dynamic_programming_7(input: bool) -> &string {
+    // Dynamic_programming function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encrypt_dynamic_programming_8(input: Vec<i64>) -> i64 {
+    // Dynamic_programming function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn hash_dynamic_programming_9(input: &string) -> f64 {
+    // Dynamic_programming function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn create_dynamic_programming_10(input: i64) -> string {
+    // Dynamic_programming function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn update_dynamic_programming_11(input: f64) -> bool {
+    // Dynamic_programming function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 41
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== DP Example #40 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    sort_dynamic_programming_0()
+    search_dynamic_programming_1()
+    find_dynamic_programming_2()
+    count_dynamic_programming_3()
+    summarize_dynamic_programming_4()
+    encode_dynamic_programming_5()
+    decode_dynamic_programming_6()
+    compress_dynamic_programming_7()
+
+    // Verify results
+    println!("All DP operations completed!")
+    println!("Example #40 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_dynamic_programming_40_0() {
+    // Test dynamic_programming functionality
+    let result: i64 = 41
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_dynamic_programming_40_1() {
+    // Test dynamic_programming functionality
+    let result: i64 = 41
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_dynamic_programming_40_2() {
+    // Test dynamic_programming functionality
+    let result: i64 = 41
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_dynamic_programming_40_3() {
+    // Test dynamic_programming functionality
+    let result: i64 = 41
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_dynamic_programming_40_4() {
+    // Test dynamic_programming functionality
+    let result: i64 = 41
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

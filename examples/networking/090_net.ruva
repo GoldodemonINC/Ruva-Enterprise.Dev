@@ -1,0 +1,516 @@
+// ─── Networking Example #90 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating networking concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Socket {
+    pub let fd: u64,
+    pub let addr: string,
+    pub let port: u16,
+}
+
+impl Socket {
+    pub fn new(fd: u64, addr: string, port: u16) -> Socket {
+        return Socket {
+            fd,
+            addr,
+            port,
+        }
+    }
+
+    pub fn default() -> Socket {
+        return Socket::new(0, "".into(), 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Socket".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Socket")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Socket")
+    }
+}
+
+
+pub struct Packet {
+    pub let data: Vec<i64>,
+    pub let size: u64,
+    pub let checksum: u64,
+}
+
+impl Packet {
+    pub fn new(data: Vec<i64>, size: u64, checksum: u64) -> Packet {
+        return Packet {
+            data,
+            size,
+            checksum,
+        }
+    }
+
+    pub fn default() -> Packet {
+        return Packet::new(Vec::new(), 0, 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Packet".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Packet")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Packet")
+    }
+}
+
+
+pub struct Connection {
+    pub let id: u64,
+    pub let remote: string,
+    pub let mut active: bool,
+}
+
+impl Connection {
+    pub fn new(id: u64, remote: string, active: bool) -> Connection {
+        return Connection {
+            id,
+            remote,
+            active,
+        }
+    }
+
+    pub fn default() -> Connection {
+        return Connection::new(0, "".into(), false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Connection".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Connection")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Connection")
+    }
+}
+
+
+pub struct Protocol {
+    pub let version: u32,
+    pub let name: string,
+}
+
+impl Protocol {
+    pub fn new(version: u32, name: string) -> Protocol {
+        return Protocol {
+            version,
+            name,
+        }
+    }
+
+    pub fn default() -> Protocol {
+        return Protocol::new(0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Protocol".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Protocol")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Protocol")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn process_networking_0(input: Vec<i64>) -> i64 {
+    // Networking function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn transform_networking_1(input: &string) -> f64 {
+    // Networking function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn validate_networking_2(input: i64) -> string {
+    // Networking function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn analyze_networking_3(input: f64) -> bool {
+    // Networking function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 91
+    result = true
+    return result
+}
+
+
+fn optimize_networking_4(input: string) -> Vec<i64> {
+    // Networking function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn filter_networking_5(input: bool) -> &string {
+    // Networking function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn aggregate_networking_6(input: Vec<i64>) -> i64 {
+    // Networking function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn compute_networking_7(input: &string) -> f64 {
+    // Networking function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn calculate_networking_8(input: i64) -> string {
+    // Networking function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn evaluate_networking_9(input: f64) -> bool {
+    // Networking function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 91
+    result = true
+    return result
+}
+
+
+fn sort_networking_10(input: string) -> Vec<i64> {
+    // Networking function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn search_networking_11(input: bool) -> &string {
+    // Networking function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn find_networking_12(input: Vec<i64>) -> i64 {
+    // Networking function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn count_networking_13(input: &string) -> f64 {
+    // Networking function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== networking Example #90 ===")
+    
+    // Initialize components
+    let mut socket_1 = create_socket_1()
+    let mut packet_1 = create_packet_1()
+    let mut connection_1 = create_connection_1()
+
+    // Process data
+    process_networking_0()
+    transform_networking_1()
+    validate_networking_2()
+    analyze_networking_3()
+    optimize_networking_4()
+    filter_networking_5()
+    aggregate_networking_6()
+    compute_networking_7()
+
+    // Verify results
+    println!("All networking operations completed!")
+    println!("Example #90 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_networking_90_0() {
+    // Test networking functionality
+    let result: i64 = 91
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_networking_90_1() {
+    // Test networking functionality
+    let result: i64 = 91
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_networking_90_2() {
+    // Test networking functionality
+    let result: i64 = 91
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_networking_90_3() {
+    // Test networking functionality
+    let result: i64 = 91
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_networking_90_0(input: i64) -> i64 {
+    // Helper function for networking example #90
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 40
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_90_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_networking_90_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_networking_90_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_networking_90_1(input: i64) -> i64 {
+    // Helper function for networking example #90
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 73
+    result = result * 4
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_90_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_networking_90_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_networking_90_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

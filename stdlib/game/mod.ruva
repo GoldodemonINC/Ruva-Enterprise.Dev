@@ -1,0 +1,143 @@
+// ─── Ruva Standard Library — Game Engine Module ──────────────────────────────
+// Entity Component System (ECS), physics, audio, input, and rendering pipeline.
+
+// ─── ECS ─────────────────────────────────────────────────────────────────────
+
+pub struct World {
+    pub entities: Vec<Entity>,
+    pub next_id: u64,
+    pub delta_time: f64,
+    pub total_time: f64,
+}
+
+pub struct Entity { pub id: u64, pub is_alive: bool, pub tags: Vec<string> }
+
+pub struct Transform { pub x: f64, pub y: f64, pub z: f64, pub rot_x: f64, pub rot_y: f64, pub rot_z: f64, pub scale_x: f64, pub scale_y: f64, pub scale_z: f64 }
+pub struct Velocity { pub vx: f64, pub vy: f64, pub vz: f64 }
+pub struct Health { pub current: f64, pub max: f64, pub regen: f64 }
+pub struct Collider { pub width: f64, pub height: f64, pub is_trigger: bool }
+pub struct Light { pub kind: string, pub r: f64, pub g: f64, pub b: f64, pub intensity: f64 }
+pub struct Camera { pub fov: f64, pub near: f64, pub far: f64, pub active: bool }
+pub struct AudioSource { pub clip: u64, pub volume: f64, pub looping: bool, pub spatial: bool }
+pub struct PlayerController { pub speed: f64, pub jump: f64, pub grounded: bool }
+pub struct AiController { pub state: string, pub target: Option<u64>, pub range: f64 }
+
+impl World {
+    pub fn new() -> World { return World { entities: Vec::new(), next_id: 0, delta_time: 0.0, total_time: 0.0 } }
+    pub fn spawn(&mut self) -> u64 { let id = self.next_id; self.next_id = self.next_id + 1; self.entities.push(Entity { id, is_alive: true, tags: Vec::new() }); return id }
+    pub fn despawn(&mut self, id: u64) { for e in &mut self.entities { if e.id == id { e.is_alive = false } } }
+    pub fn is_alive(&self, id: u64) -> bool { for e in &self.entities { if e.id == id { return e.is_alive } } return false }
+    pub fn add_tag(&mut self, id: u64, tag: string) { for e in &mut self.entities { if e.id == id { e.tags.push(tag) } } }
+    pub fn find_by_tag(&self, tag: &string) -> Vec<u64> { let mut r = Vec::new(); for e in &self.entities { if e.is_alive && e.tags.contains(tag) { r.push(e.id) } } return r }
+    pub fn entity_count(&self) -> usize { return self.entities.len() }
+    pub fn alive_count(&self) -> usize { let mut c = 0; for e in &self.entities { if e.is_alive { c = c + 1 } } return c }
+    pub fn update(&mut self, dt: f64) { self.delta_time = dt; self.total_time = self.total_time + dt }
+}
+
+// ─── Vec3 Operations ─────────────────────────────────────────────────────────
+
+impl Transform {
+    pub fn new(x: f64, y: f64, z: f64) -> Transform { return Transform { x, y, z, rot_x: 0.0, rot_y: 0.0, rot_z: 0.0, scale_x: 1.0, scale_y: 1.0, scale_z: 1.0 } }
+    pub fn zero() -> Transform { return Transform::new(0.0, 0.0, 0.0) }
+    pub fn distance_to(&self, other: &Transform) -> f64 { let dx = self.x - other.x; let dy = self.y - other.y; let dz = self.z - other.z; return sqrt(dx * dx + dy * dy + dz * dz) }
+    pub fn lerp(a: Transform, b: Transform, t: f64) -> Transform { return Transform::new(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t) }
+    pub fn forward(&self) -> (f64, f64, f64) { return (0.0, 0.0, -1.0) }
+    pub fn right(&self) -> (f64, f64, f64) { return (1.0, 0.0, 0.0) }
+}
+
+impl Velocity {
+    pub fn new(vx: f64, vy: f64, vz: f64) -> Velocity { return Velocity { vx, vy, vz } }
+    pub fn zero() -> Velocity { return Velocity::new(0.0, 0.0, 0.0) }
+    pub fn speed(&self) -> f64 { return sqrt(self.vx * self.vx + self.vy * self.vy + self.vz * self.vz) }
+    pub fn apply_gravity(&mut self, g: f64, dt: f64) { self.vy = self.vy - g * dt }
+}
+
+// ─── Physics ─────────────────────────────────────────────────────────────────
+
+pub struct PhysicsWorld {
+    pub gravity: f64,
+    pub entities: Vec<PhysicsEntity>,
+    pub collision_pairs: Vec<CollisionPair>,
+}
+
+pub struct PhysicsEntity {
+    pub entity_id: u64,
+    pub vx: f64, pub vy: f64,
+    pub mass: f64,
+    pub restitution: f64,
+    pub is_static: bool,
+}
+
+pub struct CollisionPair {
+    pub a: u64, pub b: u64,
+    pub nx: f64, pub ny: f64,
+    pub depth: f64,
+}
+
+impl PhysicsWorld {
+    pub fn new() -> PhysicsWorld { return PhysicsWorld { gravity: 9.81, entities: Vec::new(), collision_pairs: Vec::new() } }
+    pub fn add_entity(&mut self, e: PhysicsEntity) { self.entities.push(e) }
+    pub fn step(&mut self, dt: f64) { for e in &mut self.entities { if !e.is_static { e.vy = e.vy - self.gravity * dt } } self.collision_pairs.clear() }
+    pub fn raycast(&self, _ox: f64, _oy: f64, _dx: f64, _dy: f64, _max: f64) -> Option<u64> { return Option::None }
+    pub fn overlap_circle(&self, _x: f64, _y: f64, _r: f64) -> Vec<u64> { return Vec::new() }
+}
+
+impl PhysicsEntity {
+    pub fn new(id: u64, mass: f64) -> PhysicsEntity { return PhysicsEntity { entity_id: id, vx: 0.0, vy: 0.0, mass, restitution: 0.5, is_static: false } }
+    pub fn apply_force(&mut self, fx: f64, fy: f64) { self.vx = self.vx + fx / self.mass; self.vy = self.vy + fy / self.mass }
+    pub fn apply_impulse(&mut self, ix: f64, iy: f64) { self.vx = self.vx + ix / self.mass; self.vy = self.vy + iy / self.mass }
+}
+
+// ─── Input ───────────────────────────────────────────────────────────────────
+
+pub struct InputState { pub keys: HashMap<u32, bool>, pub mouse_x: f64, pub mouse_y: f64, pub mouse_dx: f64, pub mouse_dy: f64 }
+
+impl InputState {
+    pub fn new() -> InputState { return InputState { keys: HashMap::new(), mouse_x: 0.0, mouse_y: 0.0, mouse_dx: 0.0, mouse_dy: 0.0 } }
+    pub fn is_key_pressed(&self, key: u32) -> bool { return *self.keys.get(&key).unwrap_or(&false) }
+    pub fn get_mouse_position(&self) -> (f64, f64) { return (self.mouse_x, self.mouse_y) }
+    pub fn get_mouse_delta(&self) -> (f64, f64) { return (self.mouse_dx, self.mouse_dy) }
+}
+
+// ─── Audio ───────────────────────────────────────────────────────────────────
+
+pub struct AudioSystem { pub master_volume: f64, pub sources: Vec<AudioSourceInstance> }
+pub struct AudioSourceInstance { pub entity_id: u64, pub clip: u64, pub volume: f64, pub playing: bool, pub looping: bool }
+
+impl AudioSystem {
+    pub fn new() -> AudioSystem { return AudioSystem { master_volume: 1.0, sources: Vec::new() } }
+    pub fn play(&mut self, id: u64, clip: u64, vol: f64) { self.sources.push(AudioSourceInstance { entity_id: id, clip, volume: vol, playing: true, looping: false }) }
+    pub fn stop(&mut self, id: u64) { for s in &mut self.sources { if s.entity_id == id { s.playing = false } } }
+    pub fn set_master_volume(&mut self, v: f64) { self.master_volume = v }
+}
+
+// ─── Timer ───────────────────────────────────────────────────────────────────
+
+pub struct Timer { pub duration: f64, pub elapsed: f64, pub repeating: bool, pub running: bool }
+impl Timer {
+    pub fn new(dur: f64, rep: bool) -> Timer { return Timer { duration: dur, elapsed: 0.0, repeating: rep, running: false } }
+    pub fn start(&mut self) { self.elapsed = 0.0; self.running = true }
+    pub fn stop(&mut self) { self.running = false }
+    pub fn update(&mut self, dt: f64) { if !self.running { return } self.elapsed = self.elapsed + dt; if self.elapsed >= self.duration { if self.repeating { self.elapsed = self.elapsed - self.duration } else { self.running = false } } }
+    pub fn is_finished(&self) -> bool { return !self.repeating && self.elapsed >= self.duration }
+    pub fn progress(&self) -> f64 { if self.duration <= 0.0 { return 1.0 } let p = self.elapsed / self.duration; if p > 1.0 { return 1.0 } return p }
+}
+
+// ─── Sprite Animation ────────────────────────────────────────────────────────
+
+pub struct SpriteAnimator { pub current_frame: u32, pub elapsed: f64, pub playing: bool, pub speed: f64, pub frame_duration: f64, pub frame_count: u32, pub looping: bool }
+impl SpriteAnimator {
+    pub fn new(frames: u32, dur: f64) -> SpriteAnimator { return SpriteAnimator { current_frame: 0, elapsed: 0.0, playing: false, speed: 1.0, frame_duration: dur, frame_count: frames, looping: true } }
+    pub fn play(&mut self) { self.playing = true; self.current_frame = 0; self.elapsed = 0.0 }
+    pub fn stop(&mut self) { self.playing = false }
+    pub fn update(&mut self, dt: f64) { if !self.playing { return } self.elapsed = self.elapsed + dt * self.speed; if self.elapsed >= self.frame_duration { self.elapsed = self.elapsed - self.frame_duration; self.current_frame = self.current_frame + 1; if self.current_frame >= self.frame_count { if self.looping { self.current_frame = 0 } else { self.playing = false } } } }
+}
+
+// ─── Event System ────────────────────────────────────────────────────────────
+
+pub struct EventBus { pub listeners: HashMap<string, Vec<fn()>> }
+impl EventBus {
+    pub fn new() -> EventBus { return EventBus { listeners: HashMap::new() } }
+    pub fn subscribe(&mut self, _event: string, _listener: fn()) { }
+    pub fn emit(&self, _event: string) { }
+}

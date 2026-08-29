@@ -1,0 +1,480 @@
+// ─── Classes Example #88 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Router class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Router {
+    pub let routes:u64;
+    pub let middleware:u64;
+    pub let mut created_at: i64,
+
+    pub fn new(routes: u64, middleware: u64) -> Self {
+        return Self {
+            routes,
+            middleware,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn add_route(&mut self) {
+        println!("Calling add_route on Router")
+    }
+
+    pub fn remove_route(&mut self) {
+        println!("Calling remove_route on Router")
+    }
+
+    pub fn handle_request(&mut self) {
+        println!("Calling handle_request on Router")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Router object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Router {
+    pub fn default() -> Router {
+        return Router::new(0, 0)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Router")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Router::new(89, 89)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Router::default())
+    objects.push(Router::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Router::default())
+    registry.insert("secondary", Router::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Router demo complete!")
+}
+
+// Additional Router examples and patterns
+
+fn extra_router_0() {
+    // Demonstrate Router in scenario 1
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_1() {
+    // Demonstrate Router in scenario 2
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_2() {
+    // Demonstrate Router in scenario 3
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_3() {
+    // Demonstrate Router in scenario 4
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_4() {
+    // Demonstrate Router in scenario 5
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_5() {
+    // Demonstrate Router in scenario 6
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_6() {
+    // Demonstrate Router in scenario 7
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_7() {
+    // Demonstrate Router in scenario 8
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_8() {
+    // Demonstrate Router in scenario 9
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_9() {
+    // Demonstrate Router in scenario 10
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_10() {
+    // Demonstrate Router in scenario 11
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_11() {
+    // Demonstrate Router in scenario 12
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_12() {
+    // Demonstrate Router in scenario 13
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_13() {
+    // Demonstrate Router in scenario 14
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_14() {
+    // Demonstrate Router in scenario 15
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_15() {
+    // Demonstrate Router in scenario 16
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_16() {
+    // Demonstrate Router in scenario 17
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_17() {
+    // Demonstrate Router in scenario 18
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_18() {
+    // Demonstrate Router in scenario 19
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_19() {
+    // Demonstrate Router in scenario 20
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_20() {
+    // Demonstrate Router in scenario 21
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_21() {
+    // Demonstrate Router in scenario 22
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_22() {
+    // Demonstrate Router in scenario 23
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_23() {
+    // Demonstrate Router in scenario 24
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_24() {
+    // Demonstrate Router in scenario 25
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_25() {
+    // Demonstrate Router in scenario 26
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_26() {
+    // Demonstrate Router in scenario 27
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_27() {
+    // Demonstrate Router in scenario 28
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_28() {
+    // Demonstrate Router in scenario 29
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_router_29() {
+    // Demonstrate Router in scenario 30
+    let mut obj = Router::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

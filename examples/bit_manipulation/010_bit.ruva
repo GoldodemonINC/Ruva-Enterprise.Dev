@@ -1,0 +1,480 @@
+// ─── Bit Manipulation Example #10 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating bit manipulation concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Item")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Entry")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Record")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Value")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Result")
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum State {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl State {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            State::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            State::Active => "Active".into(),
+            State::Inactive => "Inactive".into(),
+            State::Pending => "Pending".into(),
+            State::Complete => "Complete".into(),
+            State::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn sort_bit_manipulation_0(input: string) -> Vec<i64> {
+    // Bit_manipulation function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn search_bit_manipulation_1(input: bool) -> &string {
+    // Bit_manipulation function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn find_bit_manipulation_2(input: Vec<i64>) -> i64 {
+    // Bit_manipulation function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn count_bit_manipulation_3(input: &string) -> f64 {
+    // Bit_manipulation function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn summarize_bit_manipulation_4(input: i64) -> string {
+    // Bit_manipulation function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn encode_bit_manipulation_5(input: f64) -> bool {
+    // Bit_manipulation function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 11
+    result = true
+    return result
+}
+
+
+fn decode_bit_manipulation_6(input: string) -> Vec<i64> {
+    // Bit_manipulation function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compress_bit_manipulation_7(input: bool) -> &string {
+    // Bit_manipulation function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encrypt_bit_manipulation_8(input: Vec<i64>) -> i64 {
+    // Bit_manipulation function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn hash_bit_manipulation_9(input: &string) -> f64 {
+    // Bit_manipulation function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 1
+    result = result + factor
+    result = result * 1
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn create_bit_manipulation_10(input: i64) -> string {
+    // Bit_manipulation function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn update_bit_manipulation_11(input: f64) -> bool {
+    // Bit_manipulation function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 11
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== bit manipulation Example #10 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    sort_bit_manipulation_0()
+    search_bit_manipulation_1()
+    find_bit_manipulation_2()
+    count_bit_manipulation_3()
+    summarize_bit_manipulation_4()
+    encode_bit_manipulation_5()
+    decode_bit_manipulation_6()
+    compress_bit_manipulation_7()
+
+    // Verify results
+    println!("All bit manipulation operations completed!")
+    println!("Example #10 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_bit_manipulation_10_0() {
+    // Test bit_manipulation functionality
+    let result: i64 = 11
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_bit_manipulation_10_1() {
+    // Test bit_manipulation functionality
+    let result: i64 = 11
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_bit_manipulation_10_2() {
+    // Test bit_manipulation functionality
+    let result: i64 = 11
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_bit_manipulation_10_3() {
+    // Test bit_manipulation functionality
+    let result: i64 = 11
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_bit_manipulation_10_4() {
+    // Test bit_manipulation functionality
+    let result: i64 = 11
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

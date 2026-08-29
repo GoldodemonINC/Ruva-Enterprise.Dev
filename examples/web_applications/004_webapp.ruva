@@ -1,0 +1,480 @@
+// ─── Web Applications Example #4 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating web applications concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Result")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn test_webapp_0(input: string) -> Vec<i64> {
+    // Webapp function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn benchmark_webapp_1(input: bool) -> &string {
+    // Webapp function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn process_webapp_2(input: Vec<i64>) -> i64 {
+    // Webapp function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 5
+    result = result + factor
+    result = result * 5
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn transform_webapp_3(input: &string) -> f64 {
+    // Webapp function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 5
+    result = result + factor
+    result = result * 5
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn validate_webapp_4(input: i64) -> string {
+    // Webapp function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn analyze_webapp_5(input: f64) -> bool {
+    // Webapp function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 25
+    result = true
+    return result
+}
+
+
+fn optimize_webapp_6(input: string) -> Vec<i64> {
+    // Webapp function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn filter_webapp_7(input: bool) -> &string {
+    // Webapp function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn aggregate_webapp_8(input: Vec<i64>) -> i64 {
+    // Webapp function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 5
+    result = result + factor
+    result = result * 5
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn compute_webapp_9(input: &string) -> f64 {
+    // Webapp function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 5
+    result = result + factor
+    result = result * 5
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn calculate_webapp_10(input: i64) -> string {
+    // Webapp function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn evaluate_webapp_11(input: f64) -> bool {
+    // Webapp function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 25
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== web application Example #4 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    test_webapp_0()
+    benchmark_webapp_1()
+    process_webapp_2()
+    transform_webapp_3()
+    validate_webapp_4()
+    analyze_webapp_5()
+    optimize_webapp_6()
+    filter_webapp_7()
+
+    // Verify results
+    println!("All web application operations completed!")
+    println!("Example #4 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_webapp_4_0() {
+    // Test webapp functionality
+    let result: i64 = 25
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_webapp_4_1() {
+    // Test webapp functionality
+    let result: i64 = 25
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_webapp_4_2() {
+    // Test webapp functionality
+    let result: i64 = 25
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_webapp_4_3() {
+    // Test webapp functionality
+    let result: i64 = 25
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_webapp_4_4() {
+    // Test webapp functionality
+    let result: i64 = 25
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

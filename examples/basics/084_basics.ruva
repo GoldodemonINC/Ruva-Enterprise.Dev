@@ -1,0 +1,481 @@
+// ─── Basics Example #84 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating basics concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Variable declarations, types, and basic operations
+
+
+// ─── Variable Declaration ──────────────────────────────────────
+fn demo_structs() {
+    // Immutable variable
+    let x: i32 = 4
+    println!("x = {}", x)
+    
+    // Mutable variable
+    let mut y: i32 = 28
+    y = 252
+    println!("y = {}", y)
+    
+    // Type inference
+    let z = 312
+    println!("z = {} (inferred type)", z)
+    
+    // Constants
+    const MAX_VALUE: i64 = 999999
+    const PI: f64 = 3.14159265358979
+    const APP_NAME: string = "validator"
+    
+    println!("MAX_VALUE = {}", MAX_VALUE)
+    println!("PI = {}", PI)
+    println!("APP_NAME = {}", APP_NAME)
+}
+
+
+// ─── Basic Operations ──────────────────────────────────────────
+fn demo_methods() {
+    // Arithmetic
+    let a: i64 = 14
+    let b: i64 = 24
+    let sum = a + b
+    let diff = a - b
+    let product = a * b
+    let quotient = a / b
+    let remainder = a % b
+    
+    println!("{} + {} = {}", a, b, sum)
+    println!("{} - {} = {}", a, b, diff)
+    println!("{} * {} = {}", a, b, product)
+    println!("{} / {} = {}", a, b, quotient)
+    println!("{} % {} = {}", a, b, remainder)
+    
+    // Float operations
+    let fx: f64 = 4.5
+    let fy: f64 = 4.25
+    println!("Float sum: {} + {} = {}", fx, fy, fx + fy)
+    println!("Float product: {} * {} = {}", fx, fy, fx * fy)
+    println!("Float sqrt: sqrt({}) = {}", fx, sqrt(fx))
+    println!("Float pow: {}^3 = {}", fx, fx * fx * fx)
+    
+    // Comparison
+    println!("{} > {} = {}", a, b, a > b)
+    println!("{} < {} = {}", a, b, a < b)
+    println!("{} == {} = {}", a, b, a == b)
+    println!("{} != {} = {}", a, b, a != b)
+    
+    // Logical
+    let p = true
+    let q = false
+    println!("true && false = {}", p && q)
+    println!("true || false = {}", p || q)
+    println!("!true = {}", !p)
+    
+    // Bitwise
+    let x: i64 = 156
+    let y: i64 = 212
+    println!("{} & {} = {}", x, y, x & y)
+    println!("{} | {} = {}", x, y, x | y)
+    println!("{} ^ {} = {}", x, y, x ^ y)
+    println!("{} << 2 = {}", x, x << 2)
+    println!("{} >> 2 = {}", x, x >> 2)
+}
+
+fn main() {
+    println!("=== validator — Basics Example #84 ===")
+    
+    // Run all demonstrations
+    demo_structs()
+    demo_methods()
+    demo_enums()
+    demo_control_flow()
+    demo_error_handling()
+    demo_collections()
+    demo_algorithms()
+    demo_utility()
+    
+    println!("All demonstrations completed successfully!")
+}
+
+
+
+// ─── String Operations ─────────────────────────────────────────
+fn demo_enums() {
+    let greeting = "Hello, Ruva!"
+    let name = "validator"
+    let combined = greeting + " " + name
+    println!("Combined: {}", combined)
+    println!("Length: {}", combined.len())
+    println!("Uppercase: {}", str_to_upper(combined))
+    println!("Lowercase: {}", str_to_lower(combined))
+    println!("Trimmed: {}", str_trim("  spaces  "))
+    println!("Contains 'Ruva': {}", str_contains(combined, "Ruva"))
+    println!("Starts with 'Hello': {}", str_starts_with(combined, "Hello"))
+    println!("Ends with name: {}", str_ends_with(combined, name))
+    
+    // String repetition
+    let repeated = str_repeat("ab", 5)
+    println!("Repeated: {}", repeated)
+    
+    // String splitting
+    let csv = "apple,banana,cherry,date"
+    let parts = str_split(csv, ",")
+    println!("Split count: {}", parts.len())
+    
+    // String joining
+    let words = vec!["Hello", "World", "from", "Ruva"]
+    let joined = str_join(words, " ")
+    println!("Joined: {}", joined)
+    
+    // String reverse
+    let reversed = str_reverse("Ruva")
+    println!("Reversed: {}", reversed)
+    
+    // Char operations
+    let ch = 'A'
+    println!("Char: {}, is alphanumeric: {}", ch, str_is_alphanumeric(ch.to_string()))
+    
+    // Numeric string conversion
+    let num_str = "42"
+    let num = str_to_i64(num_str)
+    match num {
+        Option::Some(n) => println!("Parsed: {}", n),
+        Option::None => println!("Parse failed"),
+    }
+    
+    let float_str = "3.14"
+    let fval = str_to_f64(float_str)
+    match fval {
+        Option::Some(f) => println!("Parsed float: {}", f),
+        Option::None => println!("Float parse failed"),
+    }
+    
+    // String from number
+    let from_int = str_from_i64(12345)
+    println!("From int: {}", from_int)
+    
+    let from_bool = str_from_bool(true)
+    println!("From bool: {}", from_bool)
+}
+
+
+
+// ─── Control Flow ──────────────────────────────────────────────
+fn demo_control_flow() {
+    // If/else
+    let temperature = -1
+    if temperature > 30 {
+        println!("It's hot outside!")
+    } else if temperature > 20 {
+        println!("Nice weather!")
+    } else if temperature > 10 {
+        println!("A bit chilly")
+    } else {
+        println!("Bundle up!")
+    }
+    
+    // For loop
+    println!("Counting to 10:")
+    for i in 0..10 {
+        print!("{} ", i)
+    }
+    println!("")
+    
+    // While loop
+    let mut count = 0
+    while count < 5 {
+        println!("Count: {}", count)
+        count = count + 1
+    }
+    
+    // Loop with break
+    let mut value = 0
+    loop {
+        value = value + 2
+        if value > 50 {
+            break
+        }
+    }
+    println!("Loop exited at: {}", value)
+    
+    // Match expression
+    let day = 2
+    let day_name = match day {
+        1 => "Monday",
+        2 => "Tuesday",
+        3 => "Wednesday",
+        4 => "Thursday",
+        5 => "Friday",
+        6 => "Saturday",
+        7 => "Sunday",
+        _ => "Unknown",
+    }
+    println!("Day {} is {}", day, day_name)
+    
+    // Range patterns
+    let score = 5
+    let grade = match score {
+        90..=100 => "A",
+        80..=89 => "B",
+        70..=79 => "C",
+        60..=69 => "D",
+        _ => "F",
+    }
+    println!("Score {} = Grade {}", score, grade)
+    
+    // If-let
+    let maybe_value: Option<i64> = Option::Some(5)
+    if let Option::Some(val) = maybe_value {
+        println!("Got value: {}", val)
+    }
+}
+
+
+
+// ─── Error Handling ────────────────────────────────────────────
+fn demo_error_handling() {
+    // Result type
+    let result = divide(14, 5)
+    match result {
+        Result::Ok(val) => println!("Division result: {}", val),
+        Result::Err(msg) => println!("Error: {}", msg),
+    }
+    
+    // Division by zero
+    let error_result = divide(10, 0)
+    match error_result {
+        Result::Ok(val) => println!("Result: {}", val),
+        Result::Err(msg) => println!("Expected error: {}", msg),
+    }
+    
+    // Option type
+    let numbers = vec![4, 8, 2, 6]
+    let found = find_first_negative(&numbers)
+    match found {
+        Option::Some(n) => println!("Found negative: {}", n),
+        Option::None => println!("No negatives found"),
+    }
+    
+    // Error propagation with try
+    let safe_result = safe_sqrt(-1.0)
+    match safe_result {
+        Result::Ok(val) => println!("sqrt(-1) = {}", val),
+        Result::Err(msg) => println!("sqrt error: {}", msg),
+    }
+    
+    // unwrap_or
+    let value: Option<i64> = Option::None
+    let default_val = value.unwrap_or(42)
+    println!("Default value: {}", default_val)
+    
+    // expect
+    let explicit: Option<i64> = Option::Some(100)
+    let expected = explicit.expect("Should have value")
+    println!("Expected: {}", expected)
+    
+    // Map and and_then
+    let mapped: Option<i64> = Option::Some(5).map(|x| x * 2)
+    println!("Mapped: {:?}", mapped)
+    
+    let chained: Option<i64> = Option::Some(10).and_then(|x| {
+        if x > 5 { Option::Some(x * 3) } else { Option::None }
+    })
+    println!("Chained: {:?}", chained)
+}
+
+fn divide(a: f64, b: f64) -> Result<f64, string> {
+    if b == 0.0 {
+        return Result::Err("Division by zero".into())
+    }
+    return Result::Ok(a / b)
+}
+
+fn find_first_negative(numbers: &Vec<i64>) -> Option<i64> {
+    for &num in numbers {
+        if num < 0 {
+            return Option::Some(num)
+        }
+    }
+    return Option::None
+}
+
+fn safe_sqrt(x: f64) -> Result<f64, string> {
+    if x < 0.0 {
+        return Result::Err("Cannot take square root of negative number".into())
+    }
+    return Result::Ok(sqrt(x))
+}
+
+
+
+// ─── Collections ───────────────────────────────────────────────
+fn demo_collections() {
+    // Vec operations
+    let mut numbers = Vec::new()
+    numbers.push(10)
+    numbers.push(20)
+    numbers.push(30)
+    numbers.push(40)
+    numbers.push(50)
+    
+    println!("Vector length: {}", numbers.len())
+    println!("First element: {:?}", numbers.get(0))
+    println!("Last element: {:?}", numbers.get(4))
+    
+    // Vec from literal
+    let fruits = vec!["apple", "banana", "cherry", "date"]
+    for fruit in fruits {
+        println!("Fruit: {}", fruit)
+    }
+    
+    // HashMap operations
+    let mut scores = HashMap::new()
+    scores.insert("Alice", 95)
+    scores.insert("Bob", 87)
+    scores.insert("Charlie", 92)
+    scores.insert("Diana", 88)
+    
+    println!("Alice's score: {:?}", scores.get("Alice"))
+    println!("HashMap size: {}", scores.len())
+    println!("Contains Bob: {}", scores.contains_key("Bob"))
+    
+    // Iteration
+    let mut sum = 0
+    for &num in &numbers {
+        sum = sum + num
+    }
+    println!("Sum: {}", sum)
+    
+    // Average
+    let avg = (sum ) / (numbers.len() )
+    println!("Average: {:.2}", avg)
+    
+    // Min and Max
+    let mut min_val = numbers.get(0).unwrap_or(&0)
+    let mut max_val = numbers.get(0).unwrap_or(&0)
+    for &num in &numbers {
+        if num < *min_val { min_val = &num }
+        if num > *max_val { max_val = &num }
+    }
+    println!("Min: {}, Max: {}", min_val, max_val)
+    
+    // Filter even numbers
+    let mut evens = Vec::new()
+    for &num in &numbers {
+        if num % 2 == 0 {
+            evens.push(num)
+        }
+    }
+    println!("Even numbers: {:?}", evens)
+    
+    // Pair struct
+    let pair = Pair::new("key", 42)
+    println!("Pair: ({}, {})", pair.first(), pair.second())
+    
+    // Ordering
+    let a = 10
+    let b = 20
+    let ordered = sort_asc(a, b)
+    println!("Sorted: ({}, {})", ordered.first(), ordered.second())
+    
+    // Rng
+    let mut rng = Rng::new(12345)
+    for _ in 0..5 {
+        println!("Random: {}", rng.next_i64())
+    }
+}
+
+
+
+// ─── Algorithms ────────────────────────────────────────────────
+fn demo_algorithms() {
+    // Factorial
+    let n = 10
+    let fact = factorial(n)
+    println!("Factorial of {} = {}", n, fact)
+    
+    // Fibonacci
+    let fib_n = 5
+    let fib_val = fibonacci(fib_n)
+    println!("Fibonacci({}) = {}", fib_n, fib_val)
+    
+    // GCD
+    let a = 14
+    let b = 9
+    println!("GCD({}, {}) = {}", a, b, gcd(a, b))
+    
+    // LCM
+    println!("LCM({}, {}) = {}", a, b, lcm(a, b))
+    
+    // Power
+    let base = 6
+    let exp = 5
+    println!("{}^{} = {}", base, exp, pow(base, exp))
+    
+    // Log2
+    let val = 157
+    println!("log2({}) = {}", val, log2(val))
+    
+    // Integer utilities
+    let test_num = 605
+    println!("{} is even: {}", test_num, is_even(test_num))
+    println!("{} is odd: {}", test_num, is_odd(test_num))
+    println!("{} digits: {}", test_num, digit_count(test_num))
+    println!("{} reversed: {}", test_num, reverse_num(test_num))
+    println!("{} is palindrome: {}", test_num, is_palindrome_num(test_num))
+    
+    // Clamp
+    let clamped = clamp(-16, 0, 100)
+    println!("Clamped: {}", clamped)
+    
+    // Lerp
+    let lerped = lerp(0.0, 100.0, 0.25)
+    println!("Lerp 25%: {}", lerped)
+    
+    // Abs
+    let negative = -5
+    println!("|{}| = {}", negative, abs(negative))
+    
+    // Min/Max
+    println!("min({}, {}) = {}", a, b, min(a, b))
+    println!("max({}, {}) = {}", a, b, max(a, b))
+}
+
+
+
+// ─── Utility Functions ─────────────────────────────────────────
+fn demo_utility() {
+    // Assertions
+    assert_eq(1 + 1, 2)
+    assert_ne(1, 2)
+    assert_true(5 > 3)
+    assert_false(5 < 3)
+    
+    println!("All assertions passed!")
+    
+    // Math conversions
+    let celsius = -6
+    let fahrenheit = (celsius ) * 9.0 / 5.0 + 32.0
+    println!("{}°C = {:.1}°F", celsius, fahrenheit)
+    
+    // Percentage
+    let part = 54
+    let total = 100
+    let percentage = (part ) / (total ) * 100.0
+    println!("{}% of {} = {}", part, total, percentage)
+    
+    // Range generation
+    let r = range(0, 10)
+    println!("Range 0..10: {} elements", r.len())
+    
+    let ri = range_inclusive(1, 5)
+    println!("Range 1..=5: {} elements", ri.len())
+    
+    let rs = range_step(0, 20, 3)
+    println!("Range 0..20 step 3: {} elements", rs.len())
+    
+    // Assertions with messages
+    let x = 42
+    assert_eq(x, 42, "x should be 42")
+    
+    println!("Utility functions demo complete!")
+}
+
