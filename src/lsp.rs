@@ -993,10 +993,10 @@ impl LspServer {
         };
 
         match id {
-            Some(JsonValue::Number(_)) | Some(JsonValue::Str(_)) => {
+            Some(id_val @ JsonValue::Number(_)) | Some(id_val @ JsonValue::Str(_)) => {
                 let mut response = vec![
                     ("jsonrpc".to_string(), JsonValue::Str("2.0".to_string())),
-                    ("id".to_string(), id.unwrap()),
+                    ("id".to_string(), id_val),
                 ];
                 match result {
                     Some(r) => response.push(("result".to_string(), r)),
@@ -1991,11 +1991,11 @@ impl LspServer {
 
             let label = if let Some(ref ret) = sig.return_type {
                 format!("fn {}({}) -> {}", func_name, params.iter().map(|p|
-                    p.get("label").unwrap().as_str().unwrap().to_string()
+                    p.get("label").and_then(|v| v.as_str()).unwrap_or("?").to_string()
                 ).collect::<Vec<_>>().join(", "), ret)
             } else {
                 format!("fn {}({})", func_name, params.iter().map(|p|
-                    p.get("label").unwrap().as_str().unwrap().to_string()
+                    p.get("label").and_then(|v| v.as_str()).unwrap_or("?").to_string()
                 ).collect::<Vec<_>>().join(", "))
             };
 
