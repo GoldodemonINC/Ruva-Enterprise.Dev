@@ -40,6 +40,9 @@ impl Parser {
         if self.generic_depth > 0 {
             if let Token::Shr = result.0 {
                 self.split_gt_pending = true;
+                if self.pos < self.tokens.len() {
+                    self.pos += 1;
+                }
                 return (Token::Gt, result.1);
             }
         }
@@ -2590,6 +2593,10 @@ mod tests {
     #[test]
     fn test_triple_nested_generics() {
         let src = "fn foo() -> Vec<Vec<Vec<i64>>> {}";
+        let tokens = crate::lexer::Lexer::new(src).tokenize().unwrap();
+        for (i, (tok, span)) in tokens.iter().enumerate() {
+            eprintln!("  [{i}] {tok:?} at {}:{}", span.line, span.col);
+        }
         let result = Parser::new(src).and_then(|mut p| p.parse_program());
         match &result {
             Ok(prog) => eprintln!("OK: {} items", prog.items.len()),
