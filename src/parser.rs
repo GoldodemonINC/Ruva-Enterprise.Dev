@@ -9,15 +9,22 @@ pub struct Parser {
     /// When false, `Self { ... }` is NOT parsed as a struct literal
     /// (e.g. inside match/if/while discriminant where `{` is the body)
     can_construct: bool,
+    /// Tracks nested generic depth. When > 0, `>>` is split into two `>` tokens.
+    generic_depth: u32,
+    /// When true, the next peek/advance should return a synthetic `Gt` (the second `>` of a split `>>`).
+    split_gt_pending: bool,
 }
 
 impl Parser {
     pub fn new(source: &str) -> Result<Self> {
         let tokens = Lexer::new(source).tokenize()?;
-        Ok(Self { tokens, pos: 0, can_construct: true })
+        Ok(Self { tokens, pos: 0, can_construct: true, generic_depth: 0, split_gt_pending: false })
     }
 
     fn peek(&self) -> &Token {
+        if self.split_gt_pending {
+            return &Token::Gt;
+        }
         &self.tokens.get(self.pos).map(|(t, _)| t).unwrap_or(&Token::Eof)
     }
 
@@ -26,7 +33,18 @@ impl Parser {
     }
 
     fn advance(&mut self) -> (Token, Span) {
+        if self.split_gt_pending {
+            self.split_gt_pending = false;
+            return (Token::Gt, self.peek_span());
+        }
         let result = self.tokens.get(self.pos).cloned().unwrap_or((Token::Eof, Span { line: 0, col: 0 }));
+        // When in generic context, split `>>` into two `>` tokens
+        if self.generic_depth > 0 {
+            if let Token::Shr = result.0 {
+                self.split_gt_pending = true;
+                return (Token::Gt, result.1);
+            }
+        }
         if self.pos < self.tokens.len() {
             self.pos += 1;
         }
@@ -58,8 +76,27 @@ impl Parser {
         }
     }
 
+    /// Enter generic parsing context. When generic_depth > 0, `>>` tokens
+    /// are automatically split into two `>` tokens.
+    fn enter_generic_context(&mut self) {
+        self.generic_depth += 1;
+    }
+
+    /// Exit generic parsing context.
+    fn exit_generic_context(&mut self) {
+        self.generic_depth -= 1;
+    }
+
     fn at(&self, token: &Token) -> bool {
-        self.peek() == token
+        let p = self.peek();
+        if p == token {
+            return true;
+        }
+        // In generic context, treat `Shr` as a closing `Gt` so while loops exit
+        if self.generic_depth > 0 && *token == Token::Gt && *p == Token::Shr {
+            return true;
+        }
+        false
     }
 
     // ─── Program ─────────────────────────────────────────────────────────
@@ -890,6 +927,7 @@ impl Parser {
 
     fn parse_generic_params(&mut self) -> Result<Vec<GenericParam>> {
         self.expect(&Token::Lt)?;
+        self.enter_generic_context();
         let mut params = Vec::new();
 
         while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
@@ -916,6 +954,7 @@ impl Parser {
         }
 
         self.expect(&Token::Gt)?;
+        self.exit_generic_context();
         Ok(params)
     }
 
@@ -1048,6 +1087,7 @@ impl Parser {
                 // Check for generic arguments: Vec<T>, Option<T>, etc.
                 if self.at(&Token::Lt) {
                     self.advance();
+                    self.enter_generic_context();
                     let mut args = Vec::new();
                     while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
                         args.push(self.parse_type()?);
@@ -1056,6 +1096,7 @@ impl Parser {
                         }
                     }
                     self.expect(&Token::Gt)?;
+                    self.exit_generic_context();
                     Type::Generic { name, args }
                 } else if self.at(&Token::DoubleColon) {
                     // Path: std::io::Error
@@ -1067,6 +1108,7 @@ impl Parser {
                         // Check for generic args on the last segment
                         if self.at(&Token::Lt) {
                             self.advance();
+                            self.enter_generic_context();
                             let mut args = Vec::new();
                             while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
                                 args.push(self.parse_type()?);
@@ -1075,6 +1117,7 @@ impl Parser {
                                 }
                             }
                             self.expect(&Token::Gt)?;
+                            self.exit_generic_context();
                             // Return Generic type with full path as name
                             let full_name = path.join("::");
                             return Ok(Type::Generic { name: full_name, args });
@@ -2541,5 +2584,52 @@ mod tests {
         assert!(matches!(&program.items[0], Item::Use(_)));
         assert!(matches!(&program.items[1], Item::Module(_)));
         assert!(matches!(&program.items[2], Item::Function(_)));
+    }
+}
+#[cfg(test)]
+mod debug_generic {
+    use super::*;
+    use crate::lexer::Lexer;
+
+    #[test]
+    fn debug_nested_generic_tokens() {
+        let src = "fn foo() -> Vec<Vec<T>> {}";
+        let tokens = Lexer::new(src).tokenize().unwrap();
+        for (i, (tok, span)) in tokens.iter().enumerate() {
+            eprintln!("  [{i}] {tok:?} at {}:{}", span.line, span.col);
+        }
+    }
+}
+
+#[cfg(test)]
+mod debug_generic2 {
+    use super::*;
+
+    #[test]
+    fn debug_parse_nested_generic() {
+        let src = "fn windows() -> Vec<Vec<i64>> {}";
+        let mut parser = Parser::new(src).unwrap();
+        match parser.parse_program() {
+            Ok(prog) => {
+                eprintln!("Parse OK: {:?}", prog.items.len());
+            }
+            Err(e) => {
+                eprintln!("Parse ERROR: {e}");
+            }
+        }
+    }
+
+    #[test]
+    fn debug_parse_single_generic() {
+        let src = "fn foo() -> Vec<i64> {}";
+        let mut parser = Parser::new(src).unwrap();
+        match parser.parse_program() {
+            Ok(prog) => {
+                eprintln!("Parse OK: {:?}", prog.items.len());
+            }
+            Err(e) => {
+                eprintln!("Parse ERROR: {e}");
+            }
+        }
     }
 }
