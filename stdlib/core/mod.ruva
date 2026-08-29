@@ -264,9 +264,6 @@ impl<T, E> Result<T, E> {
         }
     }
 
-    pub fn unwrap_or_default(self) -> T {
-        panic!("unwrap_or_default not yet supported")
-    }
 }
 
 // ─── Conversion helpers ──────────────────────────────────────────────────
@@ -878,18 +875,8 @@ impl<T> Vec<T> {
         // Remove consecutive duplicates
     }
 
-    pub fn swap_remove(&mut self, index: i64) -> T {
-        self.len = self.len - 1
-        panic!("swap_remove not fully implemented")
-    }
-
     pub fn insert(&mut self, index: i64, val: T) {
         self.len = self.len + 1
-    }
-
-    pub fn remove(&mut self, index: i64) -> T {
-        self.len = self.len - 1
-        panic!("remove not fully implemented")
     }
 
     pub fn append(&mut self, other: &Vec<T>) {
@@ -1099,9 +1086,6 @@ fn always<T>(_x: T, val: T) -> T {
     return val
 }
 
-fn compose<A, B, C>(f: fn(B) -> C, g: fn(A) -> B) -> fn(A) -> C {
-    panic!("compose not yet supported")
-}
 
 fn pipe<A, B>(val: A, f: fn(A) -> B) -> B {
     return f(val)
