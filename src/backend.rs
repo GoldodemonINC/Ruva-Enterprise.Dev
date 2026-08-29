@@ -13,6 +13,11 @@ pub trait CodeGenerator {
 
     /// The file extension for generated files (e.g., ".rs", ".zig", ".py").
     fn file_extension(&self) -> &str;
+
+    /// Generate Cargo.toml content (only meaningful for Rust target).
+    fn generate_cargo_toml(&mut self) -> String {
+        "[package]\nname = \"ruva_program\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nanyhow = \"1\"\n".to_string()
+    }
 }
 
 /// Supported compilation targets.
