@@ -300,7 +300,6 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
             let cargo_toml = tmp_dir.join("Cargo.toml");
             let profile = if release { "release" } else { "dev" };
             let mut cargo_content = gen.generate_cargo_toml();
-            // Auto-detect macroquad usage in generated code
             if code.contains("macroquad::") && !cargo_content.contains("macroquad") {
                 cargo_content.push_str("macroquad = \"0.4\"\n");
             }

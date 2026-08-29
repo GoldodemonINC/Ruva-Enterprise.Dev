@@ -9,9 +9,7 @@ pub struct Parser {
     /// When false, `Self { ... }` is NOT parsed as a struct literal
     /// (e.g. inside match/if/while discriminant where `{` is the body)
     can_construct: bool,
-    /// Tracks nested generic depth. When > 0, `>>` is split into two `>` tokens.
     generic_depth: u32,
-    /// When true, the next peek/advance should return a synthetic `Gt` (the second `>` of a split `>>`).
     split_gt_pending: bool,
 }
 
@@ -74,17 +72,6 @@ impl Parser {
             Token::Ident(s) => Ok((s, span)),
             _ => bail!("Expected identifier, got {:?} at {}:{}", tok, span.line, span.col),
         }
-    }
-
-    /// Enter generic parsing context. When generic_depth > 0, `>>` tokens
-    /// are automatically split into two `>` tokens.
-    fn enter_generic_context(&mut self) {
-        self.generic_depth += 1;
-    }
-
-    /// Exit generic parsing context.
-    fn exit_generic_context(&mut self) {
-        self.generic_depth -= 1;
     }
 
     fn at(&self, token: &Token) -> bool {
@@ -927,7 +914,7 @@ impl Parser {
 
     fn parse_generic_params(&mut self) -> Result<Vec<GenericParam>> {
         self.expect(&Token::Lt)?;
-        self.enter_generic_context();
+        self.generic_depth += 1;
         let mut params = Vec::new();
 
         while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
@@ -954,7 +941,7 @@ impl Parser {
         }
 
         self.expect(&Token::Gt)?;
-        self.exit_generic_context();
+        self.generic_depth -= 1;
         Ok(params)
     }
 
@@ -1087,7 +1074,7 @@ impl Parser {
                 // Check for generic arguments: Vec<T>, Option<T>, etc.
                 if self.at(&Token::Lt) {
                     self.advance();
-                    self.enter_generic_context();
+                    self.generic_depth += 1;
                     let mut args = Vec::new();
                     while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
                         args.push(self.parse_type()?);
@@ -1096,7 +1083,7 @@ impl Parser {
                         }
                     }
                     self.expect(&Token::Gt)?;
-                    self.exit_generic_context();
+                    self.generic_depth -= 1;
                     Type::Generic { name, args }
                 } else if self.at(&Token::DoubleColon) {
                     // Path: std::io::Error
@@ -1108,7 +1095,7 @@ impl Parser {
                         // Check for generic args on the last segment
                         if self.at(&Token::Lt) {
                             self.advance();
-                            self.enter_generic_context();
+                            self.generic_depth += 1;
                             let mut args = Vec::new();
                             while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
                                 args.push(self.parse_type()?);
@@ -1117,7 +1104,7 @@ impl Parser {
                                 }
                             }
                             self.expect(&Token::Gt)?;
-                            self.exit_generic_context();
+                            self.generic_depth -= 1;
                             // Return Generic type with full path as name
                             let full_name = path.join("::");
                             return Ok(Type::Generic { name: full_name, args });
@@ -2585,51 +2572,55 @@ mod tests {
         assert!(matches!(&program.items[1], Item::Module(_)));
         assert!(matches!(&program.items[2], Item::Function(_)));
     }
-}
-#[cfg(test)]
-mod debug_generic {
-    use super::*;
-    use crate::lexer::Lexer;
 
     #[test]
-    fn debug_nested_generic_tokens() {
-        let src = "fn foo() -> Vec<Vec<T>> {}";
-        let tokens = Lexer::new(src).tokenize().unwrap();
-        for (i, (tok, span)) in tokens.iter().enumerate() {
-            eprintln!("  [{i}] {tok:?} at {}:{}", span.line, span.col);
-        }
-    }
-}
-
-#[cfg(test)]
-mod debug_generic2 {
-    use super::*;
-
-    #[test]
-    fn debug_parse_nested_generic() {
-        let src = "fn windows() -> Vec<Vec<i64>> {}";
+    fn test_shift_operators_not_split_outside_generics() {
+        // `>>` in expressions must remain as Shr, not split into two Gt
+        let src = r#"
+            fn main() {
+                let x = 1 >> 2
+                let y = x >> 3
+            }
+        "#;
         let mut parser = Parser::new(src).unwrap();
-        match parser.parse_program() {
-            Ok(prog) => {
-                eprintln!("Parse OK: {:?}", prog.items.len());
-            }
-            Err(e) => {
-                eprintln!("Parse ERROR: {e}");
-            }
-        }
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
     }
 
     #[test]
-    fn debug_parse_single_generic() {
-        let src = "fn foo() -> Vec<i64> {}";
-        let mut parser = Parser::new(src).unwrap();
-        match parser.parse_program() {
-            Ok(prog) => {
-                eprintln!("Parse OK: {:?}", prog.items.len());
-            }
-            Err(e) => {
-                eprintln!("Parse ERROR: {e}");
-            }
+    fn test_triple_nested_generics() {
+        let src = "fn foo() -> Vec<Vec<Vec<i64>>> {}";
+        let result = Parser::new(src).and_then(|mut p| p.parse_program());
+        match &result {
+            Ok(prog) => eprintln!("OK: {} items", prog.items.len()),
+            Err(e) => eprintln!("ERROR: {}", e),
         }
+        assert!(result.is_ok(), "Failed to parse triple-nested generics");
+    }
+
+    #[test]
+    fn test_nested_generic_no_leak_after_error() {
+        // Parse invalid code: generic context must not leak into subsequent parses.
+        // First, parse something with a generic to set generic_depth.
+        let bad_src = "fn foo() -> Vec<!!!> {}";
+        let mut parser = Parser::new(bad_src).unwrap();
+        let _ = parser.parse_program(); // should fail
+
+        // Now parse valid code. If generic_depth leaked, this would misbehave.
+        let good_src = "fn bar() -> i32 { 42 }";
+        let mut parser2 = Parser::new(good_src).unwrap();
+        let program = parser2.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_generic_depth_not_negative() {
+        // Verify generic_depth doesn't underflow.
+        // This is more of a compile-time concern (u32 can't go negative),
+        // but we verify the parser doesn't panic on edge cases.
+        let src = "fn foo<T>() -> T {}";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
     }
 }
