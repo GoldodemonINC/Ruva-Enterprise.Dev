@@ -717,8 +717,8 @@ ruva compile src/main.ruva --lazy
 - Tests: ✅ 157 passing
 - CI/CD: ✅ GitHub Actions (build, test, lint, cross-platform)
 
-### Standard Library (9 modules)
-- core, graphics (OpenGL/Vulkan/DX11/DX12), browser (DOM/Canvas/WebGL/Fetch/WebSocket/Wasm), video (encode/decode/mux/filters), anticheat, io, testing, formatter, serialization
+### Standard Library (10 modules)
+- core, kernel (bare-metal OS dev: memory, interrupts, drivers, scheduler, syscalls), graphics (OpenGL/Vulkan/DX11/DX12), browser (DOM/Canvas/WebGL/Fetch/WebSocket/Wasm), video (encode/decode/mux/filters), anticheat, io, testing, formatter, serialization
 
 ---
 
