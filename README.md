@@ -8,8 +8,8 @@ A compiled language that blends the best of four languages:
 - **Zig (15%)**: Comptime evaluation, explicit control, no hidden allocations
 - **Python (15%)**: Decorators, list comprehensions, clean syntax
 
-Ruva transpiles to multiple backends — Rust, Zig, or Python — giving you
-the right tool for every job.
+Ruva transpiles to 13 backends — Rust, Zig, Python, Java, C#, Go, Swift,
+Kotlin, TypeScript, JavaScript, Lua, Ruby, and PHP.
 
 > *"Write safe, fast code that feels familiar. Choose your backend."*
 
@@ -539,11 +539,11 @@ ruva run src/main.ruva
 # Compile to native executable (Rust backend)
 ruva compile src/main.ruva -o my_app
 
-# Transpile to Zig
-ruva transpile src/main.ruva --target zig --stdout
+# Transpile to any of 13 backends
+ruva transpile src/main.ruva --target java --stdout
 
-# Transpile to Python (great for security-sensitive code)
-ruva transpile src/main.ruva --target python --stdout
+# Transpile to TypeScript
+ruva transpile src/main.ruva --target typescript --stdout
 
 # Check for syntax errors (fast, no codegen)
 ruva compile src/main.ruva --lazy
@@ -559,7 +559,9 @@ ruva compile src/main.ruva --lazy
 | `ruva run <file>` | Compile and run | `ruva run src/main.ruva` |
 | `ruva compile <file>` | Build to native (Rust) | `ruva compile src/main.ruva -o app` |
 | `ruva compile <file> --target zig` | Build via Zig | `ruva compile src/main.ruva --target zig` |
-| `ruva compile <file> --target python` | Transpile to Python | `ruva compile src/main.ruva --target python` |
+| `ruva compile <file> --target java` | Transpile to Java | `ruva compile src/main.ruva --target java` |
+| `ruva compile <file> --target typescript` | Transpile to TypeScript | `ruva compile src/main.ruva --target typescript` |
+| `ruva compile <file> --target go` | Transpile to Go | `ruva compile src/main.ruva --target go` |
 | `ruva compile <file> --release` | Optimized build | `ruva compile src/main.ruva --release` |
 | `ruva compile <file> --lazy` | Syntax check only | `ruva compile src/main.ruva --lazy` |
 | `ruva transpile <file>` | Generate target code | `ruva transpile src/main.ruva --stdout` |
@@ -601,28 +603,23 @@ ruva compile src/main.ruva --lazy
         └──→ .py   (Python backend) → python3 (interpreted)
 ```
 
-### Multi-Target Backends
+### Multi-Target Backends (13 total)
 
 | Backend | Use Case | Output |
 |---------|----------|--------|
 | **Rust** | Maximum performance, systems programming | `.rs` → native binary |
 | **Zig** | Embedded, security, C interop | `.zig` → compiled binary |
 | **Python** | Security-sensitive, scripting, rapid prototyping | `.py` → interpreted |
-
-### Why Multiple Backends?
-
-- **Rust**: When you need raw speed and memory safety. Games, servers, OS.
-- **Zig**: When you need embedded-friendly code, manual memory control, or C interop.
-- **Python**: When security is paramount. No memory corruption, no buffer overflows, easy to audit.
-
-### Backend Comparison
-
-| Feature | Rust | Zig | Python |
-|---------|------|-----|--------|
-| Performance | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ |
-| Memory Safety | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
-| Security | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
-| Ease of Audit | ⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **Java** | Enterprise, Android, JVM ecosystem | `.java` → compiled |
+| **C#** | .NET, Unity game dev, enterprise | `.cs` → compiled |
+| **Go** | Cloud, microservices, networking | `.go` → compiled |
+| **Swift** | iOS, macOS, Apple ecosystem | `.swift` → compiled |
+| **Kotlin** | Android, JVM, modern Java | `.kt` → compiled |
+| **TypeScript** | Web, Node.js, type-safe JS | `.ts` → compiled |
+| **JavaScript** | Universal web, browser, Node.js | `.js` → interpreted |
+| **Lua** | Embedded scripting, game modding | `.lua` → interpreted |
+| **Ruby** | Web (Rails), scripting, automation | `.rb` → interpreted |
+| **PHP** | Web backend, WordPress, CMS | `.php` → interpreted |
 | Compile Time | Slow | Fast | N/A |
 | Runtime | None | None | GC-managed |
 | Dependencies | cargo | zig toolchain | stdlib only |
