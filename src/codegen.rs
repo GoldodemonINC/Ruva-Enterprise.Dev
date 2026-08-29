@@ -60,10 +60,14 @@ impl CodeGen {
         map.insert("ruva::anticheat::tamper".into(), "winapi".into());
         map.insert("ruva::anticheat::crypto".into(), "aes-gcm".into());
 
+        // Game engine (using macroquad for windowed graphics)
+        map.insert("ruva::macroquad".into(), "macroquad".into());
+
         map
     }
 
     /// Generate a Cargo.toml for the compiled Ruva program
+    #[allow(dead_code)]
     pub fn generate_cargo_toml(&self) -> String {
         let mut cargo_toml = String::from(
             r#"[package]
@@ -117,9 +121,19 @@ edition = "2021"
             self.writeln("// External crate imports");
             let deps: Vec<String> = self.dependencies.iter().map(|(n, _)| n.clone()).collect();
             for name in &deps {
-                self.writeln(&format!("use {};", name));
+                if name == "macroquad" {
+                    self.writeln("use macroquad::prelude::*;");
+                } else {
+                    self.writeln(&format!("use {};", name));
+                }
             }
             self.writeln("");
+        }
+
+        // Check if macroquad is used and generate async main attribute
+        let has_macroquad = self.dependencies.iter().any(|(n, _)| n == "macroquad");
+        if has_macroquad {
+            self.writeln("#[macroquad::main(\"Snake Game\")] ");
         }
 
         // Generate code for all items
@@ -148,6 +162,7 @@ edition = "2021"
                         "gloo-net" => "0.4",
                         "ffmpeg-next" => "6.0",
                         "aes-gcm" => "0.10",
+                        "macroquad" => "0.4",
                         "anyhow" => "1",
                         _ => "0.1",
                     };
@@ -248,7 +263,10 @@ edition = "2021"
         };
 
         let unsafe_str = if f.is_unsafe { "unsafe " } else { "" };
-        self.writeln(&format!("{}{}fn {}{}({}){}", vis, unsafe_str, name, generics, params.join(", "), ret));
+        // Check if this is main function with macroquad
+        let has_macroquad = self.dependencies.iter().any(|(n, _)| n == "macroquad");
+        let async_str = if name == "main" && has_macroquad { "async " } else { "" };
+        self.writeln(&format!("{}{}{}fn {}{}({}){}", vis, unsafe_str, async_str, name, generics, params.join(", "), ret));
         self.gen_block(&f.body);
         self.writeln("");
     }
@@ -499,6 +517,10 @@ edition = "2021"
 
     fn gen_use(&mut self, u: &UseDef) {
         let path_str = u.path.join("::");
+        // Skip ruva:: imports — they're mapped to external crates via dependency system
+        if path_str.starts_with("ruva::") {
+            return
+        }
         if u.wildcard {
             self.writeln(&format!("use {}::*;", path_str));
         } else if !u.selective.is_empty() {
@@ -1408,5 +1430,24 @@ impl CodeGenerator for CodeGen {
 
     fn file_extension(&self) -> &str {
         ".rs"
+    }
+
+    fn generate_cargo_toml(&mut self) -> String {
+        let mut cargo_toml = String::from(
+            r#"[package]
+name = "ruva_program"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+"#,
+        );
+        for (name, version) in &self.dependencies {
+            cargo_toml.push_str(&format!("{} = \"{}\"\n", name, version));
+        }
+        if !self.dependencies.iter().any(|(n, _)| n == "anyhow") {
+            cargo_toml.push_str("anyhow = \"1\"\n");
+        }
+        cargo_toml
     }
 }
