@@ -2,6 +2,22 @@ use crate::ast::*;
 use crate::backend::CodeGenerator;
 use std::fmt::Write;
 
+/// Escape a string for safe inclusion in a double-quoted literal.
+fn escape_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 /// Python code generator — transpiles Ruva AST to Python source code.
 ///
 /// Python is excellent for security-focused applications:
@@ -646,8 +662,8 @@ impl PythonCodeGen {
                     write!(self.output, "{}", s).unwrap();
                 }
             }
-            Expr::Str(s) => write!(self.output, "\"{}\"", s).unwrap(),
-            Expr::Char(c) => write!(self.output, "\"{}\"", c).unwrap(),
+            Expr::Str(s) => write!(self.output, "\"{}\"", escape_string(s)).unwrap(),
+            Expr::Char(c) => write!(self.output, "\"{}\"", escape_string(&c.to_string())).unwrap(),
             Expr::Bool(b) => {
                 if *b {
                     self.output.push_str("True");

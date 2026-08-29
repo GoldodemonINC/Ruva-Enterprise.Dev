@@ -2,6 +2,23 @@ use crate::ast::*;
 use crate::backend::CodeGenerator;
 use std::fmt::Write;
 
+/// Escape a string for safe inclusion in a double-quoted literal.
+/// Handles backslash, double quote, newline, carriage return, and tab.
+fn escape_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 pub struct CodeGen {
     output: String,
     indent: usize,
@@ -766,8 +783,8 @@ impl CodeGen {
                     write!(self.output, "{}", s).unwrap();
                 }
             }
-            Expr::Str(s) => write!(self.output, "\"{}\"", s).unwrap(),
-            Expr::Char(c) => write!(self.output, "'{}'", c).unwrap(),
+            Expr::Str(s) => write!(self.output, "\"{}\"", escape_string(s)).unwrap(),
+            Expr::Char(c) => write!(self.output, "'{}'", escape_string(&c.to_string())).unwrap(),
             Expr::Bool(b) => write!(self.output, "{}", b).unwrap(),
             Expr::Null => self.output.push_str("None"),
             Expr::Self_ => self.output.push_str("self"),
@@ -1417,5 +1434,39 @@ edition = "2021"
             cargo_toml.push_str("anyhow = \"1\"\n");
         }
         cargo_toml
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_escape_string_basic() {
+        assert_eq!(escape_string("hello"), "hello");
+        assert_eq!(escape_string(""), "");
+    }
+
+    #[test]
+    fn test_escape_string_dangerous_chars() {
+        // These would break out of a string literal without escaping
+        assert_eq!(escape_string("hello\"world"), "hello\\\"world");
+        assert_eq!(escape_string("line1\nline2"), "line1\\nline2");
+        assert_eq!(escape_string("tab\there"), "tab\\there");
+        assert_eq!(escape_string("cr\rhere"), "cr\\rhere");
+        assert_eq!(escape_string("back\\slash"), "back\\\\slash");
+    }
+
+    #[test]
+    fn test_escape_string_injection_attempt() {
+        // Attack: close quote, inject code, reopen quote
+        let malicious = "\"; rm -rf /; \"";
+        let escaped = escape_string(malicious);
+        // The escaped output must still be a valid string literal —
+        // no unescaped quotes that would break out of the string.
+        // The original had unescaped quotes; after escaping they become \"
+        assert!(escaped.contains("\\\""), "quotes should be escaped");
+        // The injected code is still present but harmless inside the string
+        assert!(escaped.contains("rm -rf"));
     }
 }

@@ -2,6 +2,22 @@ use crate::ast::*;
 use crate::backend::CodeGenerator;
 use std::fmt::Write;
 
+/// Escape a string for safe inclusion in a double-quoted literal.
+fn escape_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 /// Zig code generator — transpiles Ruva AST to Zig source code.
 ///
 /// Zig is a systems language with manual memory management, comptime,
@@ -669,8 +685,8 @@ impl ZigCodeGen {
                     write!(self.output, "@as(f64, {})", s).unwrap();
                 }
             }
-            Expr::Str(s) => write!(self.output, "\"{}\"", s).unwrap(),
-            Expr::Char(c) => write!(self.output, "'{}'", c).unwrap(),
+            Expr::Str(s) => write!(self.output, "\"{}\"", escape_string(s)).unwrap(),
+            Expr::Char(c) => write!(self.output, "'{}'", escape_string(&c.to_string())).unwrap(),
             Expr::Bool(b) => {
                 if *b {
                     self.output.push_str("true");
@@ -890,7 +906,7 @@ impl ZigCodeGen {
                         if let Some(first) = args.first() {
                             if let Expr::Str(s) = first {
                                 // First arg is the format string
-                                self.output.push_str(&format!("std.debug.print(\"{}\\n\", .{{", s));
+                                self.output.push_str(&format!("std.debug.print(\"{}\\n\", .{{", escape_string(s)));
                                 // Remaining args are values
                                 for (i, arg) in args.iter().skip(1).enumerate() {
                                     if i > 0 {
@@ -917,7 +933,7 @@ impl ZigCodeGen {
                     "print" => {
                         if let Some(first) = args.first() {
                             if let Expr::Str(s) = first {
-                                self.output.push_str(&format!("std.debug.print(\"{}\", .{{", s));
+                                self.output.push_str(&format!("std.debug.print(\"{}\", .{{", escape_string(s)));
                                 for (i, arg) in args.iter().skip(1).enumerate() {
                                     if i > 0 {
                                         self.output.push_str(", ");
