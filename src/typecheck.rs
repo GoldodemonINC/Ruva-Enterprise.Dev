@@ -1660,6 +1660,7 @@ impl TypeChecker {
     // ─── Security Analysis ──────────────────────────────────────────────
 
     /// Check for common security anti-patterns in the program.
+    #[allow(dead_code)]
     pub fn security_audit(&self, program: &Program) -> Vec<Diagnostic> {
         let mut findings = vec![];
         for item in &program.items {
@@ -1687,6 +1688,7 @@ impl TypeChecker {
         findings
     }
 
+    #[allow(dead_code)]
     fn walk_block(&self, block: &Block, findings: &mut Vec<Diagnostic>) {
         for stmt in &block.stmts {
             match stmt {
@@ -1711,6 +1713,7 @@ impl TypeChecker {
         }
     }
 
+    #[allow(dead_code)]
     fn walk_expr(&self, expr: &Expr, findings: &mut Vec<Diagnostic>) {
         match expr {
             Expr::Binary { op: BinOp::Add, left, right }

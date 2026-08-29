@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 use crate::ast::*;
 use crate::lexer::Lexer;
 use anyhow::{bail, Result};
@@ -2261,6 +2260,7 @@ impl Parser {
         Ok(decorators)
     }
 
+    #[allow(dead_code)]
     fn parse_list_comp(&mut self) -> Result<ListCompExpr> {
         self.expect(&Token::LBracket)?;
         let element = self.parse_expr()?;

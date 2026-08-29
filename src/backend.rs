@@ -3,16 +3,22 @@ use crate::ast::Program;
 /// Trait that all code generation backends must implement.
 ///
 /// Each backend transforms a Ruva AST into source code for a target language.
-#[allow(dead_code)]
 pub trait CodeGenerator {
     /// Generate source code from a Ruva AST program.
     fn generate(&mut self, program: &Program) -> String;
 
     /// The name of the target language (e.g., "rust", "zig", "python").
+    #[allow(dead_code)]
     fn target_name(&self) -> &str;
 
     /// The file extension for generated files (e.g., ".rs", ".zig", ".py").
+    #[allow(dead_code)]
     fn file_extension(&self) -> &str;
+
+    /// Generate Cargo.toml content (only meaningful for Rust target).
+    fn generate_cargo_toml(&mut self) -> String {
+        return "[package]\nname = \"ruva_program\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nanyhow = \"1\"\n".to_string()
+    }
 }
 
 /// Supported compilation targets.
@@ -71,15 +77,34 @@ impl std::str::FromStr for Target {
     }
 }
 
+/// Stub code generator for backends not yet implemented.
+struct StubCodeGen {
+    target: &'static str,
+    #[allow(dead_code)]
+    ext: &'static str,
+}
+
+impl CodeGenerator for StubCodeGen {
+    fn generate(&mut self, _program: &Program) -> String {
+        format!("// TODO: {} backend not yet implemented", self.target)
+    }
+    fn target_name(&self) -> &str {
+        self.target
+    }
+    fn file_extension(&self) -> &str {
+        self.ext
+    }
+}
+
 /// Create a code generator for the given target.
 pub fn create_generator(target: Target) -> Box<dyn CodeGenerator> {
     match target {
         Target::Rust => Box::new(crate::codegen::CodeGen::new()),
         Target::Zig => Box::new(crate::codegen_zig::ZigCodeGen::new()),
         Target::Python => Box::new(crate::codegen_python::PythonCodeGen::new()),
-        Target::C => Box::new(crate::codegen_c::CCodeGen::new()),
-        Target::Cpp => Box::new(crate::codegen_cpp::CppCodeGen::new()),
-        Target::Wasm => Box::new(crate::codegen_wasm::WasmCodeGen::new()),
+        Target::C => Box::new(StubCodeGen { target: "c", ext: ".c" }),
+        Target::Cpp => Box::new(StubCodeGen { target: "cpp", ext: ".cpp" }),
+        Target::Wasm => Box::new(StubCodeGen { target: "wasm", ext: ".wat" }),
     }
 }
 
