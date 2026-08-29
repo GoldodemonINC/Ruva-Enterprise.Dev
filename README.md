@@ -107,17 +107,11 @@ Rust (50%) + Java (20%) + Zig (15%) + Python (15%) = Ruva
 
 Ruva is designed for **safety-critical, performance-sensitive** applications:
 
-### Browser Engines
-- Memory-safe rendering engine without GC pauses
-- Tab isolation via ownership model
-- No buffer overflows in HTML/CSS parsing
-- Native speed for JavaScript execution
-
-### Game Engines
-- 60fps game logic without frame drops
-- ECS (Entity Component System) support
-- Real-time physics without GC hitches
-- Memory-safe multiplayer networking
+### Operating Systems
+- Bare-metal / `no_std`-style compilation target
+- No GC, no hidden allocations — predictable at the kernel level
+- Ownership model applies to raw memory and hardware resources
+- Aiming to make it possible to build a full OS in Ruva
 
 ### Anticheats
 - Real-time memory scanning without reflection bypass
@@ -558,15 +552,13 @@ ruva compile src/main.ruva --lazy
 | `ruva new <name>` | Create a new project | `ruva new my_app` |
 | `ruva run <file>` | Compile and run | `ruva run src/main.ruva` |
 | `ruva compile <file>` | Build to native (Rust) | `ruva compile src/main.ruva -o app` |
-| `ruva compile <file> --target zig` | Build via Zig | `ruva compile src/main.ruva --target zig` |
-| `ruva compile <file> --target java` | Transpile to Java | `ruva compile src/main.ruva --target java` |
-| `ruva compile <file> --target typescript` | Transpile to TypeScript | `ruva compile src/main.ruva --target typescript` |
-| `ruva compile <file> --target go` | Transpile to Go | `ruva compile src/main.ruva --target go` |
+| `ruva compile <file> --target <backend>` | Build via any of the 13 backends | `ruva compile src/main.ruva --target go` |
 | `ruva compile <file> --release` | Optimized build | `ruva compile src/main.ruva --release` |
 | `ruva compile <file> --lazy` | Syntax check only | `ruva compile src/main.ruva --lazy` |
 | `ruva transpile <file>` | Generate target code | `ruva transpile src/main.ruva --stdout` |
-| `ruva transpile <file> --target zig` | Generate Zig code | `ruva transpile src/main.ruva --target zig` |
-| `ruva transpile <file> --target python` | Generate Python code | `ruva transpile src/main.ruva --target python` |
+| `ruva transpile <file> --target <backend>` | Generate code for any backend | `ruva transpile src/main.ruva --target typescript` |
+
+Valid `--target` values: `rust`, `zig`, `python`, `java`, `csharp`, `go`, `swift`, `kotlin`, `typescript`, `javascript`, `lua`, `ruby`, `php`
 | `ruva check <file>` | Check syntax | `ruva check src/main.ruva` |
 | `ruva check <dir> --all` | Check all files | `ruva check src/ --all` |
 | `ruva fmt <file>` | Format a file | `ruva fmt src/main.ruva` |
@@ -598,9 +590,19 @@ ruva compile src/main.ruva --lazy
    │ CodeGen │  → target source code
    └────┬────┘
         │
-        ├──→ .rs   (Rust backend)   → rustc → native binary
-        ├──→ .zig  (Zig backend)    → zig build-exe
-        └──→ .py   (Python backend) → python3 (interpreted)
+        ├──→ .rs   (Rust backend)       → rustc → native binary
+        ├──→ .zig  (Zig backend)        → zig build-exe
+        ├──→ .py   (Python backend)     → python3 (interpreted)
+        ├──→ .java (Java backend)       → javac → JVM bytecode
+        ├──→ .cs   (C# backend)         → dotnet build → .NET
+        ├──→ .go   (Go backend)         → go build → native binary
+        ├──→ .swift(Swift backend)      → swiftc → native binary
+        ├──→ .kt   (Kotlin backend)     → kotlinc → JVM bytecode
+        ├──→ .ts   (TypeScript backend) → tsc → JS
+        ├──→ .js   (JavaScript backend) → node (interpreted)
+        ├──→ .lua  (Lua backend)        → lua (interpreted)
+        ├──→ .rb   (Ruby backend)       → ruby (interpreted)
+        └──→ .php  (PHP backend)        → php (interpreted)
 ```
 
 ### Multi-Target Backends (13 total)
@@ -620,9 +622,16 @@ ruva compile src/main.ruva --lazy
 | **Lua** | Embedded scripting, game modding | `.lua` → interpreted |
 | **Ruby** | Web (Rails), scripting, automation | `.rb` → interpreted |
 | **PHP** | Web backend, WordPress, CMS | `.php` → interpreted |
-| Compile Time | Slow | Fast | N/A |
-| Runtime | None | None | GC-managed |
-| Dependencies | cargo | zig toolchain | stdlib only |
+
+### Backend Comparison
+
+| Feature | Rust | Zig | Python | Java/C#/Kotlin | Go | Swift | TS/JS | Lua/Ruby/PHP |
+|---------|------|-----|--------|-----------------|-----|-------|-------|---------------|
+| Performance | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| Memory Safety | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
+| Compile Time | Slow | Fast | N/A | Medium | Fast | Medium | Fast | N/A |
+| Runtime | None | None | GC-managed | GC-managed | GC-managed | ARC | GC-managed | GC-managed |
+| Dependencies | cargo | zig toolchain | stdlib only | JDK / .NET SDK | go toolchain | swift toolchain | node/tsc | lang runtime |
 
 ---
 
@@ -694,7 +703,11 @@ ruva compile src/main.ruva --lazy
 
 ## Status
 
-**v1.0.0 — Multi-Language Features**
+**Multi-Backend Expansion — in progress**
+
+> This is an actively evolving fork. Backend codegen, the design/UI tooling,
+> and OS-target support below are at varying stages of completeness —
+> treat items without ✅ as in-progress, not yet shipped.
 
 ### Language Support
 - **Rust (50%)**: Ownership, pattern matching, closures, generics, unsafe, raw pointers, enums
@@ -709,6 +722,7 @@ ruva compile src/main.ruva --lazy
 - Rust CodeGen: ✅ complete with all features
 - Zig CodeGen: ✅ complete with all features
 - Python CodeGen: ✅ complete with all features
+- Java / C# / Go / Swift / Kotlin / TypeScript / JavaScript / Lua / Ruby / PHP CodeGen: 🚧 in progress
 - Security: ✅ path traversal rejection, file size limits, JSON depth limits, dangerous FFI detection
 
 ### Tooling
@@ -716,13 +730,20 @@ ruva compile src/main.ruva --lazy
 - LSP: ✅ text document sync, hover, go-to-definition, completion, diagnostics, parse error reporting
 - Tests: ✅ 157 passing
 - CI/CD: ✅ GitHub Actions (build, test, lint, cross-platform)
+- Design tooling: 🚧 in progress
 
 ### Standard Library (9 modules)
 - core, graphics (OpenGL/Vulkan/DX11/DX12), browser (DOM/Canvas/WebGL/Fetch/WebSocket/Wasm), video (encode/decode/mux/filters), anticheat, io, testing, formatter, serialization
+
+### Enterprise Focus
+This fork (`Ruva-lang-Enterprise`) targets three domains beyond the base language:
+- **Operating systems** — bare-metal / `no_std`-style compilation, aiming to make it
+  possible to build an OS in Ruva. 🚧 in progress
+- **Anticheats** — safe primitives for process memory scanning and integrity checks
+- **Server hosting** — high-concurrency, low-latency networking at native performance
 
 ---
 
 ## License
 
 MIT
-
