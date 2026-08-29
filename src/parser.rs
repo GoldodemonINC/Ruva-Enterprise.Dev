@@ -1411,7 +1411,8 @@ impl Parser {
             let pattern = if alternatives.len() > 1 {
                 Pattern::Or(alternatives)
             } else {
-                alternatives.into_iter().next().unwrap()
+                // Safe: alternatives always has at least one element (initialized with parse_pattern())
+                alternatives.into_iter().next().expect("alternatives must have at least one pattern")
             };
             let guard = if self.at(&Token::If) {
                 self.advance();
