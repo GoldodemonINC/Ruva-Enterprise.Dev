@@ -1,0 +1,284 @@
+// Self-Hosting Scope Analyzer — Symbol table for a Ruva compiler
+// Using .ruva to build the name resolution pass of a Ruva compiler
+
+import std::io
+import std::string
+import std::collections::HashMap
+
+// ─── Symbol Types ───────────────────────────────────────────────────────────
+
+enum SymbolKind {
+    Local
+    Parameter
+    Function
+    Struct
+    Enum
+    Trait
+    Impl
+    Class
+    Module
+    Const
+    TypeAlias
+}
+
+struct Symbol {
+    pub name: string
+    pub kind: SymbolKind
+    pub ty: string
+    pub is_pub: bool
+    pub is_mut: bool
+    pub line: u32
+    pub col: u32
+    pub depth: u32
+
+    pub fn new(name: string, kind: SymbolKind, ty: string, line: u32, col: u32, depth: u32) -> Self {
+        return Self {
+            name,
+            kind,
+            ty,
+            is_pub: false,
+            is_mut: false,
+            line,
+            col,
+            depth,
+        }
+    }
+}
+
+// ─── Scope ──────────────────────────────────────────────────────────────────
+
+struct Scope {
+    pub symbols: HashMap<string, Symbol>
+    pub parent: Option<u32>
+    pub depth: u32
+    pub name: string
+
+    pub fn new(name: string, parent: Option<u32>, depth: u32) -> Self {
+        return Self {
+            symbols: HashMap::new(),
+            parent,
+            depth,
+            name,
+        }
+    }
+
+    pub fn define(&mut self, symbol: Symbol) -> bool {
+        if self.symbols.contains_key(&symbol.name) {
+            return false
+        }
+        self.symbols.insert(symbol.name.clone(), symbol)
+        return true
+    }
+
+    pub fn lookup(&self, name: &string) -> Option<&Symbol> {
+        return self.symbols.get(name)
+    }
+}
+
+// ─── Scope Analyzer ─────────────────────────────────────────────────────────
+
+struct ScopeAnalyzer {
+    pub scopes: Vec<Scope>
+    pub current_scope: u32
+    pub errors: Vec<string>
+    pub warnings: Vec<string>
+}
+
+impl ScopeAnalyzer {
+    pub fn new() -> Self {
+        let mut scopes = Vec::new()
+        scopes.push(Scope::new("<global>".into(), Option::None, 0))
+
+        return Self {
+            scopes,
+            current_scope: 0,
+            errors: Vec::new(),
+            warnings: Vec::new(),
+        }
+    }
+
+    pub fn push_scope(&mut self, name: string) -> u32 {
+        let parent = self.current_scope
+        let depth = self.scopes[parent as usize].depth + 1
+        let new_id = self.scopes.len() as u32
+
+        self.scopes.push(Scope::new(name, Option::Some(parent), depth))
+        self.current_scope = new_id
+
+        return new_id
+    }
+
+    pub fn pop_scope(&mut self) {
+        if let Option::Some(parent) = self.scopes[self.current_scope as usize].parent {
+            self.current_scope = parent
+        }
+    }
+
+    pub fn define(&mut self, symbol: Symbol) -> bool {
+        let scope = &mut self.scopes[self.current_scope as usize]
+
+        // Check for duplicate in current scope
+        if scope.symbols.contains_key(&symbol.name) {
+            self.errors.push(format!(
+                "Error: '{}' already defined at line {}",
+                symbol.name, symbol.line
+            ))
+            return false
+        }
+
+        return scope.define(symbol)
+    }
+
+    pub fn lookup(&self, name: &string) -> Option<&Symbol> {
+        let mut scope_id = self.current_scope
+
+        loop {
+            let scope = &self.scopes[scope_id as usize]
+            if let Option::Some(sym) = scope.lookup(name) {
+                return Option::Some(sym)
+            }
+
+            match scope.parent {
+                Option::Some(parent) => scope_id = parent,
+                Option::None => return Option::None,
+            }
+        }
+    }
+
+    pub fn is_defined_in_current_scope(&self, name: &string) -> bool {
+        return self.scopes[self.current_scope as usize].symbols.contains_key(name)
+    }
+
+    pub fn current_depth(&self) -> u32 {
+        return self.scopes[self.current_scope as usize].depth
+    }
+
+    pub fn get_all_symbols(&self) -> Vec<&Symbol> {
+        let mut result = Vec::new()
+        for scope in &self.scopes {
+            for sym in scope.symbols.values() {
+                result.push(sym)
+            }
+        }
+        return result
+    }
+
+    pub fn print_scope_tree(&self) {
+        println!("Scope Tree:")
+        self.print_scope(0, "")
+    }
+
+    fn print_scope(&self, id: u32, prefix: string) {
+        let scope = &self.scopes[id as usize]
+        println!("{}├── {} (depth: {})", prefix, scope.name, scope.depth)
+
+        let count = scope.symbols.len()
+        let mut i = 0
+        for sym in scope.symbols.values() {
+            i += 1
+            let connector = if i == count { "└── " } else { "├── " }
+            let kind_str = match sym.kind {
+                SymbolKind::Local => "local",
+                SymbolKind::Parameter => "param",
+                SymbolKind::Function => "fn",
+                SymbolKind::Struct => "struct",
+                SymbolKind::Enum => "enum",
+                SymbolKind::Trait => "trait",
+                SymbolKind::Impl => "impl",
+                SymbolKind::Class => "class",
+                SymbolKind::Module => "mod",
+                SymbolKind::Const => "const",
+                SymbolKind::TypeAlias => "type",
+            }
+            println!("{}{}  {}: {} ({})", prefix, connector, sym.name, kind_str, sym.ty)
+        }
+    }
+}
+
+// ─── Pre-built Scope Tree ───────────────────────────────────────────────────
+
+fn build_example_scope(analyzer: &mut ScopeAnalyzer) {
+    // Global scope definitions
+    analyzer.define(Symbol::new("PI".into(), SymbolKind::Const, "f64".into(), 1, 1, 0))
+    analyzer.define(Symbol::new("add".into(), SymbolKind::Function, "fn(i32, i32) -> i32".into(), 2, 1, 0))
+
+    // Push function scope
+    analyzer.push_scope("add()".into())
+
+    analyzer.define(Symbol::new("a".into(), SymbolKind::Parameter, "i32".into(), 3, 6, 1))
+    analyzer.define(Symbol::new("b".into(), SymbolKind::Parameter, "i32".into(), 3, 14, 1))
+    analyzer.define(Symbol::new("result".into(), SymbolKind::Local, "i32".into(), 4, 5, 1))
+
+    // Push block scope
+    analyzer.push_scope("if block".into())
+
+    analyzer.define(Symbol::new("temp".into(), SymbolKind::Local, "i32".into(), 5, 9, 2))
+
+    analyzer.pop_scope()
+    analyzer.pop_scope()
+
+    // Push class scope
+    analyzer.push_scope("Point".into())
+
+    analyzer.define(Symbol::new("x".into(), SymbolKind::Local, "f64".into(), 8, 5, 1))
+    analyzer.define(Symbol::new("y".into(), SymbolKind::Local, "f64".into(), 9, 5, 1))
+
+    // Push method scope
+    analyzer.push_scope("distance_to()".into())
+
+    analyzer.define(Symbol::new("self".into(), SymbolKind::Parameter, "&Point".into(), 10, 10, 2))
+    analyzer.define(Symbol::new("other".into(), SymbolKind::Parameter, "&Point".into(), 10, 20, 2))
+    analyzer.define(Symbol::new("dx".into(), SymbolKind::Local, "f64".into(), 11, 9, 2))
+    analyzer.define(Symbol::new("dy".into(), SymbolKind::Local, "f64".into(), 12, 9, 2))
+
+    analyzer.pop_scope()
+    analyzer.pop_scope()
+}
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Self-Hosting Scope Analyzer ===")
+    println!()
+
+    let mut analyzer = ScopeAnalyzer::new()
+    build_example_scope(&mut analyzer)
+
+    // Print scope tree
+    analyzer.print_scope_tree()
+
+    println!()
+
+    // Test lookups
+    println!("Lookup Results:")
+
+    if let Option::Some(sym) = analyzer.lookup(&"PI".into()) {
+        println!("  'PI' -> {} {} (depth {})", sym.ty, "const", sym.depth)
+    }
+    if let Option::Some(sym) = analyzer.lookup(&"result".into()) {
+        println!("  'result' -> {} {} (depth {})", sym.ty, "local", sym.depth)
+    }
+    if let Option::Some(sym) = analyzer.lookup(&"dx".into()) {
+        println!("  'dx' -> {} {} (depth {})", sym.ty, "local", sym.depth)
+    }
+    if let Option::Some(sym) = analyzer.lookup(&"x".into()) {
+        println!("  'x' -> {} {} (depth {})", sym.ty, "field", sym.depth)
+    }
+
+    // Count all symbols
+    let all = analyzer.get_all_symbols()
+    println!()
+    println!("Total symbols: {}", all.len())
+
+    // Report errors
+    if analyzer.errors.len() > 0 {
+        println!()
+        println!("Errors:")
+        for err in &analyzer.errors {
+            println!("  {}", err)
+        }
+    }
+
+    println!()
+    println!("Scope analyzer functional — ready for type checking integration.")
+}
