@@ -379,11 +379,16 @@ impl TypeChecker {
 
         self.push_scope();
 
+        // Mark types used in parameters and return type as used
         for p in &f.params {
             if !matches!(p.ty, Type::SelfType) {
+                self.mark_type_used(&p.ty);
                 let ty = self.ast_type_to_ty(&p.ty);
                 self.define_var(p.name.clone(), ty, f.span.line);
             }
+        }
+        if let Some(ref ret_ty) = f.return_type {
+            self.mark_type_used(ret_ty);
         }
 
         self.check_block(&f.body);
@@ -403,8 +408,54 @@ impl TypeChecker {
         self.in_unsafe_fn = was_unsafe_fn;
     }
 
+    /// Mark a type name as used (for unused variable warnings)
+    fn mark_type_used(&mut self, ty: &Type) {
+        match ty {
+            Type::Name(name) => {
+                // Mark named types as used (e.g., Shape, String, etc.)
+                self.mark_used(name);
+            }
+            Type::Path(parts) => {
+                // Mark the first segment of a path as used (e.g., Shape in Shape::Circle)
+                if let Some(first) = parts.first() {
+                    self.mark_used(first);
+                }
+            }
+            Type::Generic { name, args } => {
+                self.mark_used(name);
+                for arg in args {
+                    self.mark_type_used(arg);
+                }
+            }
+            Type::Reference { inner, .. } | Type::RawPointer { inner, .. } => {
+                self.mark_type_used(inner);
+            }
+            Type::Array { inner, .. } | Type::Slice(inner) => {
+                self.mark_type_used(inner);
+            }
+            Type::Tuple(types) => {
+                for t in types {
+                    self.mark_type_used(t);
+                }
+            }
+            Type::Function { params, return_type } => {
+                for p in params {
+                    self.mark_type_used(p);
+                }
+                self.mark_type_used(return_type);
+            }
+            _ => {}
+        }
+    }
+
     fn block_has_return(&self, block: &Block) -> bool {
-        for stmt in &block.stmts {
+        // Check if the block has a trailing expression that returns
+        if let Some(ref expr) = block.expr {
+            return self.expr_has_return(expr);
+        }
+        
+        // Check statements
+        for (i, stmt) in block.stmts.iter().enumerate() {
             if matches!(stmt, Stmt::Return(Some(_))) {
                 return true;
             }
@@ -415,8 +466,40 @@ impl TypeChecker {
                     }
                 }
             }
+            // Match expressions where all arms return
+            if let Stmt::Match { arms, .. } = stmt {
+                if !arms.is_empty() && arms.iter().all(|arm| self.expr_has_return(&arm.body)) {
+                    return true;
+                }
+            }
+            // Last expression statement is implicitly returned in Ruva
+            if i == block.stmts.len() - 1 {
+                if let Stmt::Expr(expr) = stmt {
+                    return self.expr_has_return(expr);
+                }
+            }
         }
         false
+    }
+
+    fn expr_has_return(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Block(block) => self.block_has_return(block),
+            Expr::If { then_body, else_body, .. } => {
+                if let Some(ref else_expr) = else_body {
+                    self.block_has_return(then_body) && self.expr_has_return(else_expr)
+                } else {
+                    false
+                }
+            }
+            Expr::Match { arms, .. } => {
+                !arms.is_empty() && arms.iter().all(|arm| self.expr_has_return(&arm.body))
+            }
+            Expr::Loop(block) => self.block_has_return(block),
+            // All other expressions implicitly return a value in Ruva
+            // (they are the last expression in a block)
+            _ => true,
+        }
     }
 
     fn check_block(&mut self, block: &Block) {
@@ -1577,9 +1660,11 @@ impl TypeChecker {
     // ─── Unsafe Checking Helpers ───────────────────────────────────────
 
     fn report_unused(&mut self) {
+        // Built-in constructors that are always in scope but only used in pattern matching
+        let builtins = ["Some", "None", "Ok", "Err", "Self"];
         let unused: Vec<String> = if let Some(scope) = self.scopes.first() {
             scope.used.iter()
-                .filter(|(name, used)| !**used && name.as_str() != "main" && !name.starts_with('_'))
+                .filter(|(name, used)| !**used && name.as_str() != "main" && !name.starts_with('_') && !builtins.contains(&name.as_str()))
                 .map(|(name, _)| name.clone())
                 .collect()
         } else {

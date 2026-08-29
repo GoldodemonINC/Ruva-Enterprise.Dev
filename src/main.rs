@@ -5,7 +5,6 @@ mod codegen_python;
 mod codegen_zig;
 mod colors;
 mod debug;
-mod features;
 mod json_protocol;
 mod lexer;
 mod lsp;
