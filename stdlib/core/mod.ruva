@@ -49,10 +49,6 @@ impl<T> Option<T> {
         }
     }
 
-    pub fn contains(&self, val: &T) -> bool {
-        return self.is_some()
-    }
-
     pub fn expect(self, msg: string) -> T {
         return match self {
             Option::Some(val) => val,
@@ -78,10 +74,6 @@ impl<T> Option<T> {
             },
             Option::None => Option::None,
         }
-    }
-
-    pub fn flatten(self) -> T {
-        return self.unwrap()
     }
 
     pub fn or(self, alt: Option<T>) -> Option<T> {
@@ -122,10 +114,6 @@ impl<T> Option<T> {
             },
             Option::None => Option::None,
         }
-    }
-
-    pub fn unzip(self) {
-        panic!("unzip not yet supported on Option")
     }
 
     pub fn inspect(self, f: fn(&T) -> Unit) -> Option<T> {
@@ -240,18 +228,6 @@ impl<T, E> Result<T, E> {
             Result::Ok(_) => other,
             Result::Err(e) => Result::Err(e),
         }
-    }
-
-    pub fn flatten(self) -> T {
-        return self.unwrap()
-    }
-
-    pub fn contains(&self, val: &T) -> bool {
-        return self.is_ok()
-    }
-
-    pub fn contains_err(&self, _val: &E) -> bool {
-        return self.is_err()
     }
 
     pub fn inspect(self, f: fn(&T) -> Unit) -> Result<T, E> {

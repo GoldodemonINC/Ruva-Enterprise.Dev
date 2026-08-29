@@ -60,36 +60,9 @@ impl CodeGen {
         map.insert("ruva::anticheat::tamper".into(), "winapi".into());
         map.insert("ruva::anticheat::crypto".into(), "aes-gcm".into());
 
-        // Game engine (using macroquad for windowed graphics)
         map.insert("ruva::macroquad".into(), "macroquad".into());
 
         map
-    }
-
-    /// Generate a Cargo.toml for the compiled Ruva program
-    #[allow(dead_code)]
-    pub fn generate_cargo_toml(&self) -> String {
-        let mut cargo_toml = String::from(
-            r#"[package]
-name = "ruva_program"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-"#,
-        );
-
-        // Add dependencies based on imports used
-        for (name, version) in &self.dependencies {
-            cargo_toml.push_str(&format!("{} = \"{}\"\n", name, version));
-        }
-
-        // Add common dependencies that most Ruva programs need
-        if !self.dependencies.iter().any(|(n, _)| n == "anyhow") {
-            cargo_toml.push_str("anyhow = \"1\"\n");
-        }
-
-        cargo_toml
     }
 
     fn write_indent(&mut self) {
@@ -130,9 +103,7 @@ edition = "2021"
             self.writeln("");
         }
 
-        // Check if macroquad is used and generate async main attribute
-        let has_macroquad = self.dependencies.iter().any(|(n, _)| n == "macroquad");
-        if has_macroquad {
+        if self.dependencies.iter().any(|(n, _)| n == "macroquad") {
             self.writeln("#[macroquad::main(\"Snake Game\")] ");
         }
 
@@ -263,9 +234,7 @@ edition = "2021"
         };
 
         let unsafe_str = if f.is_unsafe { "unsafe " } else { "" };
-        // Check if this is main function with macroquad
-        let has_macroquad = self.dependencies.iter().any(|(n, _)| n == "macroquad");
-        let async_str = if name == "main" && has_macroquad { "async " } else { "" };
+        let async_str = if name == "main" && self.dependencies.iter().any(|(n, _)| n == "macroquad") { "async " } else { "" };
         self.writeln(&format!("{}{}{}fn {}{}({}){}", vis, unsafe_str, async_str, name, generics, params.join(", "), ret));
         self.gen_block(&f.body);
         self.writeln("");
@@ -517,7 +486,6 @@ edition = "2021"
 
     fn gen_use(&mut self, u: &UseDef) {
         let path_str = u.path.join("::");
-        // Skip ruva:: imports — they're mapped to external crates via dependency system
         if path_str.starts_with("ruva::") {
             return
         }
