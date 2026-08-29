@@ -89,6 +89,10 @@ impl ModuleResolver {
         if path.starts_with('/') || path.contains(":\\") {
             bail!("Absolute paths not allowed in module imports: '{}'", path);
         }
+        // Security: reject null bytes that could cause path truncation
+        if path.contains('\0') {
+            bail!("Null bytes not allowed in module path: '{}'", path);
+        }
 
         // Check for cycles
         if self.loaded.contains(path) {
@@ -132,6 +136,10 @@ impl ModuleResolver {
         // Security: reject names with traversal components
         if name.contains("..") || name.contains('/') || name.contains('\\') {
             bail!("Invalid module name: '{}' (no path separators or traversal allowed)", name);
+        }
+        // Security: reject null bytes that could cause path truncation
+        if name.contains('\0') {
+            bail!("Null bytes not allowed in module name: '{}'", name);
         }
 
         let key = format!("mod:{}", name);

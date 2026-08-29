@@ -237,6 +237,18 @@ fn read_source(path: &Path) -> Result<String> {
     if ext != Some("ruva") {
         bail!("Expected .ruva file, got: {}", path.display());
     }
+
+    // Security: limit file size to 10MB to prevent DoS
+    const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10MB
+    let metadata = fs::metadata(path)?;
+    if metadata.len() > MAX_FILE_SIZE {
+        bail!(
+            "Source file too large: {} bytes (max {} bytes)",
+            metadata.len(),
+            MAX_FILE_SIZE
+        );
+    }
+
     Ok(fs::read_to_string(path)?)
 }
 
