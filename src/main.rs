@@ -3,6 +3,16 @@ mod backend;
 mod codegen;
 mod codegen_python;
 mod codegen_zig;
+mod codegen_java;
+mod codegen_csharp;
+mod codegen_go;
+mod codegen_swift;
+mod codegen_kotlin;
+mod codegen_typescript;
+mod codegen_javascript;
+mod codegen_lua;
+mod codegen_ruby;
+mod codegen_php;
 mod colors;
 mod debug;
 mod json_protocol;
@@ -36,6 +46,16 @@ enum CliTarget {
     Rust,
     Zig,
     Python,
+    Java,
+    Csharp,
+    Go,
+    Swift,
+    Kotlin,
+    Typescript,
+    Javascript,
+    Lua,
+    Ruby,
+    Php,
 }
 
 impl From<CliTarget> for Target {
@@ -44,6 +64,16 @@ impl From<CliTarget> for Target {
             CliTarget::Rust => Target::Rust,
             CliTarget::Zig => Target::Zig,
             CliTarget::Python => Target::Python,
+            CliTarget::Java => Target::Java,
+            CliTarget::Csharp => Target::CSharp,
+            CliTarget::Go => Target::Go,
+            CliTarget::Swift => Target::Swift,
+            CliTarget::Kotlin => Target::Kotlin,
+            CliTarget::Typescript => Target::TypeScript,
+            CliTarget::Javascript => Target::JavaScript,
+            CliTarget::Lua => Target::Lua,
+            CliTarget::Ruby => Target::Ruby,
+            CliTarget::Php => Target::Php,
         }
     }
 }
@@ -361,17 +391,92 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
             eprintln!("{}", colors::success(&format!("Compiled {} → {} (Zig)", input.display(), out_path.display())));
         }
         Target::Python => {
-            // Python: write .py file (interpreted, no compilation needed)
             let out_path = match output {
                 Some(p) => p.to_path_buf(),
-                None => {
-                    let mut p = input.to_path_buf();
-                    p.set_extension("py");
-                    p
-                }
+                None => { let mut p = input.to_path_buf(); p.set_extension("py"); p }
             };
             fs::write(&out_path, &code)?;
             eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Python)", input.display(), out_path.display())));
+        }
+        Target::Java => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("java"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Java)", input.display(), out_path.display())));
+        }
+        Target::CSharp => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("cs"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (C#)", input.display(), out_path.display())));
+        }
+        Target::Go => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("go"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Go)", input.display(), out_path.display())));
+        }
+        Target::Swift => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("swift"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Swift)", input.display(), out_path.display())));
+        }
+        Target::Kotlin => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("kt"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Kotlin)", input.display(), out_path.display())));
+        }
+        Target::TypeScript => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("ts"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (TypeScript)", input.display(), out_path.display())));
+        }
+        Target::JavaScript => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("js"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (JavaScript)", input.display(), out_path.display())));
+        }
+        Target::Lua => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("lua"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Lua)", input.display(), out_path.display())));
+        }
+        Target::Ruby => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("rb"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Ruby)", input.display(), out_path.display())));
+        }
+        Target::Php => {
+            let out_path = match output {
+                Some(p) => p.to_path_buf(),
+                None => { let mut p = input.to_path_buf(); p.set_extension("php"); p }
+            };
+            fs::write(&out_path, &code)?;
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (PHP)", input.display(), out_path.display())));
         }
     }
 
