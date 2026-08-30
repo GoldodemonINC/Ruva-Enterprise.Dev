@@ -2,3 +2,8 @@
 # get Ruva syntax highlighting and are counted in the repo's language statistics.
 *.ruva linguist-language=Ruva linguist-detectable
 *.rve  linguist-language=Ruva linguist-detectable
+
+# Exclude generated/snapshot files from language stats
+*.golden linguist-generated
+.github/ linguist-generated
+*.toml linguist-vendored

@@ -305,7 +305,7 @@ Ruva/
 │   ├── formatter/          # Code formatting
 │   ├── serialization/      # JSON/TOML/YAML
 │   └── interop/            # FFI helpers
-├── benchmarks/             # Multi-language CPU benchmarks
+├── benchmarks/             # Ruva CPU benchmarks
 ├── Cargo.toml              # Dependencies: clap + anyhow only
 └── DESIGN.md               # Language specification
 ```

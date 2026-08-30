@@ -1,8 +1,0 @@
-[package]
-name = "ruva-self-hosted"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "ruva-lex"
-path = "src/main.rs"
