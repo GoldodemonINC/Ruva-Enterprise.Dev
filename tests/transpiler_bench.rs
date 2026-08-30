@@ -18,8 +18,15 @@ fn project_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
+/// Resolve a source file that may be named `.rve` or `.ruva`, so the harness works
+/// both before and after the extension rename.
 fn input_path(name: &str) -> PathBuf {
-    project_root().join(format!("benches/inputs/{}.ruva", name))
+    let dir = project_root().join("benches/inputs");
+    for ext in [".rve", ".ruva"] {
+        let p = dir.join(format!("{}{}", name, ext));
+        if p.exists() { return p; }
+    }
+    dir.join(format!("{}.ruva", name))
 }
 
 // ─── Timing Infrastructure ─────────────────────────────────────────

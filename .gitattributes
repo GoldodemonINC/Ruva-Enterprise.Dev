@@ -1,0 +1,4 @@
+# Tell GitHub (linguist) to treat these extensions as the "Ruva" language so they
+# get Ruva syntax highlighting and are counted in the repo's language statistics.
+*.ruva linguist-language=Ruva linguist-detectable
+*.rve  linguist-language=Ruva linguist-detectable

@@ -1,0 +1,52 @@
+fn main() {
+    // TRUE branch of if (exercises the else-skip Jmp when condition is true)
+    let x = 8
+    if x > 5 {
+        println!("bigger")
+    } else {
+        println!("smaller")
+    }
+
+    // FALSE branch
+    let y = 2
+    if y > 5 {
+        println!("bigbig")
+    } else {
+        println!("smalls")
+    }
+
+    // Nested loops — inner loop runs to completion each outer iteration
+    let mut outer = 0
+    let mut total = 0
+    while outer < 3 {
+        let mut inner = 0
+        while inner < 4 {
+            total = total + 1
+            inner = inner + 1
+        }
+        outer = outer + 1
+    }
+    println!("nested total = ", total)
+
+    // Loop that must terminate (guard against infinite loop)
+    let mut n = 10
+    let mut evens = 0
+    while n > 0 {
+        if n % 2 == 0 {
+            evens = evens + 1
+        }
+        n = n - 1
+    }
+    println!("evens in 1..10 = ", evens)
+
+    // Recursion with two different base-case branches
+    println!("fib(7) = ", fib(7))
+}
+
+fn fib(n: i64) -> i64 {
+    if n < 2 {
+        return n
+    } else {
+        return fib(n - 1) + fib(n - 2)
+    }
+}

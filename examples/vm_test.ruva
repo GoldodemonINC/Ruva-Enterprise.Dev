@@ -1,0 +1,85 @@
+fn factorial(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+fn abs(x: i64) -> i64 {
+    if x < 0 {
+        return 0 - x
+    }
+    return x
+}
+
+fn main() {
+    // Basic arithmetic
+    let x = 10 + 3 * 2
+    println!("10 + 3 * 2 = ", x)
+
+    // Variables and assignment
+    let mut counter = 0
+    while counter < 5 {
+        counter = counter + 1
+    }
+    println!("Counter: ", counter)
+
+    // Function call - factorial
+    let result = factorial(5)
+    println!("5! = ", result)
+
+    // Array
+    let nums = [10, 20, 30, 40, 50]
+    println!("First: ", nums[0])
+    println!("Last: ", nums[4])
+
+    // If/else
+    let val = 42
+    if val > 10 {
+        println!("val is big: ", val)
+    } else {
+        println!("val is small")
+    }
+
+    // For loop
+    let sum = 0
+    for i in [1, 2, 3, 4, 5] {
+        sum = sum + i
+    }
+    println!("Sum 1..5 = ", sum)
+
+    // Comparison
+    println!("3 > 2 = ", 3 > 2)
+    println!("3 < 2 = ", 3 < 2)
+    println!("3 == 3 = ", 3 == 3)
+
+    // String concat
+    println!("Hello" + " " + "World")
+
+    // Boolean logic
+    let a = true
+    let b = false
+    println!("true && false = ", a && b)
+    println!("true || false = ", a || b)
+    println!(!false)
+
+    // Function call - abs
+    let abs_val = abs(42)
+    println!("abs(42) = ", abs_val)
+
+    // Modulo
+    let rem = 17 % 5
+    println!("17 % 5 = ", rem)
+
+    // While loop with halving
+    let mut n = 100
+    while n > 1 {
+        n = n / 2
+    }
+    println!("100 halved: ", n)
+
+    // Negative arithmetic
+    let neg = 0 - 10
+    println!("-10 = ", neg)
+    println!("-10 + 25 = ", neg + 25)
+}

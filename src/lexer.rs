@@ -2,8 +2,7 @@ use crate::ast::{Span, Token};
 use anyhow::{bail, Result};
 
 pub struct Lexer<'a> {
-    _source: &'a str,
-    bytes: Vec<u8>,
+    bytes: &'a [u8],
     pos: usize,
     line: usize,
     col: usize,
@@ -12,8 +11,7 @@ pub struct Lexer<'a> {
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
         Self {
-            _source: source,
-            bytes: source.bytes().collect(),
+            bytes: source.as_bytes(),
             pos: 0,
             line: 1,
             col: 1,
@@ -111,7 +109,7 @@ impl<'a> Lexer<'a> {
         Ok(s)
     }
 
-    fn read_number(&mut self, first: u8) -> Token {
+    fn read_number(&mut self, first: u8) -> Result<Token> {
         let mut num_str = String::new();
         num_str.push(first as char);
 
@@ -128,8 +126,9 @@ impl<'a> Lexer<'a> {
                 }
             }
             let cleaned: String = num_str.chars().filter(|c| *c != '_').collect();
-            let val = u64::from_str_radix(&cleaned[2..], 16).unwrap_or(0) as i64;
-            return Token::Int(val);
+            let val = u64::from_str_radix(&cleaned[2..], 16)
+                .map_err(|e| anyhow::anyhow!("Invalid hex literal at line {}: {}", self.line, e))? as i64;
+            return Ok(Token::Int(val));
         }
 
         // binary
@@ -143,8 +142,9 @@ impl<'a> Lexer<'a> {
                 }
             }
             let cleaned: String = num_str.chars().filter(|c| *c != '_').collect();
-            let val = u64::from_str_radix(&cleaned[2..], 2).unwrap_or(0) as i64;
-            return Token::Int(val);
+            let val = u64::from_str_radix(&cleaned[2..], 2)
+                .map_err(|e| anyhow::anyhow!("Invalid binary literal at line {}: {}", self.line, e))? as i64;
+            return Ok(Token::Int(val));
         }
 
         while let Some(b) = self.peek() {
@@ -154,8 +154,14 @@ impl<'a> Lexer<'a> {
                 is_float = true;
                 num_str.push(self.advance().unwrap() as char);
             } else if b == b'f' || b == b'u' || b == b'i' {
-                // type suffix — skip it
-                self.advance();
+                // type suffix — consume full suffix (e.g. i64, u32, f64)
+                while let Some(suffix) = self.peek() {
+                    if suffix.is_ascii_alphanumeric() || suffix == b'_' {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
                 break;
             } else {
                 break;
@@ -165,9 +171,11 @@ impl<'a> Lexer<'a> {
         let cleaned: String = num_str.chars().filter(|c| *c != '_').collect();
 
         if is_float {
-            Token::Float(cleaned.parse::<f64>().unwrap_or(0.0))
+            Ok(Token::Float(cleaned.parse::<f64>()
+                .map_err(|e| anyhow::anyhow!("Invalid float literal at line {}: {}", self.line, e))?))
         } else {
-            Token::Int(cleaned.parse::<i64>().unwrap_or(0))
+            Ok(Token::Int(cleaned.parse::<i64>()
+                .map_err(|e| anyhow::anyhow!("Invalid integer literal at line {}: {}", self.line, e))?))
         }
     }
 
@@ -278,15 +286,13 @@ impl<'a> Lexer<'a> {
                     match self.advance() {
                         Some(b'"') => {
                             if !current.is_empty() {
-                                parts.push((current.clone(), false));
-                                current.clear();
+                                parts.push((std::mem::take(&mut current), false));
                             }
                             break;
                         }
                         Some(b'{') => {
                             if !current.is_empty() {
-                                parts.push((current.clone(), false));
-                                current.clear();
+                                parts.push((std::mem::take(&mut current), false));
                             }
                             // Read until matching }
                             let mut depth = 1u32;
@@ -376,7 +382,7 @@ impl<'a> Lexer<'a> {
             // Number literal
             if ch.is_ascii_digit() {
                 self.advance(); // consume the first digit
-                let token = self.read_number(ch);
+                let token = self.read_number(ch)?;
                 tokens.push((token, span));
                 continue;
             }
@@ -409,7 +415,10 @@ impl<'a> Lexer<'a> {
                     Some(b'=') => { self.advance(); Token::SlashEq }
                     _ => Token::Slash,
                 },
-                b'%' => Token::Percent,
+                b'%' => match self.peek() {
+                    Some(b'=') => { self.advance(); Token::PercentEq }
+                    _ => Token::Percent,
+                },
                 b'=' => match self.peek() {
                     Some(b'=') => { self.advance(); Token::EqEq }
                     Some(b'>') => { self.advance(); Token::FatArrow }

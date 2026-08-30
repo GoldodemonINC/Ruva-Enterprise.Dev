@@ -1,0 +1,40 @@
+fn main() {
+    // break should exit the loop, skipping remaining body
+    let mut i = 0
+    let mut hits = 0
+    while i < 10 {
+        i = i + 1
+        if i == 3 {
+            break
+        }
+        hits = hits + 1
+    }
+    println!("break while: i=", i, " hits=", hits)
+
+    // continue should skip to next iteration, condition re-evaluated
+    let mut j = 0
+    let mut evens = 0
+    while j < 6 {
+        j = j + 1
+        if j % 2 == 1 {
+            continue
+        }
+        evens = evens + 1
+    }
+    println!("continue while: evens=", evens)
+
+    // both inside a for-in loop
+    let mut total = 0
+    let mut seen = 0
+    for k in [1, 2, 3, 4, 5, 6, 7, 8] {
+        if k == 4 {
+            break
+        }
+        if k == 2 {
+            continue
+        }
+        total = total + k
+        seen = seen + 1
+    }
+    println!("for-in break/continue: total=", total, " seen=", seen)
+}

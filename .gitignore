@@ -4,3 +4,11 @@
 *.so
 *.dylib
 Ruva.zip
+
+# Stray build/test artifacts
+*.class
+*.bak
+stderr.txt
+stdout.txt
+.freebuff/
+/self-hosting/target

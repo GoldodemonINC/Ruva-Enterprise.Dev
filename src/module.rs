@@ -102,12 +102,16 @@ impl ModuleResolver {
             .unwrap_or(path)
             .replace("::", "/");
 
-        // Try to find the module file
+        // Try to find the module file (`.rve` is accepted alongside `.ruva`)
         let candidates = vec![
             self.stdlib_path.join(format!("{}/mod.ruva", module_path)),
+            self.stdlib_path.join(format!("{}/mod.rve", module_path)),
             self.stdlib_path.join(format!("{}.ruva", module_path)),
+            self.stdlib_path.join(format!("{}.rve", module_path)),
             self.source_dir.join(format!("{}/mod.ruva", module_path)),
+            self.source_dir.join(format!("{}/mod.rve", module_path)),
             self.source_dir.join(format!("{}.ruva", module_path)),
+            self.source_dir.join(format!("{}.rve", module_path)),
         ];
 
         for candidate in &candidates {
@@ -140,10 +144,12 @@ impl ModuleResolver {
         }
         self.loaded.insert(key);
 
-        // Try name.ruva and name/mod.ruva
+        // Try name.ruva / .rve and name/mod.ruva / .rve
         let candidates = vec![
             self.source_dir.join(format!("{}.ruva", name)),
+            self.source_dir.join(format!("{}.rve", name)),
             self.source_dir.join(format!("{}/mod.ruva", name)),
+            self.source_dir.join(format!("{}/mod.rve", name)),
         ];
 
         for candidate in &candidates {

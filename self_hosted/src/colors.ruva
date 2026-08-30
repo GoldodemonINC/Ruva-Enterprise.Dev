@@ -1,0 +1,52 @@
+// ANSI color codes for terminal output
+// Self-hosted: written in Ruva, transpiled to Rust
+
+pub struct ColorCodes {}
+
+impl ColorCodes {
+    pub fn red() -> string { return "\x1b[31m" }
+    pub fn green() -> string { return "\x1b[32m" }
+    pub fn yellow() -> string { return "\x1b[33m" }
+    pub fn blue() -> string { return "\x1b[34m" }
+    pub fn magenta() -> string { return "\x1b[35m" }
+    pub fn cyan() -> string { return "\x1b[36m" }
+    pub fn bold() -> string { return "\x1b[1m" }
+    pub fn dim_code() -> string { return "\x1b[2m" }
+    pub fn reset() -> string { return "\x1b[0m" }
+
+    pub fn success(msg: string) -> string {
+        let r = "\x1b[0m"
+        let g = "\x1b[32m"
+        return format!("{}✓{} {}", g, r, msg)
+    }
+
+    pub fn error(msg: string) -> string {
+        let r = "\x1b[0m"
+        let re = "\x1b[31m"
+        return format!("{}✗{} {}", re, r, msg)
+    }
+
+    pub fn warning(msg: string) -> string {
+        let r = "\x1b[0m"
+        let y = "\x1b[33m"
+        return format!("{}⚠{} {}", y, r, msg)
+    }
+
+    pub fn info(msg: string) -> string {
+        let r = "\x1b[0m"
+        let c = "\x1b[36m"
+        return format!("{}⟳{} {}", c, r, msg)
+    }
+
+    pub fn header(msg: string) -> string {
+        let r = "\x1b[0m"
+        let b = "\x1b[1m"
+        return format!("{}{}{}{}", b, msg, r, "")
+    }
+
+    pub fn format_dim(msg: string) -> string {
+        let r = "\x1b[0m"
+        let d = "\x1b[2m"
+        return format!("{}{}{}{}", d, msg, r, "")
+    }
+}

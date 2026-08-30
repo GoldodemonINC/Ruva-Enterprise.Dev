@@ -600,18 +600,18 @@ edition = "2021"
                 self.gen_block(then_body);
 
                 if let Some(else_kind) = else_body {
+                    // gen_block already emitted the closing } with a trailing newline.
+                    // Remove that newline so we can append ' else {' on the same line.
+                    self.output.truncate(self.output.trim_end_matches('\n').len());
                     match else_kind {
                         ElseKind::If(cond, body) => {
-                            self.write_indent();
-                            self.output.push_str("} else ");
-                            self.write("if ");
+                            self.output.push_str(" else if ");
                             self.gen_expr(cond);
                             self.output.push(' ');
                             self.gen_block(body);
                         }
                         ElseKind::Else(body) => {
-                            self.write_indent();
-                            self.output.push_str("} else ");
+                            self.output.push_str(" else ");
                             self.gen_block(body);
                         }
                     }
@@ -731,8 +731,16 @@ edition = "2021"
                     write!(self.output, "{}", s).unwrap();
                 }
             }
-            Expr::Str(s) => write!(self.output, "\"{}\"", s).unwrap(),
-            Expr::Char(c) => write!(self.output, "'{}'", c).unwrap(),
+            Expr::Str(s) => {
+                self.output.push('"');
+                self.output.push_str(&Self::escape_rust_string(s));
+                self.output.push('"');
+            }
+            Expr::Char(c) => {
+                self.output.push('\'');
+                self.output.push_str(&Self::escape_rust_char(*c));
+                self.output.push('\'');
+            }
             Expr::Bool(b) => write!(self.output, "{}", b).unwrap(),
             Expr::Null => self.output.push_str("None"),
             Expr::Self_ => self.output.push_str("self"),
@@ -769,6 +777,7 @@ edition = "2021"
             }
 
             Expr::Range { start, end, inclusive } => {
+                self.output.push('(');
                 self.gen_expr(start);
                 if *inclusive {
                     self.output.push_str("..=");
@@ -776,6 +785,7 @@ edition = "2021"
                     self.output.push_str("..");
                 }
                 self.gen_expr(end);
+                self.output.push(')');
             }
 
             Expr::Binary { op, left, right } => {
@@ -840,12 +850,13 @@ edition = "2021"
             }
 
             Expr::Index { object, index } => {
-                // Use .get() for bounds checking instead of direct indexing
-                // This prevents panics on out-of-bounds access
+                // Use direct indexing: Rust's Index/IndexMut traits already
+                // bounds-check and panic on out-of-bounds. Using .get().unwrap()
+                // would return &T which can't be assigned to (LHS of =, +=, etc.).
                 self.gen_expr(object);
-                self.output.push_str(".get(");
+                self.output.push('[');
                 self.gen_expr(index);
-                self.output.push_str(").unwrap_or_else(|| panic!(\"Index out of bounds\"))");
+                self.output.push(']');
             }
 
             Expr::Closure { params, return_type, body } => {
@@ -854,7 +865,7 @@ edition = "2021"
                     if i > 0 {
                         self.output.push_str(", ");
                     }
-                    if p.is_ref { self.output.push('&'); }
+                    for _ in 0..p.ref_count { self.output.push('&'); }
                     if p.is_mut { self.output.push_str("mut "); }
                     self.output.push_str(&p.name);
                     if let Some(ref ty) = p.ty {
@@ -904,7 +915,8 @@ edition = "2021"
                 for part in parts {
                     match part {
                         crate::ast::FStringPart::Text(text) => {
-                            fmt_str.push_str(&text.replace('{', "{{").replace('}', "}}"));
+                            let escaped = Self::escape_rust_format_str(text);
+                            fmt_str.push_str(&escaped.replace('{', "{{").replace('}', "}}"));
                         }
                         crate::ast::FStringPart::Expr(expr) => {
                             fmt_str.push_str("{}" );
@@ -1021,13 +1033,17 @@ edition = "2021"
                 write!(self.output, " as {}", ty_str).unwrap();
             }
 
-            Expr::Macro { name, args } => {
+            Expr::Macro { name, args, separator } => {
                 self.output.push_str(name);
                 self.output.push('!');
                 self.output.push('(');
                 for (i, arg) in args.iter().enumerate() {
                     if i > 0 {
-                        self.output.push_str(", ");
+                        if *separator == ';' {
+                            self.output.push_str("; ");
+                        } else {
+                            self.output.push_str(", ");
+                        }
                     }
                     self.gen_expr(arg);
                 }
@@ -1333,6 +1349,57 @@ edition = "2021"
         self.output.push_str("| ");
         self.gen_expr(&lc.element);
         self.output.push_str(").collect::<Vec<_>>())");
+    }
+
+    // ─── String Escaping (Security) ─────────────────────────────────────
+
+    /// Escape a string value for safe embedding in a Rust string literal.
+    /// Re-escapes characters that were unescaped by the Ruva lexer.
+    fn escape_rust_string(s: &str) -> String {
+        let mut out = String::with_capacity(s.len() * 2);
+        for c in s.chars() {
+            match c {
+                '\u{005c}' /* \ */ => out.push_str("\\\\"),
+                '"' => out.push_str("\\\""),
+                '\n' => out.push_str("\\n"),
+                '\r' => out.push_str("\\r"),
+                '\t' => out.push_str("\\t"),
+                '\0' => out.push_str("\\0"),
+                c if c.is_control() => {
+                    write!(out, "\\x{:02x}", c as u32).unwrap();
+                }
+                _ => out.push(c),
+            }
+        }
+        out
+    }
+
+    /// Escape a char value for safe embedding in a Rust char literal.
+    fn escape_rust_char(c: char) -> String {
+        match c {
+            '\u{005c}' /* \ */ => "\\\\".to_string(),
+            '\u{0027}' /* ' */ => "\\'".to_string(),
+            '\n' => "\\n".to_string(),
+            '\r' => "\\r".to_string(),
+            '\t' => "\\t".to_string(),
+            '\0' => "\\0".to_string(),
+            c if c.is_control() => format!("\\x{:02x}", c as u32),
+            _ => c.to_string(),
+        }
+    }
+
+    /// Escape a string for safe embedding in a Rust format! macro string.
+    /// Re-escapes backslashes and double quotes.
+    fn escape_rust_format_str(s: &str) -> String {
+        let mut out = String::with_capacity(s.len() * 2);
+        for c in s.chars() {
+            match c {
+                '\u{005c}' /* \ */ => out.push_str("\\\\"),
+                '"' => out.push_str("\\\""),
+                _ => out.push(c),
+            }
+        }
+        out
     }
 }
 

@@ -8,15 +8,32 @@ pub struct Parser {
     /// When false, `Self { ... }` is NOT parsed as a struct literal
     /// (e.g. inside match/if/while discriminant where `{` is the body)
     can_construct: bool,
+    /// Whether the most recently parsed expression statement consumed a
+    /// semicolon. Used to distinguish a tail expression from `expr;`.
+    last_expr_had_semicolon: bool,
+    /// When true, the next `peek()` returns `Gt` and `advance()` returns `Gt`
+    /// without consuming a real token. This handles `>>` splitting for nested
+    /// generics like `Vec<Vec<f64>>` — the lexer produces one `Shr` token but
+    /// the parser needs two `Gt` tokens.
+    split_gt_pending: bool,
 }
 
 impl Parser {
     pub fn new(source: &str) -> Result<Self> {
         let tokens = Lexer::new(source).tokenize()?;
-        Ok(Self { tokens, pos: 0, can_construct: true })
+        Ok(Self {
+            tokens,
+            pos: 0,
+            can_construct: true,
+            split_gt_pending: false,
+            last_expr_had_semicolon: false,
+        })
     }
 
     fn peek(&self) -> &Token {
+        if self.split_gt_pending {
+            return &Token::Gt;
+        }
         &self.tokens.get(self.pos).map(|(t, _)| t).unwrap_or(&Token::Eof)
     }
 
@@ -25,19 +42,19 @@ impl Parser {
     }
 
     fn advance(&mut self) -> (Token, Span) {
-        let result = self.tokens.get(self.pos).cloned().unwrap_or((Token::Eof, Span { line: 0, col: 0 }));
-        if self.pos < self.tokens.len() {
-            self.pos += 1;
+        if self.split_gt_pending {
+            self.split_gt_pending = false;
+            let span = self.tokens.get(self.pos).map(|(_, s)| *s).unwrap_or(Span { line: 0, col: 0 });
+            return (Token::Gt, span);
         }
-        result
-    }
-
-    fn _advance_ref(&mut self) -> Option<&Token> {
-        let tok = self.tokens.get(self.pos).map(|(t, _)| t);
         if self.pos < self.tokens.len() {
+            let default = (Token::Eof, Span { line: 0, col: 0 });
+            let result = std::mem::replace(&mut self.tokens[self.pos], default);
             self.pos += 1;
+            result
+        } else {
+            (Token::Eof, Span { line: 0, col: 0 })
         }
-        tok
     }
 
     fn expect(&mut self, expected: &Token) -> Result<Span> {
@@ -54,6 +71,22 @@ impl Parser {
         match tok {
             Token::Ident(s) => Ok((s, span)),
             _ => bail!("Expected identifier, got {:?} at {}:{}", tok, span.line, span.col),
+        }
+    }
+
+    /// Expect a `Gt` token to close a generic parameter list.
+    /// If we see `Shr` (i.e. `>>`), consume it and leave `split_gt_pending = true`
+    /// so the next `peek()`/`advance()` returns the second `Gt` without consuming
+    /// a real token. This handles nested generics like `Vec<Vec<f64>>`.
+    fn expect_close_generic(&mut self) -> Result<Span> {
+        if self.at(&Token::Shr) {
+            // `>>` needs to be split into two `Gt` tokens.
+            let span = self.peek_span();
+            self.advance(); // consume the Shr token
+            self.split_gt_pending = true; // next peek/advance returns Gt
+            Ok(span)
+        } else {
+            self.expect(&Token::Gt)
         }
     }
 
@@ -930,7 +963,7 @@ impl Parser {
     // ─── Types ───────────────────────────────────────────────────────────
 
     fn parse_type(&mut self) -> Result<Type> {
-        let base = match self.peek().clone() {
+        let base = match self.peek() {
             Token::Star => {
                 // Raw pointer: *const T or *mut T
                 self.advance();
@@ -1032,13 +1065,13 @@ impl Parser {
                 if self.at(&Token::Lt) {
                     self.advance();
                     let mut args = Vec::new();
-                    while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
+                    while !self.at(&Token::Gt) && !self.at(&Token::Shr) && !self.at(&Token::Eof) {
                         args.push(self.parse_type()?);
                         if self.at(&Token::Comma) {
                             self.advance();
                         }
                     }
-                    self.expect(&Token::Gt)?;
+                    self.expect_close_generic()?;
                     Type::Generic { name, args }
                 } else if self.at(&Token::DoubleColon) {
                     // Path: std::io::Error
@@ -1047,33 +1080,23 @@ impl Parser {
                         self.advance();
                         let (seg, _) = self.expect_ident()?;
                         path.push(seg);
-                        // Check for generic args on the last segment
                         if self.at(&Token::Lt) {
                             self.advance();
                             let mut args = Vec::new();
-                            while !self.at(&Token::Gt) && !self.at(&Token::Eof) {
+                            while !self.at(&Token::Gt) && !self.at(&Token::Shr) && !self.at(&Token::Eof) {
                                 args.push(self.parse_type()?);
                                 if self.at(&Token::Comma) {
                                     self.advance();
                                 }
                             }
-                            self.expect(&Token::Gt)?;
-                            // Return Generic type with full path as name
+                            self.expect_close_generic()?;
                             let full_name = path.join("::");
                             return Ok(Type::Generic { name: full_name, args });
                         }
                     }
-                    // If we didn't break with generic args
                     Type::Path(path)
                 } else {
-                    // Check for special types
-                    match name.as_str() {
-                        "string" => Type::Name("String".into()),
-                        "bool" | "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
-                        | "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
-                        | "f32" | "f64" | "char" => Type::Name(name),
-                        _ => Type::Name(name),
-                    }
+                    Type::Name(name)
                 }
             }
             _ => {
@@ -1093,15 +1116,23 @@ impl Parser {
     fn parse_block(&mut self) -> Result<Block> {
         self.expect(&Token::LBrace)?;
         let mut stmts = Vec::new();
+        let mut tail_expr = None;
 
         while !self.at(&Token::RBrace) && !self.at(&Token::Eof) {
             let stmt = self.parse_stmt()?;
-            stmts.push(stmt);
+            // If this is an expression stmt followed by RBrace (no semicolon),
+            // it's a tail expression — the block's return value.
+            match stmt {
+                Stmt::Expr(e) if !self.last_expr_had_semicolon && self.at(&Token::RBrace) => {
+                    tail_expr = Some(Box::new(e));
+                }
+                stmt => stmts.push(stmt),
+            }
         }
 
         self.expect(&Token::RBrace)?;
 
-        Ok(Block { stmts, expr: None })
+        Ok(Block { stmts, expr: tail_expr })
     }
 
     fn is_expr_start(&self) -> bool {
@@ -1113,13 +1144,16 @@ impl Parser {
             |            Token::Not | Token::Amp | Token::Star | Token::Minus | Token::Pipe
             | Token::If | Token::Match | Token::Loop
             | Token::Fn | Token::Move
+            // A leading `||` in operand-start position is a zero-argument closure
+            // header (logical-OR needs a left operand, so it cannot occur here).
+            | Token::Or
         )
     }
 
     // ─── Statements ──────────────────────────────────────────────────────
 
     fn parse_stmt(&mut self) -> Result<Stmt> {
-        match self.peek().clone() {
+        match self.peek() {
             Token::Let => self.parse_let_stmt(),
             Token::Return => self.parse_return_stmt(),
             Token::If => self.parse_if_stmt(),
@@ -1157,14 +1191,18 @@ impl Parser {
                 }
                 // Expression statement or compound assignment
                 let expr = self.parse_expr()?;
+                // Parsing a nested block expression may update this flag;
+                // only the outer statement's terminator matters here.
+                self.last_expr_had_semicolon = false;
                 match self.peek() {
-                    Token::PlusEq | Token::MinusEq | Token::StarEq | Token::SlashEq
+                    Token::PlusEq | Token::MinusEq | Token::StarEq | Token::SlashEq | Token::PercentEq
                     | Token::AmpEq | Token::PipeEq | Token::CaretEq => {
                         let op = match self.peek() {
                             Token::PlusEq => BinOp::Add,
                             Token::MinusEq => BinOp::Sub,
                             Token::StarEq => BinOp::Mul,
                             Token::SlashEq => BinOp::Div,
+                            Token::PercentEq => BinOp::Rem,
                             Token::AmpEq => BinOp::BitAnd,
                             Token::PipeEq => BinOp::BitOr,
                             Token::CaretEq => BinOp::BitXor,
@@ -1172,17 +1210,26 @@ impl Parser {
                         };
                         self.advance();
                         let value = self.parse_expr()?;
-                        if self.at(&Token::Semicolon) { self.advance(); }
+                        if self.at(&Token::Semicolon) {
+                            self.advance();
+                            self.last_expr_had_semicolon = true;
+                        }
                         Ok(Stmt::Expr(Expr::CompoundAssign { op, target: Box::new(expr), value: Box::new(value) }))
                     }
                     Token::Eq => {
                         self.advance();
                         let value = self.parse_expr()?;
-                        if self.at(&Token::Semicolon) { self.advance(); }
+                        if self.at(&Token::Semicolon) {
+                            self.advance();
+                            self.last_expr_had_semicolon = true;
+                        }
                         Ok(Stmt::Expr(Expr::Assign { target: Box::new(expr), value: Box::new(value) }))
                     }
                     _ => {
-                        if self.at(&Token::Semicolon) { self.advance(); }
+                        if self.at(&Token::Semicolon) {
+                            self.advance();
+                            self.last_expr_had_semicolon = true;
+                        }
                         Ok(Stmt::Expr(expr))
                     }
                 }
@@ -1379,7 +1426,7 @@ impl Parser {
     // ─── Patterns ────────────────────────────────────────────────────────
 
     fn parse_pattern(&mut self) -> Result<Pattern> {
-        match self.peek().clone() {
+        match self.peek() {
             Token::Underscore => {
                 self.advance();
                 Ok(Pattern::Wildcard)
@@ -1481,6 +1528,20 @@ impl Parser {
         self.parse_expr_bp(0)
     }
 
+    /// Consume a closure parameter's leading `&` or `&&` patterns.
+    fn parse_closure_ref_count(&mut self) -> usize {
+        let mut ref_count = 0;
+        while self.at(&Token::And) || self.at(&Token::Amp) {
+            if self.at(&Token::And) {
+                ref_count += 2;
+            } else {
+                ref_count += 1;
+            }
+            self.advance();
+        }
+        ref_count
+    }
+
     /// Pratt parser with precedence climbing
     fn parse_expr_bp(&mut self, min_bp: u8) -> Result<Expr> {
         let mut lhs = self.parse_unary()?;
@@ -1490,7 +1551,7 @@ impl Parser {
         if min_bp == 0 && (self.at(&Token::DotDot) || self.at(&Token::DotDotEq)) {
             let inclusive = self.at(&Token::DotDotEq);
             self.advance();
-            let rhs = self.parse_expr_bp(1)?; // right side binds higher than range itself
+            let rhs = self.parse_expr_bp(1)?;
             lhs = Expr::Range {
                 start: Box::new(lhs),
                 end: Box::new(rhs),
@@ -1510,29 +1571,29 @@ impl Parser {
                 continue;
             }
 
-            let op = match self.peek() {
-                Token::Plus => BinOp::Add,
-                Token::Minus => BinOp::Sub,
-                Token::Star => BinOp::Mul,
-                Token::Slash => BinOp::Div,
-                Token::Percent => BinOp::Rem,
-                Token::EqEq => BinOp::Eq,
-                Token::Ne => BinOp::Ne,
-                Token::Lt => BinOp::Lt,
-                Token::Gt => BinOp::Gt,
-                Token::Le => BinOp::Le,
-                Token::Ge => BinOp::Ge,
-                Token::And => BinOp::And,
-                Token::Or => BinOp::Or,
-                Token::Amp => BinOp::BitAnd,
-                Token::Pipe => BinOp::BitOr,
-                Token::Caret => BinOp::BitXor,
-                Token::Shl => BinOp::Shl,
-                Token::Shr => BinOp::Shr,
+            // Single match: resolve operator and its precedence in one step.
+            let (op, bp) = match self.peek() {
+                Token::Or => (BinOp::Or, (1, 2)),
+                Token::And => (BinOp::And, (3, 4)),
+                Token::EqEq => (BinOp::Eq, (5, 6)),
+                Token::Ne => (BinOp::Ne, (5, 6)),
+                Token::Lt => (BinOp::Lt, (7, 8)),
+                Token::Gt => (BinOp::Gt, (7, 8)),
+                Token::Le => (BinOp::Le, (7, 8)),
+                Token::Ge => (BinOp::Ge, (7, 8)),
+                Token::Pipe => (BinOp::BitOr, (9, 10)),
+                Token::Caret => (BinOp::BitXor, (11, 12)),
+                Token::Amp => (BinOp::BitAnd, (13, 14)),
+                Token::Shl => (BinOp::Shl, (15, 16)),
+                Token::Shr => (BinOp::Shr, (15, 16)),
+                Token::Plus => (BinOp::Add, (17, 18)),
+                Token::Minus => (BinOp::Sub, (17, 18)),
+                Token::Star => (BinOp::Mul, (19, 20)),
+                Token::Slash => (BinOp::Div, (19, 20)),
+                Token::Percent => (BinOp::Rem, (19, 20)),
                 _ => break,
             };
 
-            let bp = self.binop_bp(&op);
             if bp.0 < min_bp {
                 break;
             }
@@ -1549,23 +1610,8 @@ impl Parser {
         Ok(lhs)
     }
 
-    fn binop_bp(&self, op: &BinOp) -> (u8, u8) {
-        match op {
-            BinOp::Or => (1, 2),
-            BinOp::And => (3, 4),
-            BinOp::Eq | BinOp::Ne => (5, 6),
-            BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => (7, 8),
-            BinOp::BitOr => (9, 10),
-            BinOp::BitXor => (11, 12),
-            BinOp::BitAnd => (13, 14),
-            BinOp::Shl | BinOp::Shr => (15, 16),
-            BinOp::Add | BinOp::Sub => (17, 18),
-            BinOp::Mul | BinOp::Div | BinOp::Rem => (19, 20),
-        }
-    }
-
     fn parse_unary(&mut self) -> Result<Expr> {
-        match self.peek().clone() {
+        match self.peek() {
             Token::Minus => {
                 self.advance();
                 let expr = self.parse_unary()?;
@@ -1705,18 +1751,18 @@ impl Parser {
     }
 
     fn parse_atom(&mut self) -> Result<Expr> {
-        match self.peek().clone() {
-            Token::Int(n) => {
-                self.advance();
-                Ok(Expr::Int(n))
+        match self.peek() {
+            Token::Int(_) => {
+                let (tok, _) = self.advance();
+                if let Token::Int(n) = tok { Ok(Expr::Int(n)) } else { unreachable!() }
             }
-            Token::Float(f) => {
-                self.advance();
-                Ok(Expr::Float(f))
+            Token::Float(_) => {
+                let (tok, _) = self.advance();
+                if let Token::Float(f) = tok { Ok(Expr::Float(f)) } else { unreachable!() }
             }
-            Token::Str(s) => {
-                self.advance();
-                Ok(Expr::Str(s))
+            Token::Str(_) => {
+                let (tok, _) = self.advance();
+                if let Token::Str(s) = tok { Ok(Expr::Str(s)) } else { unreachable!() }
             }
             Token::FStringStart => {
                 self.advance(); // skip FStringStart
@@ -1739,13 +1785,13 @@ impl Parser {
                 self.expect(&Token::FStringEnd)?;
                 Ok(Expr::FString(parts))
             }
-            Token::Char(c) => {
-                self.advance();
-                Ok(Expr::Char(c))
+            Token::Char(_) => {
+                let (tok, _) = self.advance();
+                if let Token::Char(c) = tok { Ok(Expr::Char(c)) } else { unreachable!() }
             }
-            Token::Bool(b) => {
-                self.advance();
-                Ok(Expr::Bool(b))
+            Token::Bool(_) => {
+                let (tok, _) = self.advance();
+                if let Token::Bool(b) = tok { Ok(Expr::Bool(b)) } else { unreachable!() }
             }
             Token::Null => {
                 self.advance();
@@ -1777,8 +1823,9 @@ impl Parser {
                 }
                 Ok(Expr::Self_)
             }
-            Token::Ident(name) => {
-                self.advance();
+            Token::Ident(_) => {
+                let (tok, _) = self.advance();
+                let name = if let Token::Ident(s) = tok { s } else { unreachable!() };
 
                 // Check for :: path continuation
                 if self.at(&Token::DoubleColon) {
@@ -1797,14 +1844,14 @@ impl Parser {
                 // Macro invocation: println!, vec!, etc.
                 if self.at(&Token::Not) {
                     self.advance();
-                    let macro_args = if self.at(&Token::LParen) || self.at(&Token::LBrace) || self.at(&Token::LBracket) {
+                    let (macro_args, separator) = if self.at(&Token::LParen) || self.at(&Token::LBrace) || self.at(&Token::LBracket) {
                         let delim = self.peek().clone();
                         match delim {
                             Token::LParen => {
                                 self.advance();
                                 let args = self.parse_args()?;
                                 self.expect(&Token::RParen)?;
-                                args
+                                (args, ',')
                             }
                             Token::LBrace => {
                                 self.advance();
@@ -1818,28 +1865,30 @@ impl Parser {
                                     }
                                 }
                                 self.expect(&Token::RBrace)?;
-                                args
+                                (args, ',')
                             }
                             Token::LBracket => {
                                 self.advance();
                                 let mut args = Vec::new();
+                                let mut sep = ',';
                                 if !self.at(&Token::RBracket) {
                                     args.push(self.parse_expr()?);
-                                    while self.at(&Token::Comma) {
+                                    while self.at(&Token::Comma) || self.at(&Token::Semicolon) {
+                                        if self.at(&Token::Semicolon) { sep = ';'; }
                                         self.advance();
                                         if self.at(&Token::RBracket) { break; }
                                         args.push(self.parse_expr()?);
                                     }
                                 }
                                 self.expect(&Token::RBracket)?;
-                                args
+                                (args, sep)
                             }
-                            _ => Vec::new(),
+                            _ => (Vec::new(), ','),
                         }
                     } else {
-                        Vec::new()
+                        (Vec::new(), ',')
                     };
-                    return Ok(Expr::Macro { name, args: macro_args });
+                    return Ok(Expr::Macro { name, args: macro_args, separator });
                 }
 
                 // Special built-in expressions
@@ -2008,7 +2057,8 @@ impl Parser {
                 self.expect(&Token::LParen)?;
                 let mut params = Vec::new();
                 while !self.at(&Token::RParen) && !self.at(&Token::Eof) {
-                    let is_ref = if self.at(&Token::Amp) { self.advance(); true } else { false };
+                    let ref_count = self.parse_closure_ref_count();
+                    let is_ref = ref_count > 0;
                     let is_mut = if self.at(&Token::Mut) { self.advance(); true } else { false };
                     let (name, _) = self.expect_ident()?;
                     let ty = if self.at(&Token::Colon) {
@@ -2017,7 +2067,7 @@ impl Parser {
                     } else {
                         None
                     };
-                    params.push(ClosureParam { name, ty, is_ref, is_mut });
+                    params.push(ClosureParam { name, ty, is_ref, is_mut, ref_count });
                     if self.at(&Token::Comma) { self.advance(); }
                 }
                 self.expect(&Token::RParen)?;
@@ -2035,7 +2085,8 @@ impl Parser {
                 self.advance(); // consume first |
                 let mut params = Vec::new();
                 while !self.at(&Token::Pipe) && !self.at(&Token::Eof) {
-                    let is_ref = if self.at(&Token::Amp) { self.advance(); true } else { false };
+                    let ref_count = self.parse_closure_ref_count();
+                    let is_ref = ref_count > 0;
                     let is_mut = if self.at(&Token::Mut) { self.advance(); true } else { false };
                     let (name, _) = self.expect_ident()?;
                     let ty = if self.at(&Token::Colon) {
@@ -2044,7 +2095,7 @@ impl Parser {
                     } else {
                         None
                     };
-                    params.push(ClosureParam { name, ty, is_ref, is_mut });
+                    params.push(ClosureParam { name, ty, is_ref, is_mut, ref_count });
                     if self.at(&Token::Comma) { self.advance(); }
                 }
                 self.expect(&Token::Pipe)?; // consume closing |
@@ -2056,6 +2107,22 @@ impl Parser {
                 };
                 let body = Box::new(self.parse_expr()?);
                 Ok(Expr::Closure { params, return_type, body })
+            }
+            Token::Or => {
+                // Zero-argument closure: `|| -> T { ... }`. In primary (operand-start)
+                // position the lexical `Or` emitted by `||` cannot be the logical-OR
+                // operator (it would have no left operand), so it is unambiguously an
+                // empty parameter list. In ordinary infix position this token is still
+                // consumed as logical OR by the precedence loop, so both uses coexist.
+                self.advance();
+                let return_type = if self.at(&Token::Arrow) {
+                    self.advance();
+                    Some(self.parse_type()?)
+                } else {
+                    None
+                };
+                let body = Box::new(self.parse_expr()?);
+                Ok(Expr::Closure { params: Vec::new(), return_type, body })
             }
             Token::Dot => {
                 // Method chain starting with .method()
@@ -2250,6 +2317,32 @@ mod tests {
     }
 
     #[test]
+    fn test_semicolon_prevents_tail_expression() {
+        let src = "fn f() -> i32 { 1; }\nfn g() -> i32 { 1 }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+
+        let Item::Function(f) = &program.items[0] else { panic!("Expected function") };
+        assert!(f.body.expr.is_none());
+        assert_eq!(f.body.stmts.len(), 1);
+
+        let Item::Function(g) = &program.items[1] else { panic!("Expected function") };
+        assert!(g.body.expr.is_some());
+        assert!(g.body.stmts.is_empty());
+    }
+
+    #[test]
+    fn test_nested_block_does_not_leak_semicolon_state() {
+        let src = "fn f() -> i32 { ({ 1; }) }";
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+
+        let Item::Function(f) = &program.items[0] else { panic!("Expected function") };
+        assert!(f.body.expr.is_some());
+        assert!(f.body.stmts.is_empty());
+    }
+
+    #[test]
     fn test_parse_struct() {
         let src = r#"
             struct Point {
@@ -2284,6 +2377,85 @@ mod tests {
         let mut parser = Parser::new(src).unwrap();
         let program = parser.parse_program().unwrap();
         assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_closure_ref_pattern() {
+        // Test |&x| — single ref pattern
+        let src = r#"
+            fn main() {
+                let f = |&x| x
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                if let Stmt::Let { value, .. } = &f.body.stmts[0] {
+                    if let Expr::Closure { params, .. } = value {
+                        assert_eq!(params.len(), 1);
+                        assert_eq!(params[0].name, "x");
+                        assert!(params[0].is_ref);
+                        assert_eq!(params[0].ref_count, 1);
+                    } else { panic!("Expected Closure") }
+                } else { panic!("Expected Let") }
+            }
+            _ => panic!("Expected Function"),
+        }
+    }
+
+    #[test]
+    fn test_parse_closure_double_ref_pattern() {
+        // Test |&&x| — double ref pattern (used in filter on iter of &T)
+        let src = r#"
+            fn main() {
+                let f = |&&x| x
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                if let Stmt::Let { value, .. } = &f.body.stmts[0] {
+                    if let Expr::Closure { params, .. } = value {
+                        assert_eq!(params.len(), 1);
+                        assert_eq!(params[0].name, "x");
+                        assert!(params[0].is_ref);
+                        assert_eq!(params[0].ref_count, 2);
+                    } else { panic!("Expected Closure") }
+                } else { panic!("Expected Let") }
+            }
+            _ => panic!("Expected Function"),
+        }
+    }
+
+    #[test]
+    fn test_parse_closure_mixed_ref_and_nonref() {
+        // Test |&&x, y, &z| — mixed patterns
+        let src = r#"
+            fn main() {
+                let f = |&&x, y, &z| x + y + z
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                if let Stmt::Let { value, .. } = &f.body.stmts[0] {
+                    if let Expr::Closure { params, .. } = value {
+                        assert_eq!(params.len(), 3);
+                        assert_eq!(params[0].name, "x");
+                        assert_eq!(params[0].ref_count, 2);
+                        assert_eq!(params[1].name, "y");
+                        assert_eq!(params[1].ref_count, 0);
+                        assert!(!params[1].is_ref);
+                        assert_eq!(params[2].name, "z");
+                        assert_eq!(params[2].ref_count, 1);
+                    } else { panic!("Expected Closure") }
+                } else { panic!("Expected Let") }
+            }
+            _ => panic!("Expected Function"),
+        }
     }
 
     #[test]
@@ -2478,5 +2650,125 @@ mod tests {
         assert!(matches!(&program.items[0], Item::Use(_)));
         assert!(matches!(&program.items[1], Item::Module(_)));
         assert!(matches!(&program.items[2], Item::Function(_)));
+    }
+
+    #[test]
+    fn test_parse_nested_generics_gt_split() {
+        // The lexer produces a single Shr token for >>, but the parser
+        // needs two Gt tokens for nested generics like Vec<Vec<f64>>.
+        let src = r#"
+            fn process(a: &Vec<Vec<f64>>, b: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+                return a
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                // Check return type is Vec<Vec<f64>>
+                let ret = f.return_type.as_ref().unwrap();
+                match ret {
+                    Type::Generic { name, args } => {
+                        assert_eq!(name, "Vec");
+                        assert_eq!(args.len(), 1);
+                        match &args[0] {
+                            Type::Generic { name: inner_name, args: inner_args } => {
+                                assert_eq!(inner_name, "Vec");
+                                assert_eq!(inner_args.len(), 1);
+                            }
+                            _ => panic!("Expected inner Generic type"),
+                        }
+                    }
+                    _ => panic!("Expected Generic return type"),
+                }
+                // Check param types
+                for param in &f.params {
+                    match &param.ty {
+                        Type::Reference { inner, .. } => {
+                            match inner.as_ref() {
+                                Type::Generic { name, args } => {
+                                    assert_eq!(name, "Vec");
+                                    assert_eq!(args.len(), 1);
+                                }
+                                _ => panic!("Expected Generic in reference"),
+                            }
+                        }
+                        _ => panic!("Expected Reference type for param"),
+                    }
+                }
+            }
+            _ => panic!("Expected Function item"),
+        }
+    }
+
+    #[test]
+    fn test_parse_triple_nested_generics() {
+        // Triple-nested: Vec<Vec<Vec<u8>>> produces two Shr tokens
+        let src = r#"
+            fn get_data() -> Vec<Vec<Vec<u8>>> {
+                return Vec::new()
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                let ret = f.return_type.as_ref().unwrap();
+                match ret {
+                    Type::Generic { name, args } => {
+                        assert_eq!(name, "Vec");
+                        assert_eq!(args.len(), 1);
+                        match &args[0] {
+                            Type::Generic { name: n2, args: a2 } => {
+                                assert_eq!(n2, "Vec");
+                                assert_eq!(a2.len(), 1);
+                                match &a2[0] {
+                                    Type::Generic { name: n3, args: a3 } => {
+                                        assert_eq!(n3, "Vec");
+                                        assert_eq!(a3.len(), 1);
+                                    }
+                                    _ => panic!("Expected innermost Generic"),
+                                }
+                            }
+                            _ => panic!("Expected middle Generic"),
+                        }
+                    }
+                    _ => panic!("Expected Generic return type"),
+                }
+            }
+            _ => panic!("Expected Function item"),
+        }
+    }
+
+    #[test]
+    fn test_parse_option_vec_generic() {
+        // Option<Vec<Vec<i32>>> — generic with Option wrapping
+        let src = r#"
+            fn get_nested() -> Option<Vec<Vec<i32>>> {
+                return Option::None
+            }
+        "#;
+        let mut parser = Parser::new(src).unwrap();
+        let program = parser.parse_program().unwrap();
+        match &program.items[0] {
+            Item::Function(f) => {
+                let ret = f.return_type.as_ref().unwrap();
+                match ret {
+                    Type::Generic { name, args } => {
+                        assert_eq!(name, "Option");
+                        assert_eq!(args.len(), 1);
+                        match &args[0] {
+                            Type::Generic { name: n2, args: a2 } => {
+                                assert_eq!(n2, "Vec");
+                                assert_eq!(a2.len(), 1);
+                            }
+                            _ => panic!("Expected inner Generic"),
+                        }
+                    }
+                    _ => panic!("Expected Generic return type"),
+                }
+            }
+            _ => panic!("Expected Function item"),
+        }
     }
 }

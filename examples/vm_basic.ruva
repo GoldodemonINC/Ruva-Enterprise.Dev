@@ -1,0 +1,10 @@
+fn main() {
+    let x = 10
+    println!("x = ", x)
+
+    let y = 3 + 5
+    println!("3 + 5 = ", y)
+
+    let z = x + y
+    println!("x + y = ", z)
+}

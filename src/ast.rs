@@ -105,6 +105,7 @@ pub enum Token {
     SlashEq,    // /=
     AmpEq,      // &=
     PipeEq,     // |=
+    PercentEq,  // %=
     CaretEq,    // ^=
 
     // Delimiters
@@ -703,6 +704,8 @@ pub enum Expr {
     Macro {
         name: String,
         args: Vec<Expr>,
+        /// Separator between macro args: `,` or `;` (for vec![val; count])
+        separator: char,
     },
 
     // Reference
@@ -781,6 +784,8 @@ pub struct ClosureParam {
     pub ty: Option<Type>,
     pub is_ref: bool,
     pub is_mut: bool,
+    /// Number of `&` levels in the pattern (e.g. `&&x` → ref_count: 2)
+    pub ref_count: usize,
 }
 
 #[derive(Debug, Clone)]

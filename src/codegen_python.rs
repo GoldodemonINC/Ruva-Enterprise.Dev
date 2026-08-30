@@ -899,7 +899,7 @@ impl PythonCodeGen {
                 }
             }
 
-            Expr::Macro { name, args } => {
+            Expr::Macro { name, args, separator: _ } => {
                 match name.as_str() {
                     "println" => {
                         self.output.push_str("print(");

@@ -1,0 +1,184 @@
+// Self-hosted Ruva AST definitions
+// Simplified AST covering core language features
+
+enum BinOp {
+    Add, Sub, Mul, Div, Rem,
+    Eq, Ne, Lt, Gt, Le, Ge,
+    And, Or, BitAnd, BitOr, BitXor, Shl, Shr,
+}
+
+enum UnaryOp {
+    Neg, Not, Deref,
+}
+
+struct Program {
+    items: Vec<Item>,
+}
+
+enum Item {
+    Function(FunctionDef),
+    Struct(StructDef),
+    Enum(EnumDef),
+    Impl(ImplBlock),
+    Trait(TraitDef),
+    Import(ImportDef),
+    ExternBlock(ExternBlock),
+}
+
+struct FunctionDef {
+    is_pub: bool,
+    name: string,
+    params: Vec<Param>,
+    return_type: Option<Type>,
+    body: Block,
+}
+
+struct Param {
+    name: string,
+    ty: Type,
+}
+
+struct StructDef {
+    is_pub: bool,
+    name: string,
+    fields: Vec<FieldDef>,
+}
+
+struct FieldDef {
+    is_pub: bool,
+    name: string,
+    ty: Type,
+}
+
+struct EnumDef {
+    is_pub: bool,
+    name: string,
+    variants: Vec<EnumVariant>,
+}
+
+struct EnumVariant {
+    name: string,
+    fields: Vec<Type>,
+}
+
+struct ImplBlock {
+    self_type: Type,
+    trait_name: Option<Type>,
+    methods: Vec<FunctionDef>,
+}
+
+struct TraitDef {
+    is_pub: bool,
+    name: string,
+    methods: Vec<TraitMethod>,
+}
+
+struct TraitMethod {
+    name: string,
+    params: Vec<Param>,
+    return_type: Option<Type>,
+    default_body: Option<Block>,
+}
+
+struct ImportDef {
+    path: string,
+}
+
+struct ExternBlock {
+    abi: string,
+    items: Vec<ExternItem>,
+}
+
+enum ExternItem {
+    Function { is_pub: bool, name: string, params: Vec<Param>, return_type: Option<Type> },
+    Static { is_pub: bool, name: string, ty: Type },
+}
+
+enum Type {
+    Name(string),
+    Generic { name: string, args: Vec<Type> },
+    Reference { inner: Box<Type>, is_mut: bool },
+    Slice(Box<Type>),
+    Array { inner: Box<Type>, size: Option<Box<Expr>> },
+    Tuple(Vec<Type>),
+    Function { params: Vec<Type>, return_type: Box<Type> },
+    Unit,
+    RawPointer { inner: Box<Type>, is_mut: bool },
+}
+
+struct Block {
+    stmts: Vec<Stmt>,
+    expr: Option<Box<Expr>>,
+}
+
+enum Stmt {
+    Let { name: string, ty: Option<Type>, is_mut: bool, value: Expr },
+    Expr(Expr),
+    Return(Option<Expr>),
+    If { condition: Expr, then_body: Block, else_body: Option<ElseKind> },
+    For { var: string, iterable: Expr, body: Block },
+    While { condition: Expr, body: Block },
+    Loop(Block),
+    Break(Option<Expr>),
+    Continue,
+    Match { expr: Expr, arms: Vec<MatchArm> },
+    Unsafe(Block),
+}
+
+enum ElseKind {
+    If(Expr, Block),
+    Else(Block),
+}
+
+struct MatchArm {
+    pattern: Pattern,
+    body: Expr,
+}
+
+enum Pattern {
+    Wildcard,
+    Ident(string),
+    Literal(Expr),
+    Enum { path: Vec<string>, fields: Vec<Pattern> },
+    Or(Vec<Pattern>),
+}
+
+enum Expr {
+    Int(i64),
+    Float(f64),
+    Str(string),
+    Bool(bool),
+    Null,
+    Array(Vec<Expr>),
+    Tuple(Vec<Expr>),
+    Range { start: Box<Expr>, end: Box<Expr>, inclusive: bool },
+    Ident(string),
+    Path(Vec<string>),
+    Self_,
+    Binary { op: BinOp, left: Box<Expr>, right: Box<Expr> },
+    Unary { op: UnaryOp, expr: Box<Expr> },
+    Assign { target: Box<Expr>, value: Box<Expr> },
+    CompoundAssign { op: BinOp, target: Box<Expr>, value: Box<Expr> },
+    Call { function: Box<Expr>, args: Vec<Expr> },
+    MethodCall { object: Box<Expr>, method: string, args: Vec<Expr> },
+    Field { object: Box<Expr>, field: string },
+    Index { object: Box<Expr>, index: Box<Expr> },
+    Closure { params: Vec<ClosureParam>, body: Box<Expr> },
+    Block(Block),
+    If { condition: Box<Expr>, then_body: Block, else_body: Option<Box<Expr>> },
+    Match { expr: Box<Expr>, arms: Vec<MatchArm> },
+    Loop(Block),
+    Macro { name: string, args: Vec<Expr> },
+    Reference { expr: Box<Expr>, is_mut: bool },
+    Deref(Box<Expr>),
+    Cast { expr: Box<Expr>, ty: Type },
+    StructLiteral { name: Box<Expr>, fields: Vec<(string, Expr)> },
+    UnsafeBlock(Block),
+    Sizeof(Type),
+}
+
+struct ClosureParam {
+    name: string,
+    is_ref: bool,
+    is_mut: bool,
+}

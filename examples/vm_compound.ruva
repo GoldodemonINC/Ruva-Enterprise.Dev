@@ -1,0 +1,30 @@
+fn main() {
+    let mut x = 10
+    x += 5
+    println!("x += 5 -> ", x)
+
+    x -= 3
+    println!("x -= 3 -> ", x)
+
+    x *= 2
+    println!("x *= 2 -> ", x)
+
+    x /= 4
+    println!("x /= 4 -> ", x)
+
+    let mut y = 17
+    y %= 5
+    println!("y %= 5 -> ", y)
+
+    // Global compound assignment
+    let mut g = 100
+    g /= 10
+    println!("global /= -> ", g)
+
+    // Compound in loop
+    let mut sum = 0
+    for i in [1, 2, 3, 4, 5] {
+        sum += i
+    }
+    println!("sum 1..5 = ", sum)
+}

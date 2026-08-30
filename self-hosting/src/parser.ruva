@@ -1,0 +1,625 @@
+// Self-hosted Ruva Parser
+// Pratt parser consuming Token stream from the lexer
+
+struct Parser {
+    tokens: Vec<Token>,
+    pos: usize,
+    last_expr_had_semicolon: bool,
+}
+
+impl Parser {
+    pub fn new(source: string) -> Self {
+        let mut lexer = Lexer::new(source)
+        let tokens = lexer.tokenize()
+        return Parser { tokens: tokens, pos: 0, last_expr_had_semicolon: false }
+    }
+
+    fn peek(&self) -> TokenKind {
+        if self.pos >= self.tokens.len() { return TokenKind::Eof }
+        return self.tokens[self.pos].kind
+    }
+
+    fn peek_value(&self) -> string {
+        if self.pos >= self.tokens.len() { return String::new() }
+        return self.tokens[self.pos].value.clone()
+    }
+
+    fn advance(&mut self) -> Token {
+        if self.pos < self.tokens.len() {
+            let tok = self.tokens[self.pos].clone()
+            self.pos += 1
+            return tok
+        }
+        return Token { kind: TokenKind::Eof, value: String::new(), span: Span { line: 0, col: 0 } }
+    }
+
+    fn expect_kind(&mut self, expected: TokenKind) -> Token {
+        let tok = self.advance()
+        if tok.kind == expected { return tok }
+        return Token { kind: TokenKind::Eof, value: String::new(), span: tok.span }
+    }
+
+    fn at(&self, kind: TokenKind) -> bool { return self.peek() == kind }
+    fn at_any(&self, a: TokenKind, b: TokenKind) -> bool { return self.peek() == a || self.peek() == b }
+
+    // ─── Program & Items ─────────────────────────────────────────
+    pub fn parse_program(&mut self) -> Program {
+        let mut items = Vec::new()
+        while !self.at(TokenKind::Eof) {
+            items.push(self.parse_item())
+        }
+        return Program { items: items }
+    }
+
+    fn parse_item(&mut self) -> Item {
+        if self.at(TokenKind::KwImport) { return Item::Import(self.parse_import()) }
+        let is_pub = self.at(TokenKind::KwPub)
+        if is_pub { self.advance() }
+        if self.at(TokenKind::KwFn) { return Item::Function(self.parse_function(is_pub)) }
+        if self.at(TokenKind::KwStruct) { return Item::Struct(self.parse_struct(is_pub)) }
+        if self.at(TokenKind::KwEnum) { return Item::Enum(self.parse_enum(is_pub)) }
+        if self.at(TokenKind::KwImpl) { return Item::Impl(self.parse_impl()) }
+        if self.at(TokenKind::KwTrait) { return Item::Trait(self.parse_trait(is_pub)) }
+        if self.at(TokenKind::KwExtern) { return Item::ExternBlock(self.parse_extern_block()) }
+        // Skip unknown items
+        while !self.at_any(TokenKind::Eof, TokenKind::RBrace) { self.advance() }
+        if self.at(TokenKind::RBrace) { self.advance() }
+        return Item::Import(ImportDef { path: String::from("__skip__") })
+    }
+
+    fn parse_import(&mut self) -> ImportDef {
+        self.expect_kind(TokenKind::KwImport)
+        let mut path = String::new()
+        loop {
+            if self.at_any(TokenKind::Eof, TokenKind::Semicolon) { break }
+            let tok = self.advance()
+            if tok.kind == TokenKind::Dot || tok.kind == TokenKind::DoubleColon {
+                path.push_str("::")
+            } else {
+                path.push_str(&tok.value)
+            }
+        }
+        if self.at(TokenKind::Semicolon) { self.advance() }
+        return ImportDef { path: path }
+    }
+
+    // ─── Function ──────────────────────────────────────────────────
+    fn parse_function(&mut self, is_pub: bool) -> FunctionDef {
+        self.expect_kind(TokenKind::KwFn)
+        let name = self.advance().value
+        let params = self.parse_params()
+        let return_type = if self.at(TokenKind::Arrow) { self.advance(); Some(self.parse_type()) } else { None }
+        let body = self.parse_block()
+        return FunctionDef { is_pub: is_pub, name: name, params: params, return_type: return_type, body: body }
+    }
+
+    fn parse_params(&mut self) -> Vec<Param> {
+        let mut params = Vec::new()
+        self.expect_kind(TokenKind::LParen)
+        while !self.at(TokenKind::RParen) {
+            let name = self.advance().value
+            self.expect_kind(TokenKind::Colon)
+            let ty = self.parse_type()
+            params.push(Param { name: name, ty: ty })
+            if self.at(TokenKind::Comma) { self.advance() }
+        }
+        self.expect_kind(TokenKind::RParen)
+        return params
+    }
+
+    // ─── Struct ──────────────────────────────────────────────────────
+    fn parse_struct(&mut self, is_pub: bool) -> StructDef {
+        self.expect_kind(TokenKind::KwStruct)
+        let name = self.advance().value
+        self.expect_kind(TokenKind::LBrace)
+        let mut fields = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            let fpub = self.at(TokenKind::KwPub)
+            if fpub { self.advance() }
+            let fname = self.advance().value
+            self.expect_kind(TokenKind::Colon)
+            let fty = self.parse_type()
+            fields.push(FieldDef { is_pub: fpub, name: fname, ty: fty })
+            if self.at(TokenKind::Comma) { self.advance() }
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return StructDef { is_pub: is_pub, name: name, fields: fields }
+    }
+
+    // ─── Enum ────────────────────────────────────────────────────────
+    fn parse_enum(&mut self, is_pub: bool) -> EnumDef {
+        self.expect_kind(TokenKind::KwEnum)
+        let name = self.advance().value
+        self.expect_kind(TokenKind::LBrace)
+        let mut variants = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            let vname = self.advance().value
+            let fields = if self.at(TokenKind::LParen) {
+                self.advance()
+                let mut f = Vec::new()
+                while !self.at(TokenKind::RParen) {
+                    f.push(self.parse_type())
+                    if self.at(TokenKind::Comma) { self.advance() }
+                }
+                self.expect_kind(TokenKind::RParen)
+                f
+            } else { Vec::new() }
+            variants.push(EnumVariant { name: vname, fields: fields })
+            if self.at(TokenKind::Comma) { self.advance() }
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return EnumDef { is_pub: is_pub, name: name, variants: variants }
+    }
+
+    // ─── Impl ──────────────────────────────────────────────────────
+    fn parse_impl(&mut self) -> ImplBlock {
+        self.expect_kind(TokenKind::KwImpl)
+        let trait_name = if !self.at(TokenKind::KwFor) {
+            let t = self.parse_type()
+            if self.at(TokenKind::KwFor) { self.advance(); Some(t) } else { Some(t) }
+        } else { None }
+        let self_type = self.parse_type()
+        self.expect_kind(TokenKind::LBrace)
+        let mut methods = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            let mpub = self.at(TokenKind::KwPub)
+            if mpub { self.advance() }
+            methods.push(self.parse_function(mpub))
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return ImplBlock { self_type: self_type, trait_name: trait_name, methods: methods }
+    }
+
+    // ─── Trait ───────────────────────────────────────────────────────
+    fn parse_trait(&mut self, is_pub: bool) -> TraitDef {
+        self.expect_kind(TokenKind::KwTrait)
+        let name = self.advance().value
+        self.expect_kind(TokenKind::LBrace)
+        let mut methods = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            self.expect_kind(TokenKind::KwFn)
+            let mname = self.advance().value
+            let params = self.parse_params()
+            let return_type = if self.at(TokenKind::Arrow) { self.advance(); Some(self.parse_type()) } else { None }
+            let default_body = if self.at(TokenKind::LBrace) { Some(self.parse_block()) } else { None }
+            methods.push(TraitMethod { name: mname, params: params, return_type: return_type, default_body: default_body })
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return TraitDef { is_pub: is_pub, name: name, methods: methods }
+    }
+
+    // ─── Extern ──────────────────────────────────────────────────────
+    fn parse_extern_block(&mut self) -> ExternBlock {
+        self.expect_kind(TokenKind::KwExtern)
+        let abi = if self.at(TokenKind::StrLit) { self.advance().value } else { String::from("C") }
+        self.expect_kind(TokenKind::LBrace)
+        let mut items = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            if self.at(TokenKind::KwFn) {
+                self.advance()
+                let name = self.advance().value
+                let params = self.parse_params()
+                let ret = if self.at(TokenKind::Arrow) { self.advance(); Some(self.parse_type()) } else { None }
+                if self.at(TokenKind::Semicolon) { self.advance() }
+                items.push(ExternItem::Function { is_pub: true, name: name, params: params, return_type: ret })
+            } else if self.at(TokenKind::KwStatic) {
+                self.advance()
+                let name = self.advance().value
+                self.expect_kind(TokenKind::Colon)
+                let ty = self.parse_type()
+                if self.at(TokenKind::Semicolon) { self.advance() }
+                items.push(ExternItem::Static { is_pub: true, name: name, ty: ty })
+            } else { self.advance() }
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return ExternBlock { abi: abi, items: items }
+    }
+
+    // ─── Type Parser ────────────────────────────────────────────────
+    fn parse_type(&mut self) -> Type {
+        if self.at(TokenKind::KwSelfType) { self.advance(); return Type::Name(String::from("Self")) }
+        if self.at(TokenKind::Amp) {
+            self.advance()
+            let is_mut = self.at(TokenKind::KwMut)
+            if is_mut { self.advance() }
+            let inner = Box::new(self.parse_type())
+            return Type::Reference { inner: inner, is_mut: is_mut }
+        }
+        if self.at(TokenKind::Star) {
+            self.advance()
+            let is_mut = self.at(TokenKind::KwMut)
+            if is_mut { self.advance() }
+            self.expect_kind(TokenKind::KwSelfType)
+            let inner = Box::new(Type::Name(String::from("u8")))
+            return Type::RawPointer { inner: inner, is_mut: is_mut }
+        }
+        let name = self.advance().value
+        if self.at(TokenKind::LAngle) {
+            self.advance()
+            let mut args = Vec::new()
+            while !self.at(TokenKind::GAngle) {
+                args.push(self.parse_type())
+                if self.at(TokenKind::Comma) { self.advance() }
+            }
+            self.expect_kind(TokenKind::GAngle)
+            return Type::Generic { name: name, args: args }
+        }
+        return Type::Name(name)
+    }
+
+    // ─── Block ─────────────────────────────────────────────────────
+    fn parse_block(&mut self) -> Block {
+        self.expect_kind(TokenKind::LBrace)
+        let mut stmts = Vec::new()
+        let mut tail_expr = None
+        while !self.at(TokenKind::RBrace) && !self.at(TokenKind::Eof) {
+            let stmt = self.parse_stmt()
+            match stmt {
+                Stmt::Expr(e) if !self.last_expr_had_semicolon && self.at(TokenKind::RBrace) => {
+                    tail_expr = Some(Box::new(e))
+                }
+                stmt => stmts.push(stmt),
+            }
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return Block { stmts: stmts, expr: tail_expr }
+    }
+
+    // ─── Statement Parser ────────────────────────────────────────────
+    fn parse_stmt(&mut self) -> Stmt {
+        if self.at(TokenKind::KwLet) { return self.parse_let() }
+        if self.at(TokenKind::KwIf) { return self.parse_if_stmt() }
+        if self.at(TokenKind::KwWhile) { return self.parse_while() }
+        if self.at(TokenKind::KwFor) { return self.parse_for() }
+        if self.at(TokenKind::KwLoop) { return self.parse_loop_stmt() }
+        if self.at(TokenKind::KwReturn) { return self.parse_return() }
+        if self.at(TokenKind::KwBreak) { self.advance(); let v = self.parse_break_value(); if self.at(TokenKind::Semicolon) { self.advance() }; return Stmt::Break(v) }
+        if self.at(TokenKind::KwContinue) { self.advance(); if self.at(TokenKind::Semicolon) { self.advance() }; return Stmt::Continue }
+        if self.at(TokenKind::KwMatch) { return self.parse_match_stmt() }
+        if self.at(TokenKind::KwUnsafe) { self.advance(); return Stmt::Unsafe(self.parse_block()) }
+        if self.at(TokenKind::LBrace) { return Stmt::Block(self.parse_block()) }
+        let expr = self.parse_expr()
+        self.last_expr_had_semicolon = self.at(TokenKind::Semicolon)
+        if self.at(TokenKind::Semicolon) { self.advance() }
+        return Stmt::Expr(expr)
+    }
+
+    fn parse_let(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwLet)
+        let is_mut = self.at(TokenKind::KwMut)
+        if is_mut { self.advance() }
+        let name = self.advance().value
+        let ty = if self.at(TokenKind::Colon) { self.advance(); Some(self.parse_type()) } else { None }
+        self.expect_kind(TokenKind::Eq)
+        let value = self.parse_expr()
+        if self.at(TokenKind::Semicolon) { self.advance() }
+        return Stmt::Let { name: name, ty: ty, is_mut: is_mut, value: value }
+    }
+
+    fn parse_if_stmt(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwIf)
+        let condition = self.parse_expr()
+        let then_body = self.parse_block()
+        let else_body = if self.at(TokenKind::KwElse) {
+            self.advance()
+            if self.at(TokenKind::KwIf) { Some(ElseKind::If(self.parse_if_condition(), self.parse_block())) }
+            else { Some(ElseKind::Else(self.parse_block())) }
+        } else { None }
+        return Stmt::If { condition: condition, then_body: then_body, else_body: else_body }
+    }
+
+    fn parse_if_condition(&mut self) -> Expr {
+        let e = self.parse_expr()
+        return e
+    }
+
+    fn parse_while(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwWhile)
+        let condition = self.parse_expr()
+        let body = self.parse_block()
+        return Stmt::While { condition: condition, body: body }
+    }
+
+
+    fn parse_for(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwFor)
+        let var = self.advance().value
+        self.advance() // skip "in"
+        let iterable = self.parse_expr()
+        let body = self.parse_block()
+        return Stmt::For(var, iterable, body)
+    }
+
+    fn parse_loop_stmt(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwLoop)
+        return Stmt::Loop(self.parse_block())
+    }
+
+    fn parse_return(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwReturn)
+        let value = if self.at(TokenKind::Semicolon) { None } else if self.at_any(TokenKind::RBrace, TokenKind::Eof) { None } else { Some(self.parse_expr()) }
+        if self.at(TokenKind::Semicolon) { self.advance() }
+        return Stmt::Return(value)
+    }
+
+    fn parse_match_stmt(&mut self) -> Stmt {
+        self.expect_kind(TokenKind::KwMatch)
+        let expr = self.parse_expr()
+        self.expect_kind(TokenKind::LBrace)
+        let mut arms = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            let pattern = self.parse_pattern()
+            self.expect_kind(TokenKind::FatArrow)
+            let body = self.parse_expr()
+            if self.at(TokenKind::Comma) { self.advance() }
+            arms.push(MatchArm { pattern: pattern, body: body })
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return Stmt::Match { expr: expr, arms: arms }
+    }
+
+    fn parse_pattern(&mut self) -> Pattern {
+        if self.at(TokenKind::Underscore) { self.advance(); return Pattern::Wildcard }
+        if self.at(TokenKind::IntLit) { let v = self.advance().value.parse().unwrap_or(0); return Pattern::Literal(Expr::Int(v)) }
+        if self.at(TokenKind::StrLit) { let v = self.advance().value; return Pattern::Literal(Expr::Str(v)) }
+        if self.at(TokenKind::KwTrue) { self.advance(); return Pattern::Literal(Expr::Bool(true)) }
+        if self.at(TokenKind::KwFalse) { self.advance(); return Pattern::Literal(Expr::Bool(false)) }
+        let name = self.advance().value
+        return Pattern::Ident(name)
+    }
+
+    // ─── Expression Parser (Pratt) ─────────────────────────────────
+    fn parse_expr(&mut self) -> Expr {
+        return self.parse_expr_prec(0)
+    }
+
+    fn parse_expr_prec(&mut self, min_prec: u32) -> Expr {
+        let mut left = self.parse_unary()
+        loop {
+            let op = self.peek()
+            let prec = self.binop_prec(op)
+            if prec == 0 || prec < min_prec { break }
+            let binop = self.binop_from_kind(op)
+            self.advance()
+            let right = self.parse_expr_prec(prec + 1)
+            left = Expr::Binary { op: binop, left: Box::new(left), right: Box::new(right) }
+        }
+        // Handle assignment and compound assignment
+        if self.at(TokenKind::Eq) {
+            self.advance()
+            let value = self.parse_expr()
+            return Expr::Assign { target: Box::new(left), value: Box::new(value) }
+        }
+        return left
+    }
+
+    fn binop_prec(&self, kind: TokenKind) -> u32 {
+        if kind == TokenKind::Or { return 1 }
+        if kind == TokenKind::And { return 2 }
+        if kind == TokenKind::EqEq || kind == TokenKind::Ne { return 3 }
+        if kind == TokenKind::Lt || kind == TokenKind::Gt || kind == TokenKind::Le || kind == TokenKind::Ge { return 4 }
+        if kind == TokenKind::Pipe { return 5 }
+        if kind == TokenKind::Caret { return 6 }
+        if kind == TokenKind::Amp { return 7 }
+        if kind == TokenKind::Shl || kind == TokenKind::Shr { return 8 }
+        if kind == TokenKind::Plus || kind == TokenKind::Minus { return 9 }
+        if kind == TokenKind::Star || kind == TokenKind::Slash || kind == TokenKind::Percent { return 10 }
+        return 0
+    }
+
+    fn binop_from_kind(&self, kind: TokenKind) -> BinOp {
+        if kind == TokenKind::Plus { return BinOp::Add }
+        if kind == TokenKind::Minus { return BinOp::Sub }
+        if kind == TokenKind::Star { return BinOp::Mul }
+        if kind == TokenKind::Slash { return BinOp::Div }
+        if kind == TokenKind::Percent { return BinOp::Rem }
+        if kind == TokenKind::EqEq { return BinOp::Eq }
+        if kind == TokenKind::Ne { return BinOp::Ne }
+        if kind == TokenKind::Lt { return BinOp::Lt }
+        if kind == TokenKind::Gt { return BinOp::Gt }
+        if kind == TokenKind::Le { return BinOp::Le }
+        if kind == TokenKind::Ge { return BinOp::Ge }
+        if kind == TokenKind::And { return BinOp::And }
+        if kind == TokenKind::Or { return BinOp::Or }
+        if kind == TokenKind::Amp { return BinOp::BitAnd }
+        if kind == TokenKind::Pipe { return BinOp::BitOr }
+        if kind == TokenKind::Caret { return BinOp::BitXor }
+        if kind == TokenKind::Shl { return BinOp::Shl }
+        if kind == TokenKind::Shr { return BinOp::Shr }
+        return BinOp::Add
+    }
+
+    fn parse_unary(&mut self) -> Expr {
+        if self.at(TokenKind::Minus) { self.advance(); return Expr::Unary { op: UnaryOp::Neg, expr: Box::new(self.parse_unary()) } }
+        if self.at(TokenKind::Not) { self.advance(); return Expr::Unary { op: UnaryOp::Not, expr: Box::new(self.parse_unary()) } }
+        if self.at(TokenKind::Star) { self.advance(); return Expr::Unary { op: UnaryOp::Deref, expr: Box::new(self.parse_unary()) } }
+        if self.at(TokenKind::Amp) {
+            self.advance()
+            let is_mut = self.at(TokenKind::KwMut)
+            if is_mut { self.advance() }
+            return Expr::Reference { expr: Box::new(self.parse_unary()), is_mut: is_mut }
+        }
+        return self.parse_postfix()
+    }
+
+    fn parse_postfix(&mut self) -> Expr {
+        let mut expr = self.parse_primary()
+        loop {
+            if self.at(TokenKind::LParen) {
+                self.advance()
+                let mut args = Vec::new()
+                while !self.at(TokenKind::RParen) {
+                    args.push(self.parse_expr())
+                    if self.at(TokenKind::Comma) { self.advance() }
+                }
+                self.expect_kind(TokenKind::RParen)
+                expr = Expr::Call { function: Box::new(expr), args: args }
+            } else if self.at(TokenKind::Dot) {
+                self.advance()
+                let field = self.advance().value
+                if self.at(TokenKind::LParen) {
+                    self.advance()
+                    let mut args = Vec::new()
+                    while !self.at(TokenKind::RParen) {
+                        args.push(self.parse_expr())
+                        if self.at(TokenKind::Comma) { self.advance() }
+                    }
+                    self.expect_kind(TokenKind::RParen)
+                    expr = Expr::MethodCall { object: Box::new(expr), method: field, args: args }
+                } else {
+                    expr = Expr::Field { object: Box::new(expr), field: field }
+                }
+            } else if self.at(TokenKind::LBracket) {
+                self.advance()
+                let index = self.parse_expr()
+                self.expect_kind(TokenKind::RBracket)
+                expr = Expr::Index { object: Box::new(expr), index: Box::new(index) }
+            } else if self.at(TokenKind::As) {
+                self.advance()
+                let ty = self.parse_type()
+                expr = Expr::Cast { expr: Box::new(expr), ty: ty }
+            } else if self.at(TokenKind::Question) {
+                self.advance()
+                expr = Expr::Try(Box::new(expr))
+            } else { break }
+        }
+        return expr
+    }
+
+    fn parse_primary(&mut self) -> Expr {
+        // Literals
+        if self.at(TokenKind::IntLit) { let v = self.advance().value.parse().unwrap_or(0); return Expr::Int(v) }
+        if self.at(TokenKind::FloatLit) { let v = self.advance().value.parse().unwrap_or(0.0); return Expr::Float(v) }
+        if self.at(TokenKind::StrLit) { let v = self.advance().value; return Expr::Str(v) }
+        if self.at(TokenKind::KwTrue) { self.advance(); return Expr::Bool(true) }
+        if self.at(TokenKind::KwFalse) { self.advance(); return Expr::Bool(false) }
+        if self.at(TokenKind::KwNull) { self.advance(); return Expr::Null }
+
+        // Self
+        if self.at(TokenKind::KwSelf) { self.advance(); return Expr::Self_ }
+
+        // Parenthesized / tuple
+        if self.at(TokenKind::LParen) {
+            self.advance()
+            if self.at(TokenKind::RParen) { self.advance(); return Expr::Tuple(Vec::new()) }
+            let first = self.parse_expr()
+            if self.at(TokenKind::Comma) {
+                let mut elems = vec![first]
+                while !self.at(TokenKind::RParen) {
+                    if self.at(TokenKind::Comma) { self.advance() }
+                    if self.at(TokenKind::RParen) { break }
+                    elems.push(self.parse_expr())
+                }
+                self.expect_kind(TokenKind::RParen)
+                return Expr::Tuple(elems)
+            }
+            self.expect_kind(TokenKind::RParen)
+            return first
+        }
+
+        // Array literal
+        if self.at(TokenKind::LBracket) {
+            self.advance()
+            let mut elems = Vec::new()
+            while !self.at(TokenKind::RBracket) {
+                elems.push(self.parse_expr())
+                if self.at(TokenKind::Comma) { self.advance() }
+            }
+            self.expect_kind(TokenKind::RBracket)
+            return Expr::Array(elems)
+        }
+
+        // Block expression
+        if self.at(TokenKind::LBrace) { return Expr::Block(self.parse_block()) }
+
+        // If expression
+        if self.at(TokenKind::KwIf) { return self.parse_if_expr() }
+
+        // Loop expression
+        if self.at(TokenKind::KwLoop) { self.advance(); return Expr::Loop(self.parse_block()) }
+
+        // Match expression
+        if self.at(TokenKind::KwMatch) { return self.parse_match_expr() }
+
+        // Unsafe block
+        if self.at(TokenKind::KwUnsafe) { self.advance(); return Expr::UnsafeBlock(self.parse_block()) }
+
+        // Closure
+        if self.at(TokenKind::Pipe) { return self.parse_closure() }
+
+        // Macro invocation: name!(...)
+        if self.peek() == TokenKind::Ident && self.pos + 1 < self.tokens.len() && self.tokens[self.pos + 1].kind == TokenKind::Not {
+            let name = self.advance().value
+            self.advance() // skip !
+            self.expect_kind(TokenKind::LParen)
+            let mut args = Vec::new()
+            while !self.at(TokenKind::RParen) {
+                args.push(self.parse_expr())
+                if self.at(TokenKind::Comma) { self.advance() }
+            }
+            self.expect_kind(TokenKind::RParen)
+            return Expr::Macro { name: name, args: args }
+        }
+
+        // Path or identifier
+        if self.at(TokenKind::Ident) {
+            let name = self.advance().value
+            return Expr::Ident(name)
+        }
+
+        // Fallback
+        self.advance()
+        return Expr::Null
+    }
+
+    fn parse_if_expr(&mut self) -> Expr {
+        self.expect_kind(TokenKind::KwIf)
+        let condition = Box::new(self.parse_expr())
+        let then_body = self.parse_block()
+        let else_body = if self.at(TokenKind::KwElse) {
+            self.advance()
+            if self.at(TokenKind::KwIf) { Some(Box::new(self.parse_if_expr())) }
+            else { Some(Box::new(Expr::Block(self.parse_block()))) }
+        } else { None }
+        return Expr::If { condition: condition, then_body: then_body, else_body: else_body }
+    }
+
+    fn parse_match_expr(&mut self) -> Expr {
+        self.expect_kind(TokenKind::KwMatch)
+        let expr = Box::new(self.parse_expr())
+        self.expect_kind(TokenKind::LBrace)
+        let mut arms = Vec::new()
+        while !self.at(TokenKind::RBrace) {
+            let pattern = self.parse_pattern()
+            self.expect_kind(TokenKind::FatArrow)
+            let body = self.parse_expr()
+            if self.at(TokenKind::Comma) { self.advance() }
+            arms.push(MatchArm { pattern: pattern, body: body })
+        }
+        self.expect_kind(TokenKind::RBrace)
+        return Expr::Match { expr: expr, arms: arms }
+    }
+
+    fn parse_closure(&mut self) -> Expr {
+        self.expect_kind(TokenKind::Pipe)
+        let mut params = Vec::new()
+        while !self.at(TokenKind::Pipe) {
+            let is_ref = self.at(TokenKind::Amp)
+            if is_ref { self.advance() }
+            let is_mut = self.at(TokenKind::KwMut)
+            if is_mut { self.advance() }
+            let name = self.advance().value
+            params.push(ClosureParam { name: name, is_ref: is_ref, is_mut: is_mut })
+            if self.at(TokenKind::Comma) { self.advance() }
+        }
+        self.expect_kind(TokenKind::Pipe)
+        let body = if self.at(TokenKind::LBrace) { Box::new(Expr::Block(self.parse_block())) } else { Box::new(self.parse_expr()) }
+        return Expr::Closure { params: params, body: body }
+    }
+
+    fn parse_break_value(&mut self) -> Option<Expr> {
+        if self.at(TokenKind::Semicolon) { return None }
+        if self.at_any(TokenKind::RBrace, TokenKind::Eof) { return None }
+        return Some(self.parse_expr())
+    }
+}

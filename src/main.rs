@@ -21,6 +21,7 @@ mod lsp;
 mod module;
 mod parser;
 mod typecheck;
+mod vm;
 
 use anyhow::{bail, Result};
 use backend::Target;
@@ -207,6 +208,16 @@ enum Commands {
 
     /// Start the Ruva Language Server (LSP)
     Lsp,
+
+    /// Run a .ruva file using the bytecode VM (real compilation, no transpilation)
+    Vm {
+        /// Input .ruva file
+        input: PathBuf,
+
+        /// Print bytecode disassembly for debugging
+        #[arg(long)]
+        debug: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -250,15 +261,22 @@ fn main() -> Result<()> {
         Commands::Lsp => {
             cmd_lsp()?;
         }
+        Commands::Vm { input, debug } => {
+            cmd_vm(&input, debug)?;
+        }
     }
 
     Ok(())
 }
 
+/// True if `path` is a Ruva source file (`.ruva` or the `.rve` extension).
+fn is_ruva_source(path: &Path) -> bool {
+    matches!(path.extension().and_then(|e| e.to_str()), Some("ruva") | Some("rve"))
+}
+
 fn read_source(path: &Path) -> Result<String> {
-    let ext = path.extension().and_then(|e| e.to_str());
-    if ext != Some("ruva") {
-        bail!("Expected .ruva file, got: {}", path.display());
+    if !is_ruva_source(path) {
+        bail!("Expected a .ruva or .rve file, got: {}", path.display());
     }
     Ok(fs::read_to_string(path)?)
 }
@@ -390,93 +408,18 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
 
             eprintln!("{}", colors::success(&format!("Compiled {} → {} (Zig)", input.display(), out_path.display())));
         }
-        Target::Python => {
+        _ => {
+            // All other backends: transpile-only (write file with target extension)
             let out_path = match output {
                 Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("py"); p }
+                None => {
+                    let mut p = input.to_path_buf();
+                    p.set_extension(target.file_extension().trim_start_matches('.'));
+                    p
+                }
             };
             fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Python)", input.display(), out_path.display())));
-        }
-        Target::Java => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("java"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Java)", input.display(), out_path.display())));
-        }
-        Target::CSharp => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("cs"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (C#)", input.display(), out_path.display())));
-        }
-        Target::Go => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("go"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Go)", input.display(), out_path.display())));
-        }
-        Target::Swift => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("swift"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Swift)", input.display(), out_path.display())));
-        }
-        Target::Kotlin => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("kt"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Kotlin)", input.display(), out_path.display())));
-        }
-        Target::TypeScript => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("ts"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (TypeScript)", input.display(), out_path.display())));
-        }
-        Target::JavaScript => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("js"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (JavaScript)", input.display(), out_path.display())));
-        }
-        Target::Lua => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("lua"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Lua)", input.display(), out_path.display())));
-        }
-        Target::Ruby => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("rb"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (Ruby)", input.display(), out_path.display())));
-        }
-        Target::Php => {
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => { let mut p = input.to_path_buf(); p.set_extension("php"); p }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} (PHP)", input.display(), out_path.display())));
+            eprintln!("{}", colors::success(&format!("Transpiled {} → {} ({})", input.display(), out_path.display(), target)));
         }
     }
 
@@ -491,13 +434,13 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
     for entry in fs::read_dir(&src_dir)? {
         let entry = entry?;
         let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("ruva") {
+        if is_ruva_source(&path) {
             files.push(path);
         }
     }
 
     if files.is_empty() {
-        bail!("No .ruva files found in {}", src_dir.display());
+        bail!("No .ruva/.rv files found in {}", src_dir.display());
     }
 
     eprintln!("⟳ Building {} .ruva files...", files.len());
@@ -508,6 +451,29 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
     }
 
     eprintln!("✓ Build complete");
+    Ok(())
+}
+
+fn cmd_vm(input: &Path, debug: bool) -> Result<()> {
+    let source = read_source(input)?;
+    let mut parser = parser::Parser::new(&source)?;
+    let program = parser.parse_program()?;
+
+    // Resolve modules (inline stdlib, file-based modules)
+    let mut resolver = module::ModuleResolver::new(input);
+    let program = resolver.resolve_program(&program)?;
+
+    eprintln!("{}", colors::info(&format!("Running {} via bytecode VM...", input.display())));
+
+    let result = vm::compile_and_run(&program, debug)
+        .map_err(|e| anyhow::anyhow!("VM error: {}", e))?;
+
+    // Don't print nil results from scripts
+    match &result {
+        vm::Value::Nil => {}
+        _ => eprintln!("{}", colors::success(&format!("Result: {}", result))),
+    }
+
     Ok(())
 }
 
@@ -559,7 +525,7 @@ fn cmd_check(input: &Path, all: bool) -> Result<()> {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("ruva") {
+            if is_ruva_source(&path) {
                 check_file(&path)?;
             }
         }
@@ -626,7 +592,7 @@ fn cmd_transpile(input: &Path, output: Option<&Path>, target: Target, stdout: bo
         Some(p) => p.to_path_buf(),
         None => {
             let mut p = input.to_path_buf();
-            p.set_extension(target.file_extension());
+            p.set_extension(target.file_extension().trim_start_matches('.'));
             p
         }
     };
@@ -743,7 +709,7 @@ fn cmd_fmt(input: &Path, check: bool, dry_run: bool, verbose: bool) -> Result<()
         for entry in fs::read_dir(input)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("ruva") {
+            if is_ruva_source(&path) {
                 match format_single_file(&path, check, dry_run, verbose) {
                     Ok(changed) => {
                         stats.0 += 1;

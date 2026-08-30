@@ -1,0 +1,280 @@
+// Ruva Self-Hosted Lexer
+// Tokenizes .ruva source into a stream of tokens.
+// Uses byte values for escape sequences to avoid char literal issues.
+
+enum TokenKind {
+    IntLit, FloatLit, StrLit, CharLit, BoolLit, Ident,
+    KwFn, KwLet, KwMut, KwPub, KwStruct, KwClass, KwImpl, KwTrait,
+    KwEnum, KwType, KwIf, KwElse, KwFor, KwWhile, KwLoop, KwBreak,
+    KwContinue, KwReturn, KwMatch, KwSelf, KwSelfType, KwNull,
+    KwTrue, KwFalse, KwImport, KwUse, KwAs, KwMove, KwUnsafe,
+    KwExtern, KwStatic, KwConst, KwMod, KwInterface, KwTry,
+    KwCatch, KwFinally, KwThrow, KwComptime, KwPackage,
+    Plus, Minus, Star, Slash, Percent, Eq, EqEq, Ne, Lt, Gt, Le, Ge,
+    And, Or, Not, Amp, Pipe, Caret, Tilde, Shl, Shr, Arrow, FatArrow,
+    DoubleColon, Dot, DotDot, DotDotEq, PlusEq, MinusEq, StarEq,
+    SlashEq, AmpEq, PipeEq, CaretEq,
+    LParen, RParen, LBrace, RBrace, LBracket, RBracket, Semicolon,
+    Colon, Comma, Hash, At, Question, QuestionDot, NullCoalesce,
+    Underscore, Eof,
+}
+
+struct Span { line: u32, col: u32 }
+struct Token { kind: TokenKind, value: string, span: Span }
+struct Lexer { source: string, pos: usize, line: u32, col: u32 }
+
+impl Lexer {
+    pub fn new(source: string) -> Self {
+        return Self { source: source, pos: 0, line: 1, col: 1 }
+    }
+
+    fn source_len(&self) -> usize { return self.source.len() }
+
+    fn peek_byte(&self) -> Option<u8> {
+        if self.pos >= self.source_len() { return None }
+        let bytes = self.source.as_bytes()
+        return Some(bytes[self.pos])
+    }
+
+    fn peek_at(&self, offset: usize) -> Option<u8> {
+        let idx = self.pos + offset
+        if idx >= self.source_len() { return None }
+        return Some(self.source.as_bytes()[idx])
+    }
+
+    fn advance(&mut self) -> Option<u8> {
+        let ch = self.peek_byte()
+        if ch.is_some() {
+            let c = ch.unwrap()
+            self.pos += 1
+            if c == 10 { self.line += 1; self.col = 1 }
+            else { self.col += 1 }
+            return Some(c)
+        }
+        return None
+    }
+
+    fn skip_whitespace(&mut self) {
+        loop {
+            let c = self.peek_byte()
+            if c.is_none() { break }
+            let ch = c.unwrap()
+            let is_ws = ch == 32 || ch == 9 || ch == 10 || ch == 13
+            if is_ws { self.advance() } else { break }
+        }
+    }
+
+    fn skip_line_comment(&mut self) {
+        loop {
+            let c = self.peek_byte()
+            if c.is_none() { break }
+            let ch = c.unwrap()
+            if ch == 10 { break }
+            self.advance()
+        }
+    }
+
+    fn skip_block_comment(&mut self) {
+        let mut depth: u32 = 1
+        while depth > 0 {
+            let c1 = self.peek_byte()
+            let c2 = self.peek_at(1)
+            if c1.is_none() { break }
+            let a = c1.unwrap()
+            if c2.is_some() {
+                let b = c2.unwrap()
+                if a == 47 && b == 42 { self.advance(); self.advance(); depth += 1 }
+                else if a == 42 && b == 47 { self.advance(); self.advance(); depth -= 1 }
+                else { self.advance() }
+            } else {
+                self.advance()
+            }
+        }
+    }
+
+    fn read_string(&mut self, quote: u8) -> string {
+        let mut s = String::new()
+        loop {
+            let ch = self.advance()
+            if ch.is_none() { break }
+            let c = ch.unwrap()
+            if c == 92 {
+                let esc = self.advance()
+                if esc.is_some() { let e = esc.unwrap(); s.push(e as char) }
+            } else if c == quote {
+                break
+            } else {
+                s.push(c as char)
+            }
+        }
+        return s
+    }
+
+    fn read_number(&mut self, first: u8) -> Token {
+        let mut num = String::new()
+        num.push(first as char)
+        let mut is_float = false
+        if first == 48 && self.peek_byte() == Some(120) {
+            num.push(self.advance().unwrap() as char)
+            loop {
+                let c = self.peek_byte()
+                if c.is_none() { break }
+                let ch = c.unwrap()
+                if (ch >= 48 && ch <= 57) || (ch >= 65 && ch <= 70) || (ch >= 97 && ch <= 102) || ch == 95 {
+                    num.push(self.advance().unwrap() as char)
+                } else { break }
+            }
+            return Token { kind: TokenKind::IntLit, value: num, span: Span { line: self.line, col: self.col } }
+        }
+        if first == 48 && self.peek_byte() == Some(98) {
+            num.push(self.advance().unwrap() as char)
+            loop {
+                let c = self.peek_byte()
+                if c.is_none() { break }
+                let ch = c.unwrap()
+                if ch == 48 || ch == 49 || ch == 95 { num.push(self.advance().unwrap() as char) }
+                else { break }
+            }
+            return Token { kind: TokenKind::IntLit, value: num, span: Span { line: self.line, col: self.col } }
+        }
+        loop {
+            let c = self.peek_byte()
+            if c.is_none() { break }
+            let ch = c.unwrap()
+            if ch >= 48 && ch <= 57 { num.push(self.advance().unwrap() as char) }
+            else if ch == 46 && !is_float && self.peek_at(1) != Some(46) {
+                is_float = true; num.push(self.advance().unwrap() as char)
+            }
+            else if ch == 102 || ch == 117 || ch == 105 { self.advance(); break }
+            else { break }
+        }
+        if is_float { return Token { kind: TokenKind::FloatLit, value: num, span: Span { line: self.line, col: self.col } } }
+        return Token { kind: TokenKind::IntLit, value: num, span: Span { line: self.line, col: self.col } }
+    }
+    fn keyword_or_ident(&self, word: &str) -> TokenKind {
+        if word == "fn" { return TokenKind::KwFn }
+        if word == "let" { return TokenKind::KwLet }
+        if word == "mut" { return TokenKind::KwMut }
+        if word == "pub" { return TokenKind::KwPub }
+        if word == "struct" { return TokenKind::KwStruct }
+        if word == "class" { return TokenKind::KwClass }
+        if word == "impl" { return TokenKind::KwImpl }
+        if word == "trait" { return TokenKind::KwTrait }
+        if word == "enum" { return TokenKind::KwEnum }
+        if word == "type" { return TokenKind::KwType }
+        if word == "if" { return TokenKind::KwIf }
+        if word == "else" { return TokenKind::KwElse }
+        if word == "for" { return TokenKind::KwFor }
+        if word == "while" { return TokenKind::KwWhile }
+        if word == "loop" { return TokenKind::KwLoop }
+        if word == "break" { return TokenKind::KwBreak }
+        if word == "continue" { return TokenKind::KwContinue }
+        if word == "return" { return TokenKind::KwReturn }
+        if word == "match" { return TokenKind::KwMatch }
+        if word == "self" { return TokenKind::KwSelf }
+        if word == "Self" { return TokenKind::KwSelfType }
+        if word == "null" { return TokenKind::KwNull }
+        if word == "true" { return TokenKind::KwTrue }
+        if word == "false" { return TokenKind::KwFalse }
+        if word == "import" { return TokenKind::KwImport }
+        if word == "use" { return TokenKind::KwUse }
+        if word == "as" { return TokenKind::KwAs }
+        if word == "move" { return TokenKind::KwMove }
+        if word == "unsafe" { return TokenKind::KwUnsafe }
+        if word == "extern" { return TokenKind::KwExtern }
+        if word == "static" { return TokenKind::KwStatic }
+        if word == "const" { return TokenKind::KwConst }
+        if word == "mod" { return TokenKind::KwMod }
+        if word == "interface" { return TokenKind::KwInterface }
+        if word == "try" { return TokenKind::KwTry }
+        if word == "catch" { return TokenKind::KwCatch }
+        if word == "finally" { return TokenKind::KwFinally }
+        if word == "throw" { return TokenKind::KwThrow }
+        if word == "comptime" { return TokenKind::KwComptime }
+        if word == "package" { return TokenKind::KwPackage }
+        return TokenKind::Ident
+    }
+
+    fn read_ident(&mut self, first: u8) -> Token {
+        let mut ident = String::new()
+        ident.push(first as char)
+        loop {
+            let c = self.peek_byte()
+            if c.is_none() { break }
+            let ch = c.unwrap()
+            if (ch >= 48 && ch <= 57) || (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 {
+                ident.push(self.advance().unwrap() as char)
+            } else { break }
+        }
+        let kind = self.keyword_or_ident(&ident)
+        return Token { kind: kind, value: ident, span: Span { line: self.line, col: self.col } }
+    }
+    fn read_char_lit(&mut self) -> Token {
+        let span = Span { line: self.line, col: self.col }
+        let c = self.advance()
+        if c.is_some() {
+            let ch = c.unwrap()
+            if ch == 92 { let esc = self.advance(); if esc.is_some() { let _ = self.advance() } }
+            else { let _ = self.advance() }
+        }
+        return Token { kind: TokenKind::CharLit, value: String::from("chr"), span: span }
+    }
+    fn next_token(&mut self) -> Token {
+        self.skip_whitespace()
+        let c = self.peek_byte()
+        if c.is_none() { return Token { kind: TokenKind::Eof, value: String::new(), span: Span { line: self.line, col: self.col } } }
+        let ch = c.unwrap()
+        let span = Span { line: self.line, col: self.col }
+        if ch == 34 { let _ = self.advance(); let s = self.read_string(34); return Token { kind: TokenKind::StrLit, value: s, span: span } }
+        if ch == 39 { let _ = self.advance(); return self.read_char_lit() }
+        if ch >= 48 && ch <= 57 { return self.read_number(self.advance().unwrap()) }
+        if (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 { return self.read_ident(self.advance().unwrap()) }
+        if ch == 47 {
+            self.advance()
+            let next = self.peek_byte()
+            if next == Some(47) { self.skip_line_comment(); return self.next_token() }
+            if next == Some(42) { self.skip_block_comment(); return self.next_token() }
+            return Token { kind: TokenKind::Slash, value: String::from("/"), span: span }
+        }
+        if ch == 43 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::PlusEq, value: String::from("+="), span: span } } return Token { kind: TokenKind::Plus, value: String::from("+"), span: span } }
+        if ch == 45 { self.advance(); let n = self.peek_byte(); if n == Some(62) { let _ = self.advance(); return Token { kind: TokenKind::Arrow, value: String::from("->"), span: span } } if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::MinusEq, value: String::from("-="), span: span } } return Token { kind: TokenKind::Minus, value: String::from("-"), span: span } }
+        if ch == 42 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::StarEq, value: String::from("*="), span: span } } return Token { kind: TokenKind::Star, value: String::from("*"), span: span } }
+        if ch == 37 { self.advance(); return Token { kind: TokenKind::Percent, value: String::from("%"), span: span } }
+        if ch == 61 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::EqEq, value: String::from("=="), span: span } } return Token { kind: TokenKind::Eq, value: String::from("="), span: span } }
+        if ch == 33 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::Ne, value: String::from("!="), span: span } } return Token { kind: TokenKind::Not, value: String::from("!"), span: span } }
+        if ch == 60 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::Le, value: String::from("<="), span: span } } if n == Some(60) { let _ = self.advance(); return Token { kind: TokenKind::Shl, value: String::from("<<"), span: span } } return Token { kind: TokenKind::Lt, value: String::from("<"), span: span } }
+        if ch == 62 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::Ge, value: String::from(">="), span: span } } if n == Some(62) { let _ = self.advance(); return Token { kind: TokenKind::Shr, value: String::from(">>"), span: span } } return Token { kind: TokenKind::Gt, value: String::from(">"), span: span } }
+        if ch == 38 { self.advance(); let n = self.peek_byte(); if n == Some(38) { let _ = self.advance(); return Token { kind: TokenKind::And, value: String::from("&&"), span: span } } if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::AmpEq, value: String::from("&="), span: span } } return Token { kind: TokenKind::Amp, value: String::from("&"), span: span } }
+        if ch == 124 { self.advance(); let n = self.peek_byte(); if n == Some(124) { let _ = self.advance(); return Token { kind: TokenKind::Or, value: String::from("||"), span: span } } if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::PipeEq, value: String::from("|="), span: span } } return Token { kind: TokenKind::Pipe, value: String::from("|"), span: span } }
+        if ch == 94 { self.advance(); let n = self.peek_byte(); if n == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::CaretEq, value: String::from("^="), span: span } } return Token { kind: TokenKind::Caret, value: String::from("^"), span: span } }
+        if ch == 126 { self.advance(); return Token { kind: TokenKind::Tilde, value: String::from("~"), span: span } }
+        if ch == 46 { self.advance(); let n = self.peek_byte(); if n == Some(46) { let _ = self.advance(); let n2 = self.peek_byte(); if n2 == Some(61) { let _ = self.advance(); return Token { kind: TokenKind::DotDotEq, value: String::from("..="), span: span } } return Token { kind: TokenKind::DotDot, value: String::from(".."), span: span } } return Token { kind: TokenKind::Dot, value: String::from("."), span: span } }
+        if ch == 58 { self.advance(); let n = self.peek_byte(); if n == Some(58) { let _ = self.advance(); return Token { kind: TokenKind::DoubleColon, value: String::from("::"), span: span } } return Token { kind: TokenKind::Colon, value: String::from(":"), span: span } }
+        if ch == 63 { self.advance(); let n = self.peek_byte(); if n == Some(46) { let _ = self.advance(); return Token { kind: TokenKind::QuestionDot, value: String::from("?."), span: span } } if n == Some(63) { let _ = self.advance(); return Token { kind: TokenKind::NullCoalesce, value: String::from("??"), span: span } } return Token { kind: TokenKind::Question, value: String::from("?"), span: span } }
+        if ch == 40 { self.advance(); return Token { kind: TokenKind::LParen, value: String::from("("), span: span } }
+        if ch == 41 { self.advance(); return Token { kind: TokenKind::RParen, value: String::from(")"), span: span } }
+        if ch == 123 { self.advance(); return Token { kind: TokenKind::LBrace, value: String::from("{"), span: span } }
+        if ch == 125 { self.advance(); return Token { kind: TokenKind::RBrace, value: String::from("}"), span: span } }
+        if ch == 91 { self.advance(); return Token { kind: TokenKind::LBracket, value: String::from("["), span: span } }
+        if ch == 93 { self.advance(); return Token { kind: TokenKind::RBracket, value: String::from("]"), span: span } }
+        if ch == 59 { self.advance(); return Token { kind: TokenKind::Semicolon, value: String::from(";"), span: span } }
+        if ch == 44 { self.advance(); return Token { kind: TokenKind::Comma, value: String::from(","), span: span } }
+        if ch == 35 { self.advance(); return Token { kind: TokenKind::Hash, value: String::from("#"), span: span } }
+        if ch == 64 { self.advance(); return Token { kind: TokenKind::At, value: String::from("@"), span: span } }
+        if ch == 95 { self.advance(); return Token { kind: TokenKind::Underscore, value: String::from("_"), span: span } }
+        self.advance()
+        return Token { kind: TokenKind::Ident, value: String::from("?"), span: span }
+    }
+    pub fn tokenize(&mut self) -> Vec<Token> {
+        let mut tokens = Vec::new()
+        loop {
+            let tok = self.next_token()
+            if tok.kind == TokenKind::Eof {
+                tokens.push(tok)
+                break
+            }
+            tokens.push(tok)
+        }
+        return tokens
+    }
+}

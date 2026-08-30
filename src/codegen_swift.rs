@@ -137,7 +137,7 @@ impl SwiftCodeGen {
             Expr::MethodCall { object, method, args } => { self.gen_expr(object); self.output.push('.'); self.output.push_str(method); self.output.push('('); for (i, a) in args.iter().enumerate() { if i > 0 { self.output.push_str(", "); } self.gen_expr(a); } self.output.push(')'); }
             Expr::Field { object, field } => { self.gen_expr(object); self.output.push('.'); self.output.push_str(field); }
             Expr::Index { object, index } => { self.gen_expr(object); self.output.push('['); self.gen_expr(index); self.output.push(']'); }
-            Expr::Macro { name, args } => {
+            Expr::Macro { name, args, separator: _ } => {
                 match name.as_str() {
                     "println" | "print" => { self.output.push_str("print("); for (i, a) in args.iter().enumerate() { if i > 0 { self.output.push_str(", "); } self.gen_expr(a); } self.output.push(')'); }
                     _ => { self.output.push_str(name); self.output.push('('); for (i, a) in args.iter().enumerate() { if i > 0 { self.output.push_str(", "); } self.gen_expr(a); } self.output.push(')'); }

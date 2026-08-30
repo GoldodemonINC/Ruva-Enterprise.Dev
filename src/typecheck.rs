@@ -1,5 +1,21 @@
 use crate::ast::*;
 
+// ─── Type Classification Constants ─────────────────────────────────────────
+
+/// All numeric primitive type names (signed, unsigned, float).
+const NUMERIC_TYPES: &[&str] = &[
+    "i8", "i16", "i32", "i64", "i128", "isize",
+    "u8", "u16", "u32", "u64", "u128", "usize",
+    "f32", "f64",
+];
+
+/// Primitive types recognized by the type checker (includes numeric + bool, char, string).
+const PRIMITIVE_TYPES: &[&str] = &[
+    "i8", "i16", "i32", "i64", "i128", "isize",
+    "u8", "u16", "u32", "u64", "u128", "usize",
+    "f32", "f64", "bool", "char",
+];
+
 // ─── Structured Type Representation ────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,31 +37,11 @@ pub enum Ty {
 
 type TypeVar = usize;
 
-// ─── Type Variable Table ───────────────────────────────────────────────────
-
-#[allow(dead_code)]
-struct TypeTable {
-    next_var: TypeVar,
-}
-
-#[allow(dead_code)]
-impl TypeTable {
-    fn new() -> Self {
-        Self { next_var: 0 }
-    }
-
-    fn fresh_var(&mut self) -> Ty {
-        let v = self.next_var;
-        self.next_var += 1;
-        Ty::Var(v)
-    }
-}
-
 // ─── Structured Type Checker ───────────────────────────────────────────────
 
 struct Scope {
-    variables: std::collections::HashMap<String, Ty>,
-    used: std::collections::HashMap<String, bool>,
+    /// Maps variable name → (type, has been used).
+    bindings: std::collections::HashMap<String, (Ty, bool)>,
 }
 
 pub struct TypeChecker {
@@ -56,8 +52,6 @@ pub struct TypeChecker {
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
     in_unsafe_fn: bool,
-    #[allow(dead_code)]
-    type_table: TypeTable,
     /// Tracks the current source location for error reporting
     current_line: usize,
     current_col: usize,
@@ -98,8 +92,7 @@ impl TypeChecker {
     pub fn new() -> Self {
         let mut checker = Self {
             scopes: vec![Scope {
-                variables: std::collections::HashMap::new(),
-                used: std::collections::HashMap::new(),
+                bindings: std::collections::HashMap::new(),
             }],
             functions: std::collections::HashMap::new(),
             struct_fields: std::collections::HashMap::new(),
@@ -107,7 +100,6 @@ impl TypeChecker {
             current_return_type: None,
             in_unsafe_block: false,
             in_unsafe_fn: false,
-            type_table: TypeTable::new(),
             current_line: 0,
             current_col: 0,
             warning_count: 0,
@@ -342,15 +334,9 @@ impl TypeChecker {
                 }
             }
             Item::ExternBlock(eb) => {
-                for ei in &eb.items {
-                    if let ExternItem::Function { params, .. } = ei {
-                        // Extern functions can reference types that may not be in scope yet
-                        // Just verify parameter types are valid
-                        for p in params {
-                            self.verify_type(&p.ty, 0);
-                        }
-                    }
-                }
+                // Extern functions reference types that may not be in scope yet;
+                // skip type-checking their parameter types.
+                let _ = eb;
             }
             _ => {}
         }
@@ -1154,13 +1140,10 @@ impl TypeChecker {
     fn ast_type_to_ty(&self, ast_ty: &Type) -> Ty {
         match ast_ty {
             Type::Name(name) => {
-                // Normalize common type aliases
-                match name.as_str() {
-                    "string" => Ty::Primitive("string".into()),
-                    "bool" | "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
-                    | "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
-                    | "f32" | "f64" | "char" => Ty::Primitive(name.clone()),
-                    _ => Ty::Named(name.clone()),
+                if name == "string" || PRIMITIVE_TYPES.contains(&name.as_str()) {
+                    Ty::Primitive(name.clone())
+                } else {
+                    Ty::Named(name.clone())
                 }
             }
             Type::Path(parts) => Ty::Named(parts.join("::")),
@@ -1252,11 +1235,7 @@ impl TypeChecker {
         match (&a, &b) {
             // Allow numeric coercion between primitive numeric types
             (Ty::Primitive(a), Ty::Primitive(b)) => {
-                let numeric = ["i8", "i16", "i32", "i64", "i128", "isize",
-                               "u8", "u16", "u32", "u64", "u128", "usize", "f32", "f64"];
-                let a_is_num = numeric.contains(&a.as_str());
-                let b_is_num = numeric.contains(&b.as_str());
-                a_is_num && b_is_num
+                NUMERIC_TYPES.contains(&a.as_str()) && NUMERIC_TYPES.contains(&b.as_str())
             }
             (Ty::Reference(a_inner, a_mut), Ty::Reference(b_inner, b_mut)) => {
                 a_mut == b_mut && self.types_compatible(a_inner, b_inner)
@@ -1299,11 +1278,7 @@ impl TypeChecker {
     }
 
     fn ty_is_numeric(&self, ty: &Ty) -> bool {
-        matches!(ty, Ty::Primitive(s) if matches!(s.as_str(),
-            "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
-            | "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
-            | "f32" | "f64"
-        ))
+        matches!(ty, Ty::Primitive(s) if NUMERIC_TYPES.contains(&s.as_str()))
     }
 
     fn ty_is_raw_pointer(&self, ty: &Ty) -> bool {
@@ -1314,8 +1289,7 @@ impl TypeChecker {
 
     fn push_scope(&mut self) {
         self.scopes.push(Scope {
-            variables: std::collections::HashMap::new(),
-            used: std::collections::HashMap::new(),
+            bindings: std::collections::HashMap::new(),
         });
     }
 
@@ -1325,27 +1299,21 @@ impl TypeChecker {
 
     fn define_var(&mut self, name: String, ty: Ty, _line: usize) {
         if let Some(scope) = self.scopes.last_mut() {
-            scope.used.insert(name.clone(), false);
-            scope.variables.insert(name, ty);
+            scope.bindings.insert(name, (ty, false));
         }
     }
 
     fn is_defined(&self, name: &str) -> bool {
-        for scope in self.scopes.iter().rev() {
-            if scope.variables.contains_key(name) {
-                return true;
-            }
-        }
-        false
+        self.scopes.iter().rev().any(|s| s.bindings.contains_key(name))
     }
 
     fn is_defined_in_current_scope(&self, name: &str) -> bool {
-        self.scopes.last().map_or(false, |s| s.variables.contains_key(name))
+        self.scopes.last().map_or(false, |s| s.bindings.contains_key(name))
     }
 
     fn mark_used(&mut self, name: &str) {
         for scope in self.scopes.iter_mut().rev() {
-            if let Some(used) = scope.used.get_mut(name) {
+            if let Some((_, used)) = scope.bindings.get_mut(name) {
                 *used = true;
                 return;
             }
@@ -1353,80 +1321,29 @@ impl TypeChecker {
     }
 
     fn lookup_var_type(&self, name: &str) -> Ty {
-        for scope in self.scopes.iter().rev() {
-            if let Some(ty) = scope.variables.get(name) {
-                return ty.clone();
-            }
-        }
-        Ty::Inferred
-    }
-
-    fn verify_type(&self, ty: &Type, line: usize) {
-        // Verify a type reference is valid
-        match ty {
-            Type::Name(name) => {
-                if !self.is_known_type(name) {
-                    // Don't error on type names we don't know — they might be from external crates
-                }
-            }
-            Type::Generic { args, .. } => {
-                for arg in args {
-                    self.verify_type(arg, line);
-                }
-            }
-            Type::Reference { inner, .. } | Type::RawPointer { inner, .. } => {
-                self.verify_type(inner, line);
-            }
-            Type::Array { inner, .. } | Type::Slice(inner) => {
-                self.verify_type(inner, line);
-            }
-            Type::Tuple(types) => {
-                for t in types {
-                    self.verify_type(t, line);
-                }
-            }
-            _ => {}
-        }
+        self.scopes.iter().rev()
+            .find_map(|s| s.bindings.get(name).map(|(ty, _)| ty.clone()))
+            .unwrap_or(Ty::Inferred)
     }
 
     fn is_known_type(&self, name: &str) -> bool {
-        // Check built-in types
         let normalized = if name == "string" { "String" } else { name };
-        matches!(normalized,
-            "i8" | "i16" | "i32" | "i64" | "i128" | "isize"
-            | "u8" | "u16" | "u32" | "u64" | "u128" | "usize"
-            | "f32" | "f64" | "bool" | "char" | "String"
-            | "Self" | "Option" | "Result" | "Vec" | "HashMap"
-            | "str"
-        ) || self.scopes.iter().any(|s| s.variables.contains_key(name))
+        (normalized == "String" || PRIMITIVE_TYPES.contains(&normalized)
+            || matches!(normalized, "Self" | "Option" | "Result" | "Vec" | "HashMap" | "str"))
+        || self.scopes.iter().any(|s| s.bindings.contains_key(name))
     }
 
-    // ─── Unsafe Checking Helpers ───────────────────────────────────────
-
-    #[allow(dead_code)]
-    fn is_unsafe_required_fn(&self, name: &str) -> bool {
-        matches!(name,
-            "transmute" | "size_of" | "align_of" | "offset_of"
-            | "read_volatile" | "write_volatile"
-            | "copy" | "copy_nonoverlapping"
-            | "ptr::read" | "ptr::write"
-        ) || name.starts_with("asm") || name.starts_with("llvm")
-    }
-
-    #[allow(dead_code)]
-    fn is_unsafe_type(&self, ty: &Ty) -> bool {
-        self.ty_is_raw_pointer(ty)
-    }
+    // ─── Unused Variable Reporting ────────────────────────────────────
 
     fn report_unused(&mut self) {
-        let unused: Vec<String> = if let Some(scope) = self.scopes.first() {
-            scope.used.iter()
-                .filter(|(name, used)| !**used && name.as_str() != "main" && !name.starts_with('_'))
-                .map(|(name, _)| name.clone())
-                .collect()
-        } else {
-            vec![]
-        };
+        let unused: Vec<String> = self.scopes.first()
+            .map(|scope| {
+                scope.bindings.iter()
+                    .filter(|(name, &(_, used))| !used && name.as_str() != "main" && !name.starts_with('_'))
+                    .map(|(name, _)| name.clone())
+                    .collect()
+            })
+            .unwrap_or_default();
         for name in unused {
             self.warn(format!("Variable '{}' is never used", name), 0, 0);
         }
@@ -1492,7 +1409,6 @@ impl TypeChecker {
         }
     }
 
-    // ─── Legacy compat: infer_type used as String in some places ───────
 }
 
 #[cfg(test)]

@@ -10,7 +10,7 @@
 //! Syntax errors use `transpile`, type errors use `check`.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// All golden test cases: (input_name, input_extension)
@@ -77,8 +77,18 @@ fn golden_path(name: &str) -> PathBuf {
     project_root().join(format!("tests/golden/{}.golden", name))
 }
 
+/// Resolve a source file that may be named `.rve` or `.ruva`, so the harness works
+/// both before and after the extension rename.
+fn resolve_ruva_file(dir: &Path, name: &str) -> PathBuf {
+    for ext in [".rve", ".ruva"] {
+        let p = dir.join(format!("{}{}", name, ext));
+        if p.exists() { return p; }
+    }
+    dir.join(format!("{}.ruva", name)) // default; the harness surfaces a clear error if missing
+}
+
 fn input_path(name: &str) -> PathBuf {
-    project_root().join(format!("tests/transpiler_golden/{}.ruva", name))
+    resolve_ruva_file(&project_root().join("tests/transpiler_golden"), name)
 }
 
 // ─── Error golden helpers ─────────────────────────────────────────────
@@ -96,7 +106,7 @@ const ERROR_GOLDEN_CASES: &[&str] = &[
 ];
 
 fn error_input_path(name: &str) -> PathBuf {
-    project_root().join(format!("tests/transpiler_golden/errors/{}.ruva", name))
+    resolve_ruva_file(&project_root().join("tests/transpiler_golden/errors"), name)
 }
 
 fn error_golden_path(name: &str) -> PathBuf {

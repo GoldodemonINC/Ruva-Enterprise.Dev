@@ -862,7 +862,7 @@ impl ZigCodeGen {
                 write!(self.output, " // as {}", ty_str).unwrap();
             }
 
-            Expr::Macro { name, args } => {
+            Expr::Macro { name, args, separator: _ } => {
                 // Map common macros to Zig equivalents
                 match name.as_str() {
                     "println" => {
