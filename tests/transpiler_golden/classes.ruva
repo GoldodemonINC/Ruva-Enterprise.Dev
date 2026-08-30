@@ -1,0 +1,22 @@
+class Person {
+    pub let name: string,
+    pub let mut age: u32,
+
+    pub fn new(name: string, age: u32) -> Self {
+        return Self { name, age }
+    }
+
+    pub fn birthday(&mut self) {
+        self.age += 1
+    }
+
+    pub fn greet(&self) -> string {
+        return format!("Hi, I'm {} and I'm {} years old.", self.name, self.age)
+    }
+}
+
+fn main() {
+    let mut person = Person::new("Alice".into(), 30)
+    person.birthday()
+    println!("{}", person.greet())
+}

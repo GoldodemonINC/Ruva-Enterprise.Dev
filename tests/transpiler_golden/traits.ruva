@@ -1,0 +1,29 @@
+trait Drawable {
+    fn draw(&self)
+    fn area(&self) -> f64
+}
+
+struct Circle {
+    pub radius: f64,
+}
+
+impl Circle {
+    pub fn new(radius: f64) -> Self {
+        return Self { radius }
+    }
+}
+
+impl Drawable for Circle {
+    fn draw(&self) {
+        println!("Drawing circle r={}", self.radius)
+    }
+    fn area(&self) -> f64 {
+        return 3.14159 * self.radius * self.radius
+    }
+}
+
+fn main() {
+    let c = Circle::new(5.0)
+    c.draw()
+    println!("area = {}", c.area())
+}

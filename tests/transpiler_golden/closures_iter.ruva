@@ -1,0 +1,15 @@
+fn main() {
+    let numbers = [1, 2, 3, 4, 5]
+    let mut sum = 0
+    for n in numbers {
+        sum += n
+    }
+
+    let add_one = |x: i32| -> i32 { x + 1 }
+    let result = add_one(10)
+
+    let multiplier = 3
+    let multiply = |x: i32| -> i32 { x * multiplier }
+
+    println!("sum = {}, result = {}", sum, result)
+}

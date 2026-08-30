@@ -1,0 +1,12 @@
+extern "C" {
+    fn strlen(s: *const i8) -> usize;
+}
+
+fn main() {
+    let mut x = 42
+    let ptr = &mut x as *mut i32
+    unsafe {
+        *ptr = 100
+    }
+    println!("x = {}", x)
+}

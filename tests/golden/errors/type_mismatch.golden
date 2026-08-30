@@ -1,0 +1,1 @@
+[31m✗[0m error at 4:1: Type mismatch: expected 'i32', got 'string'
