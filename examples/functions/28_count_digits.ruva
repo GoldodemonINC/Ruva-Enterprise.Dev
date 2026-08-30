@@ -1,0 +1,14 @@
+fn count_digits(mut n: i64) -> i64 {
+    let mut count = 0
+    if n == 0 { return 1 }
+    while n > 0 {
+        count += 1
+        n = n / 10
+    }
+    return count
+}
+
+fn main() {
+    println!("digits(42) = {}", count_digits(42))
+    println!("digits(123456) = {}", count_digits(123456))
+}

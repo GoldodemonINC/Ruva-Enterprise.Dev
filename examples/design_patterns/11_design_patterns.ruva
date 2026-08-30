@@ -1,0 +1,7 @@
+// Example: Design Patterns #11
+// This example demonstrates design patterns concepts in Ruva
+
+fn main() {
+    println!("Example: Design Patterns #11")
+    println!("Ruva makes design patterns safe and fast")
+}

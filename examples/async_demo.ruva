@@ -1,0 +1,217 @@
+// Async patterns — futures, channels, task spawning
+// Note: async/await is on the roadmap. This shows the intended syntax.
+
+// ─── Task Spawning ────────────────────────────────────────────────────
+
+class task_handle {
+    pub let id: u32
+    pub let mut completed: bool
+    pub let mut result: string
+
+    pub fn new(id: u32) -> Self {
+        return Self {
+            id: id,
+            completed: false,
+            result: "".into(),
+        }
+    }
+}
+
+class task_executor {
+    pub let mut tasks: Vec<task_handle>
+
+    pub fn new() -> Self {
+        return Self { tasks: vec![] }
+    }
+
+    pub fn spawn(&mut self, name: string) -> u32 {
+        let id = self.tasks.len() as u32
+        let mut task = task_handle::new(id)
+        task.result = format!("Task {} spawned", name)
+        self.tasks.push(task)
+        return id
+    }
+
+    pub fn complete(&mut self, id: u32, result: string) {
+        if (id as usize) < self.tasks.len() {
+            self.tasks[id as usize].completed = true
+            self.tasks[id as usize].result = result
+        }
+    }
+
+    pub fn all_done(&self) -> bool {
+        for task in &self.tasks {
+            if !task.completed {
+                return false
+            }
+        }
+        return true
+    }
+
+    pub fn summary(&self) -> string {
+        let mut done = 0
+        let total = self.tasks.len()
+        for task in &self.tasks {
+            if task.completed {
+                done += 1
+            }
+        }
+        return format!("{}/{} tasks completed", done, total)
+    }
+}
+
+// ─── Channel (message passing) ───────────────────────────────────────
+
+class channel<T> {
+    pub let mut messages: Vec<T>
+
+    pub fn new() -> Self {
+        return Self { messages: vec![] }
+    }
+
+    pub fn send(&mut self, msg: T) {
+        self.messages.push(msg)
+    }
+
+    pub fn recv(&mut self) -> Option<T> {
+        if self.messages.is_empty() {
+            return None
+        }
+        return Some(self.messages.remove(0))
+    }
+
+    pub fn len(&self) -> u32 {
+        return self.messages.len() as u32
+    }
+}
+
+// ─── Work Queue ───────────────────────────────────────────────────────
+
+class work_item {
+    pub let id: u32
+    pub let payload: string
+    pub let mut status: string
+
+    pub fn new(id: u32, payload: string) -> Self {
+        return Self {
+            id: id,
+            payload: payload,
+            status: "pending".into(),
+        }
+    }
+}
+
+class work_queue {
+    pub let mut queue: Vec<work_item>
+    pub let mut processed: Vec<work_item>
+    pub let batch_size: u32
+
+    pub fn new(batch: u32) -> Self {
+        return Self {
+            queue: vec![],
+            processed: vec![],
+            batch_size: batch,
+        }
+    }
+
+    pub fn enqueue(&mut self, payload: string) -> u32 {
+        let id = self.queue.len() as u32
+        self.queue.push(work_item::new(id, payload))
+        return id
+    }
+
+    pub fn process_batch(&mut self) -> u32 {
+        let mut count = 0
+        while !self.queue.is_empty() && count < self.batch_size {
+            let mut item = self.queue.remove(0)
+            item.status = "done".into()
+            self.processed.push(item)
+            count += 1
+        }
+        return count
+    }
+
+    pub fn pending(&self) -> u32 {
+        return self.queue.len() as u32
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.queue.is_empty()
+    }
+}
+
+// ─── Timeout Simulation ───────────────────────────────────────────────
+
+class timeout<T> {
+    pub let value: T
+    pub let mut expired: bool
+
+    pub fn new(value: T) -> Self {
+        return Self { value: value, expired: false }
+    }
+
+    pub fn get(&self) -> Option<&T> {
+        if self.expired {
+            return None
+        }
+        return Some(&self.value)
+    }
+
+    pub fn expire(&mut self) {
+        self.expired = true
+    }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────
+
+fn main() {
+    // Task executor
+    println!("=== Task Executor ===")
+    let mut executor = task_executor::new()
+    executor.spawn("fetch_users".into())
+    executor.spawn("load_config".into())
+    executor.spawn("warm_cache".into())
+    println!("{}", executor.summary())
+    executor.complete(0, "100 users loaded".into())
+    executor.complete(1, "config loaded".into())
+    println!("{}", executor.summary())
+    executor.complete(2, "cache warmed".into())
+    println!("{}", executor.summary())
+
+    // Channel
+    println!("\n=== Channels ===")
+    let mut tx = channel::new()
+    let mut rx = channel::new()
+    tx.send("message 1".into())
+    tx.send("message 2".into())
+    tx.send("message 3".into())
+    println!("Messages in channel: {}", tx.len())
+    while let Some(msg) = tx.recv() {
+        println!("Received: {}", msg)
+    }
+
+    // Work queue
+    println!("\n=== Work Queue ===")
+    let mut wq = work_queue::new(3)
+    for i in 0..10 {
+        wq.enqueue(format!("job-{}", i))
+    }
+    println!("Pending: {}", wq.pending())
+    while !wq.is_empty() {
+        let batch = wq.process_batch()
+        println!("Processed batch of {}, remaining: {}", batch, wq.pending())
+    }
+
+    // Timeout
+    println!("\n=== Timeout ===")
+    let mut data = timeout::new("important data")
+    match data.get() {
+        Some(val) => println!("Got: {}", val),
+        None => println!("Expired"),
+    }
+    data.expire()
+    match data.get() {
+        Some(val) => println!("Got: {}", val),
+        None => println!("Expired (as expected)"),
+    }
+}

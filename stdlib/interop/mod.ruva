@@ -1,0 +1,128 @@
+// ─── Ruva Standard Library — Multi-Language Interop Module ───────────────────
+// FFI bindings for calling Ruva from other languages and vice versa.
+
+// ─── C FFI ───────────────────────────────────────────────────────────────────
+
+pub struct CBuffer { pub data: *mut u8, pub len: usize, pub capacity: usize }
+impl CBuffer {
+    pub fn new(cap: usize) -> CBuffer { return CBuffer { data: std::ptr::null_mut(), len: 0, capacity: cap } }
+    pub fn is_empty(&self) -> bool { return self.len == 0 }
+    pub fn free(&mut self) { self.data = std::ptr::null_mut(); self.len = 0; self.capacity = 0 }
+}
+
+// ─── Python Interop ──────────────────────────────────────────────────────────
+
+pub struct PythonInterpreter { pub initialized: bool, pub paths: Vec<string> }
+pub enum PyValue { None, Bool(bool), Int(i64), Float(f64), String(string), List(Vec<PyValue>) }
+
+impl PythonInterpreter {
+    pub fn new() -> PythonInterpreter { return PythonInterpreter { initialized: false, paths: Vec::new() } }
+    pub fn initialize(&mut self) -> Result<(), string> { self.initialized = true; return Result::Ok(()) }
+    pub fn exec(&self, _code: string) -> Result<(), string> { return Result::Err("Python runtime required".into()) }
+    pub fn call(&self, _mod: string, _fn: string, _args: Vec<PyValue>) -> Result<PyValue, string> { return Result::Err("Python runtime required".into()) }
+    pub fn add_path(&mut self, p: string) { self.paths.push(p) }
+    pub fn shutdown(&mut self) { self.initialized = false }
+}
+
+// ─── JavaScript Interop ──────────────────────────────────────────────────────
+
+pub struct JsRuntime { pub initialized: bool }
+pub enum JsValue { Undefined, Null, Bool(bool), Number(f64), String(string), Array(Vec<JsValue>) }
+
+impl JsRuntime {
+    pub fn new() -> JsRuntime { return JsRuntime { initialized: false } }
+    pub fn initialize(&mut self) -> Result<(), string> { self.initialized = true; return Result::Ok(()) }
+    pub fn eval(&self, _code: string) -> Result<JsValue, string> { return Result::Err("JS runtime required".into()) }
+    pub fn call(&self, _name: string, _args: Vec<JsValue>) -> Result<JsValue, string> { return Result::Err("JS runtime required".into()) }
+    pub fn set_global(&mut self, _name: string, _val: JsValue) { }
+    pub fn register_fn(&mut self, _name: string, _func: fn(Vec<JsValue>) -> JsValue) { }
+    pub fn shutdown(&mut self) { self.initialized = false }
+}
+
+// ─── WASM Module ─────────────────────────────────────────────────────────────
+
+pub struct WasmModule { pub bytes: Vec<u8>, pub instantiated: bool }
+impl WasmModule {
+    pub fn new(b: Vec<u8>) -> WasmModule { return WasmModule { bytes: b, instantiated: false } }
+    pub fn instantiate(&mut self) -> Result<(), string> { self.instantiated = true; return Result::Ok(()) }
+    pub fn call_fn(&self, _name: string, _args: Vec<i64>) -> Result<i64, string> { return Result::Err("WASM runtime required".into()) }
+    pub fn memory_size(&self) -> usize { return self.bytes.len() }
+}
+
+// ─── Rust FFI ────────────────────────────────────────────────────────────────
+
+pub struct RustFfi { pub crate_name: string, pub version: string }
+impl RustFfi {
+    pub fn new(name: string, ver: string) -> RustFfi { return RustFfi { crate_name: name, version: ver } }
+    pub fn cargo_dep(&self) -> string { return format!("{} = \"{}\"", self.crate_name, self.version) }
+    pub fn use_stmt(&self) -> string { return format!("use {};", self.crate_name) }
+}
+
+// ─── Dynamic Library ─────────────────────────────────────────────────────────
+
+pub struct DynamicLibrary { pub name: string, pub loaded: bool }
+impl DynamicLibrary {
+    pub fn load(name: string) -> Result<DynamicLibrary, string> { return DynamicLibrary { name, loaded: true }.into() }
+    pub fn close(&mut self) { self.loaded = false }
+}
+
+// ─── JSON-RPC ────────────────────────────────────────────────────────────────
+
+pub struct JsonRpcClient { pub endpoint: string, pub timeout_ms: u64, pub next_id: u64 }
+pub struct JsonRpcRequest { pub method: string, pub params: string, pub id: u64 }
+pub struct JsonRpcResponse { pub result: Option<string>, pub error: Option<string>, pub id: u64 }
+
+impl JsonRpcClient {
+    pub fn new(ep: string) -> JsonRpcClient { return JsonRpcClient { endpoint: ep, timeout_ms: 30000, next_id: 1 } }
+    pub fn call(&mut self, method: string, params: string) -> Result<JsonRpcResponse, string> { let id = self.next_id; self.next_id = self.next_id + 1; return Result::Err("Not implemented".into()) }
+    pub fn notify(&self, _method: string, _params: string) -> Result<(), string> { return Result::Err("Not implemented".into()) }
+}
+
+impl JsonRpcResponse {
+    pub fn success(result: string, id: u64) -> JsonRpcResponse { return JsonRpcResponse { result: Option::Some(result), error: Option::None, id } }
+    pub fn error(msg: string, id: u64) -> JsonRpcResponse { return JsonRpcResponse { result: Option::None, error: Option::Some(msg), id } }
+    pub fn is_success(&self) -> bool { return self.error.is_none() }
+}
+
+// ─── Shared Memory ───────────────────────────────────────────────────────────
+
+pub struct SharedMemory { pub name: string, pub size: usize, pub attached: bool }
+impl SharedMemory {
+    pub fn create(name: string, size: usize) -> SharedMemory { return SharedMemory { name, size, attached: true } }
+    pub fn open(name: string) -> Result<SharedMemory, string> { return Result::Err("Not implemented".into()) }
+    pub fn read(&self, _off: usize, _len: usize) -> Vec<u8> { return Vec::new() }
+    pub fn write(&mut self, _off: usize, _data: &[u8]) -> Result<(), string> { return Result::Ok(()) }
+    pub fn detach(&mut self) { self.attached = false }
+}
+
+// ─── MessagePack ─────────────────────────────────────────────────────────────
+
+pub struct MsgPackEncoder { pub buffer: Vec<u8> }
+pub struct MsgPackDecoder { pub data: Vec<u8>, pub pos: usize }
+
+impl MsgPackEncoder {
+    pub fn new() -> MsgPackEncoder { return MsgPackEncoder { buffer: Vec::new() } }
+    pub fn encode_nil(&mut self) { self.buffer.push(0xc0) }
+    pub fn encode_bool(&mut self, v: bool) { if v { self.buffer.push(0xc3) } else { self.buffer.push(0xc2) } }
+    pub fn encode_i32(&mut self, _v: i32) { }
+    pub fn encode_str(&mut self, _v: &string) { }
+    pub fn finish(&self) -> Vec<u8> { return self.buffer.clone() }
+}
+
+impl MsgPackDecoder {
+    pub fn new(d: Vec<u8>) -> MsgPackDecoder { return MsgPackDecoder { data: d, pos: 0 } }
+    pub fn decode_bool(&mut self) -> Result<bool, string> { return Result::Err("Not implemented".into()) }
+    pub fn decode_i32(&mut self) -> Result<i32, string> { return Result::Err("Not implemented".into()) }
+    pub fn decode_str(&mut self) -> Result<string, string> { return Result::Err("Not implemented".into()) }
+    pub fn is_finished(&self) -> bool { return self.pos >= self.data.len() }
+}
+
+// ─── Pipe / IPC ──────────────────────────────────────────────────────────────
+
+pub struct Pipe { pub read_fd: u64, pub write_fd: u64, pub blocking: bool }
+impl Pipe {
+    pub fn create() -> Result<Pipe, string> { return Result::Err("Not implemented".into()) }
+    pub fn read(&self, _buf_size: usize) -> Result<Vec<u8>, string> { return Result::Err("Not implemented".into()) }
+    pub fn write(&self, _data: &[u8]) -> Result<usize, string> { return Result::Err("Not implemented".into()) }
+    pub fn set_nonblocking(&mut self, nb: bool) { self.blocking = !nb }
+}

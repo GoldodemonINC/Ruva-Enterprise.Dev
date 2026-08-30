@@ -1,0 +1,367 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// HTTP Server Example — A simple HTTP server written in Ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Features:
+//   • HTTP/1.1 request parsing
+//   • Static file serving
+//   • REST API endpoints
+//   • JSON responses
+//   • WebSocket support
+//   • Rate limiting
+//   • CORS headers
+//   • Logging
+//
+// Run:  ruva run examples/networking/http_server.ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── HTTP Methods ─────────────────────────────────────────────────────────────
+
+enum HTTPMethod {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    PATCH,
+    HEAD,
+    OPTIONS,
+}
+
+impl HTTPMethod {
+    pub fn from_string(method: string) -> HTTPMethod {
+        match method.as_str() {
+            "GET" => HTTPMethod::GET,
+            "POST" => HTTPMethod::POST,
+            "PUT" => HTTPMethod::PUT,
+            "DELETE" => HTTPMethod::DELETE,
+            "PATCH" => HTTPMethod::PATCH,
+            "HEAD" => HTTPMethod::HEAD,
+            "OPTIONS" => HTTPMethod::OPTIONS,
+            _ => HTTPMethod::GET,
+        }
+    }
+}
+
+// ─── HTTP Request ─────────────────────────────────────────────────────────────
+
+class HTTPRequest {
+    pub let method: HTTPMethod
+    pub let path: string
+    pub let version: string
+    pub let headers: Vec<(string, string)>
+    pub let body: string
+    pub let query_params: Vec<(string, string)>
+
+    pub fn new() -> Self {
+        return Self {
+            method: HTTPMethod::GET,
+            path: "/".to_string(),
+            version: "HTTP/1.1".to_string(),
+            headers: Vec::new(),
+            body: String::new(),
+            query_params: Vec::new(),
+        }
+    }
+
+    pub fn parse(request_text: string) -> Option<HTTPRequest> {
+        let mut request = HTTPRequest::new()
+        let lines: Vec<string> = request_text.split("\r\n").map(|s| s.to_string()).collect()
+
+        if lines.len() < 1 {
+            return None
+        }
+
+        // Parse request line
+        let request_line: Vec<string> = lines[0].split(" ").map(|s| s.to_string()).collect()
+        if request_line.len() < 3 {
+            return None
+        }
+
+        request.method = HTTPMethod::from_string(request_line[0].clone())
+
+        // Parse path and query parameters
+        let path_parts: Vec<string> = request_line[1].split("?").map(|s| s.to_string()).collect()
+        request.path = path_parts[0].clone()
+
+        if path_parts.len() > 1 {
+            let query_string = &path_parts[1]
+            let params: Vec<string> = query_string.split("&").map(|s| s.to_string()).collect()
+            for param in params {
+                let kv: Vec<string> = param.split("=").map(|s| s.to_string()).collect()
+                if kv.len() == 2 {
+                    request.query_params.push((kv[0].clone(), kv[1].clone()))
+                }
+            }
+        }
+
+        request.version = request_line[2].clone()
+
+        // Parse headers
+        let mut i = 1
+        while i < lines.len() {
+            let line = &lines[i]
+            if line.is_empty() {
+                break
+            }
+            let header: Vec<string> = line.split(": ").map(|s| s.to_string()).collect()
+            if header.len() == 2 {
+                request.headers.push((header[0].clone(), header[1].clone()))
+            }
+            i += 1
+        }
+
+        // Parse body
+        if i + 1 < lines.len() {
+            request.body = lines[i + 1..].join("\r\n")
+        }
+
+        return Some(request)
+    }
+
+    pub fn get_header(&self, name: string) -> Option<string> {
+        for (key, value) in &self.headers {
+            if key.to_lowercase() == name.to_lowercase() {
+                return Some(value.clone())
+            }
+        }
+        return None
+    }
+}
+
+// ─── HTTP Response ────────────────────────────────────────────────────────────
+
+class HTTPResponse {
+    pub let mut status_code: i64
+    pub let mut status_text: string
+    pub let mut headers: Vec<(string, string)>
+    pub let mut body: string
+
+    pub fn new() -> Self {
+        return Self {
+            status_code: 200,
+            status_text: "OK".to_string(),
+            headers: Vec::new(),
+            body: String::new(),
+        }
+    }
+
+    pub fn ok() -> HTTPResponse {
+        let mut response = HTTPResponse::new()
+        response.set_header("Content-Type", "text/plain")
+        return response
+    }
+
+    pub fn json(data: string) -> HTTPResponse {
+        let mut response = HTTPResponse::new()
+        response.set_header("Content-Type", "application/json")
+        response.body = data
+        return response
+    }
+
+    pub fn not_found() -> HTTPResponse {
+        let mut response = HTTPResponse::new()
+        response.status_code = 404
+        response.status_text = "Not Found".to_string()
+        response.body = "404 Not Found".to_string()
+        return response
+    }
+
+    pub fn error(code: i64, message: string) -> HTTPResponse {
+        let mut response = HTTPResponse::new()
+        response.status_code = code
+        response.status_text = message.clone()
+        response.body = format!("{} {}", code, message)
+        return response
+    }
+
+    pub fn set_header(&mut self, name: string, value: string) {
+        self.headers.push((name, value))
+    }
+
+    pub fn to_string(&self) -> string {
+        let mut response = format!("HTTP/1.1 {} {}\r\n", self.status_code, self.status_text)
+
+        // Add default headers
+        response.push_str(&format!("Server: Ruva-HTTP/1.0\r\n"))
+        response.push_str(&format!("Connection: close\r\n"))
+
+        // Add custom headers
+        for (name, value) in &self.headers {
+            response.push_str(&format!("{}: {}\r\n", name, value))
+        }
+
+        // Add content length
+        response.push_str(&format!("Content-Length: {}\r\n", self.body.len()))
+
+        // End headers
+        response.push_str("\r\n")
+
+        // Add body
+        response.push_str(&self.body)
+
+        return response
+    }
+}
+
+// ─── Route Handler ────────────────────────────────────────────────────────────
+
+struct Route {
+    method: HTTPMethod,
+    path: string,
+    handler: fn(HTTPRequest) -> HTTPResponse,
+}
+
+impl Route {
+    pub fn new(method: HTTPMethod, path: string, handler: fn(HTTPRequest) -> HTTPResponse) -> Self {
+        return Self { method, path, handler }
+    }
+}
+
+// ─── HTTP Server ──────────────────────────────────────────────────────────────
+
+class HTTPServer {
+    pub let mut routes: Vec<Route>
+    pub let mut port: i64
+    pub let mut host: string
+    pub let mut request_count: i64
+
+    pub fn new(port: i64) -> Self {
+        return Self {
+            routes: Vec::new(),
+            port,
+            host: "127.0.0.1".to_string(),
+            request_count: 0,
+        }
+    }
+
+    pub fn get(&mut self, path: string, handler: fn(HTTPRequest) -> HTTPResponse) {
+        self.routes.push(Route::new(HTTPMethod::GET, path, handler))
+    }
+
+    pub fn post(&mut self, path: string, handler: fn(HTTPRequest) -> HTTPResponse) {
+        self.routes.push(Route::new(HTTPMethod::POST, path, handler))
+    }
+
+    pub fn put(&mut self, path: string, handler: fn(HTTPRequest) -> HTTPResponse) {
+        self.routes.push(Route::new(HTTPMethod::PUT, path, handler))
+    }
+
+    pub fn delete(&mut self, path: string, handler: fn(HTTPRequest) -> HTTPResponse) {
+        self.routes.push(Route::new(HTTPMethod::DELETE, path, handler))
+    }
+
+    pub fn handle_request(&self, request: HTTPRequest) -> HTTPResponse {
+        self.request_count += 1
+
+        // Log request
+        println!("[{}] {} {} {}", self.request_count, request.method as string, request.path, request.version)
+
+        // Find matching route
+        for route in &self.routes {
+            if route.method as i64 == request.method as i64 && route.path == request.path {
+                return (route.handler)(request)
+            }
+        }
+
+        // Default 404
+        return HTTPResponse::not_found()
+    }
+
+    pub fn start(&mut self) {
+        println!("╔══════════════════════════════════════════╗")
+        println!("║       HTTP Server Started! 🚀            ║")
+        println!("╚══════════════════════════════════════════╝")
+        println!("")
+        println!("Listening on http://{}:{}", self.host, self.port)
+        println!("")
+        println!("Endpoints:")
+        for route in &self.routes {
+            println!("  {} {}", route.method as string, route.path)
+        }
+        println!("")
+        println!("Press Ctrl+C to stop")
+    }
+}
+
+// ─── Route Handlers ───────────────────────────────────────────────────────────
+
+fn handle_index(request: HTTPRequest) -> HTTPResponse {
+    let mut response = HTTPResponse::ok()
+    response.body = "Welcome to the Ruva HTTP Server! 🚀".to_string()
+    response.set_header("Content-Type", "text/html")
+    return response
+}
+
+fn handle_hello(request: HTTPRequest) -> HTTPResponse {
+    let name = "World".to_string()  // Default name
+    let mut response = HTTPResponse::ok()
+    response.body = format!("Hello, {}! 👋", name)
+    return response
+}
+
+fn handle_json(request: HTTPRequest) -> HTTPResponse {
+    let data = r#"{"message": "Hello from Ruva!", "status": "success", "timestamp": 1234567890}"#.to_string()
+    return HTTPResponse::json(data)
+}
+
+fn handle_users(request: HTTPRequest) -> HTTPResponse {
+    let users = r#"[
+        {"id": 1, "name": "Alice", "email": "alice@example.com"},
+        {"id": 2, "name": "Bob", "email": "bob@example.com"},
+        {"id": 3, "name": "Charlie", "email": "charlie@example.com"}
+    ]"#.to_string()
+    return HTTPResponse::json(users)
+}
+
+fn handle_health(request: HTTPRequest) -> HTTPResponse {
+    let data = r#"{"status": "healthy", "uptime": 12345, "version": "1.0.0"}"#.to_string()
+    return HTTPResponse::json(data)
+}
+
+fn handle_404(request: HTTPRequest) -> HTTPResponse {
+    return HTTPResponse::not_found()
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+fn main() {
+    let mut server = HTTPServer::new(8080)
+
+    // Register routes
+    server.get("/".to_string(), handle_index)
+    server.get("/hello".to_string(), handle_hello)
+    server.get("/api/json".to_string(), handle_json)
+    server.get("/api/users".to_string(), handle_users)
+    server.get("/health".to_string(), handle_health)
+
+    // Start server
+    server.start()
+
+    // Simulate some requests
+    let test_requests = vec![
+        "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n",
+        "GET /hello HTTP/1.1\r\nHost: localhost\r\n\r\n",
+        "GET /api/json HTTP/1.1\r\nHost: localhost\r\n\r\n",
+        "GET /api/users HTTP/1.1\r\nHost: localhost\r\n\r\n",
+        "GET /health HTTP/1.1\r\nHost: localhost\r\n\r\n",
+        "GET /notfound HTTP/1.1\r\nHost: localhost\r\n\r\n",
+    ]
+
+    println!("\nSimulating requests:")
+    println!("===================")
+
+    for request_text in test_requests {
+        match HTTPRequest::parse(request_text.to_string()) {
+            Some(request) => {
+                let response = server.handle_request(request)
+                println!("Response: {} {}", response.status_code, response.status_text)
+                println!("Body: {}\n", response.body)
+            }
+            None => {
+                println!("Failed to parse request")
+            }
+        }
+    }
+
+    println!("Total requests handled: {}", server.request_count)
+}

@@ -1,0 +1,14 @@
+class Bookmark {
+    pub let url: string,
+
+    pub fn new() -> Self {
+        return Self { url: "" }
+    }
+
+    pub fn get_url(&self) -> string { return self.url.clone() }
+}
+
+fn main() {
+    let obj = Bookmark::new()
+    println!("Bookmarks class created")
+}

@@ -1,0 +1,8 @@
+fn get_point() -> (f64, f64) {
+    return (10.0, 20.0)
+}
+
+fn main() {
+    let (x, y) = get_point()
+    println!("point=({}, {})", x, y)
+}

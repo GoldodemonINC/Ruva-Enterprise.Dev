@@ -1,0 +1,14 @@
+class LibraryBook {
+    pub let title: string,
+
+    pub fn new() -> Self {
+        return Self { title: "" }
+    }
+
+    pub fn is_available(&self) -> bool { return true }
+}
+
+fn main() {
+    let obj = LibraryBook::new()
+    println!("Library class created")
+}

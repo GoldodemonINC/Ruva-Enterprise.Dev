@@ -1,0 +1,319 @@
+// ─── Testing Module Demo ─────────────────────────────────────────────────
+// Demonstrates the Ruva testing standard library: assertions,
+// test runner, test discovery, and output formatting.
+
+import ruva::testing
+
+// ─── Helper Functions Under Test ─────────────────────────────────────────
+
+fn add(a: i64, b: i64) -> i64 {
+    return a + b
+}
+
+fn multiply(a: i64, b: i64) -> i64 {
+    return a * b
+}
+
+fn divide(a: f64, b: f64) -> f64 {
+    return a / b
+}
+
+fn is_even(n: i64) -> bool {
+    return n % 2 == 0
+}
+
+fn factorial(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    let mut result = 1
+    let mut i = 2
+    while i <= n {
+        result = result * i
+        i = i + 1
+    }
+    return result
+}
+
+fn fizzbuzz(n: i64) -> string {
+    if n % 15 == 0 {
+        return "FizzBuzz".into()
+    } else if n % 3 == 0 {
+        return "Fizz".into()
+    } else if n % 5 == 0 {
+        return "Buzz".into()
+    } else {
+        return "number".into()
+    }
+}
+
+fn fibonacci(n: i64) -> i64 {
+    if n <= 0 {
+        return 0
+    }
+    if n == 1 {
+        return 1
+    }
+    let mut a = 0
+    let mut b = 1
+    let mut i = 2
+    while i <= n {
+        let temp = a + b
+        a = b
+        b = temp
+        i = i + 1
+    }
+    return b
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Testing Module Demo ===")
+    println!("")
+
+    // ─── 1. Basic Assertions ────────────────────────────────────────
+
+    println!("--- 1. Basic Assertions ---")
+
+    // assert: condition must be true
+    assert_true(is_even(4))
+    assert_true(!is_even(3))
+    println!("✓ assert_true passed")
+
+    // assert_false
+    assert_false(is_even(3))
+    assert_false(!is_even(4))
+    println!("✓ assert_false passed")
+
+    // assert_eq (boolean comparison)
+    assert_eq(add(2, 3) == 5, true)
+    assert_eq(multiply(4, 5) == 20, true)
+    println!("✓ assert_eq passed")
+
+    // assert_ne (boolean comparison)
+    assert_ne(add(2, 3) == 6, true)
+    assert_ne(multiply(4, 5) == 19, true)
+    println!("✓ assert_ne passed")
+
+    // assert_msg with custom message
+    assert_msg(add(10, 20) == 30, "addition should work")
+    println!("✓ assert_msg passed")
+
+    // ─── 2. Numeric Assertions ──────────────────────────────────────
+
+    println!("\n--- 2. Numeric Assertions ---")
+
+    // assert_approx_eq for floating point
+    let pi = 3.14159
+    let pi_approx = 3.14158
+    assert_approx_eq(pi, pi_approx, 0.001)
+    println!("✓ assert_approx_eq passed (pi ≈ pi_approx)")
+
+    // assert_approx_ne
+    assert_approx_ne(1.0, 2.0, 0.001)
+    println!("✓ assert_approx_ne passed (1.0 ≠ 2.0)")
+
+    // Comparison assertions
+    assert_gt(10.0, 5.0)
+    assert_gte(10.0, 10.0)
+    assert_lt(5.0, 10.0)
+    assert_lte(10.0, 10.0)
+    println!("✓ comparison assertions passed (gt, gte, lt, lte)")
+
+    // ─── 3. String Assertions ───────────────────────────────────────
+
+    println!("\n--- 3. String Assertions ---")
+
+    assert_str_eq("hello".into(), "hello".into())
+    assert_str_ne("hello".into(), "world".into())
+    println!("✓ assert_str_eq/ne passed")
+
+    assert_str_contains("hello world".into(), "world".into())
+    assert_str_starts_with("hello world".into(), "hello".into())
+    assert_str_ends_with("hello world".into(), "world".into())
+    println!("✓ string contain/starts/ends passed")
+
+    // ─── 4. Result/Option Assertions ────────────────────────────────
+
+    println!("\n--- 4. Result/Option Assertions ---")
+
+    let ok_result: Result<i64, string> = Result::Ok(42)
+    let val = assert_result_ok(ok_result)
+    assert_eq(val == 42, true)
+    println!("✓ assert_result_ok passed (got 42)")
+
+    let err_result: Result<i64, string> = Result::Err("oops".into())
+    let err_msg = assert_result_err(err_result)
+    assert_str_eq(err_msg, "oops".into())
+    println!("✓ assert_result_err passed (got \"oops\")")
+
+    let some_val: Option<i64> = Option::Some(99)
+    let unwrapped = assert_option_some(some_val)
+    assert_eq(unwrapped == 99, true)
+    println!("✓ assert_option_some passed (got 99)")
+
+    let none_val: Option<i64> = Option::None
+    assert_option_none(none_val)
+    println!("✓ assert_option_none passed")
+
+    // ─── 5. Test Runner ─────────────────────────────────────────────
+
+    println!("\n--- 5. Test Runner ---")
+
+    let mut runner = TestRunner::new("arithmetic tests".into())
+
+    // Run individual assertions through the runner
+    runner.run_assertion("add(2,3)==5".into(), add(2, 3) == 5)
+    runner.run_assertion("multiply(4,5)==20".into(), multiply(4, 5) == 20)
+    runner.run_assertion("factorial(5)==120".into(), factorial(5) == 120)
+    runner.run_assertion("factorial(0)==1".into(), factorial(0) == 1)
+    runner.run_assertion("is_even(4)==true".into(), is_even(4))
+    runner.run_assertion("is_even(3)==false".into(), !is_even(3))
+
+    runner.print_results()
+
+    let stats = runner.get_stats()
+    println!("Pass rate: {:.1}%", stats.pass_rate())
+    println!("All passed: {}", runner.is_all_passed())
+
+    // ─── 6. Test Suite ──────────────────────────────────────────────
+
+    println!("\n--- 6. Test Suite ---")
+
+    let mut suite = TestSuite::new("fizzbuzz tests".into())
+    suite.add_pass("fizzbuzz(15)==FizzBuzz".into())
+    suite.add_pass("fizzbuzz(3)==Fizz".into())
+    suite.add_pass("fizzbuzz(5)==Buzz".into())
+    suite.add_pass("fizzbuzz(7)==number".into())
+
+    suite.print_summary()
+    println!("Suite all passed: {}", suite.is_all_passed())
+
+    // ─── 7. Test Stats ──────────────────────────────────────────────
+
+    println!("\n--- 7. Test Stats ---")
+
+    let stats = TestStats::from_suite(suite)
+    stats.print_stats()
+    println!("Pass rate: {:.1}%", stats.pass_rate())
+
+    // Merge stats
+    let mut total_stats = TestStats::new()
+    total_stats.merge(stats)
+    total_stats.merge(runner.get_stats())
+    println!("Merged stats:")
+    total_stats.print_stats()
+
+    // ─── 8. Test Discovery ──────────────────────────────────────────
+
+    println!("\n--- 8. Test Discovery ---")
+
+    let mut discovery = TestDiscovery::new()
+    discovery.register_test("test_add".into())
+    discovery.register_test("test_multiply".into())
+    discovery.register_test("test_divide".into())
+    discovery.register_test_with_category("test_fibonacci".into(), "math".into())
+    discovery.register_test_with_category("test_factorial".into(), "math".into())
+    discovery.register_test_with_category("test_fizzbuzz".into(), "logic".into())
+
+    discovery.print_discovered()
+    println!("Has math category: {}", discovery.has_category("math".into()))
+    println!("Has logic category: {}", discovery.has_category("logic".into()))
+    println!("Has string category: {}", discovery.has_category("string".into()))
+
+    // ─── 9. Test Output Formatting ──────────────────────────────────
+
+    println!("\n--- 9. Test Output Formatting ---")
+
+    let formatter = TestFormatter::new()
+    println!("Pass label: {}", TestFormatter::format_pass("test".into()))
+    println!("Fail label: {}", TestFormatter::format_fail("test".into()))
+    println!("Skip label: {}", TestFormatter::format_skip("test".into()))
+    println!("Duration (fast): {}", TestFormatter::format_duration(500))
+    println!("Duration (slow): {}", TestFormatter::format_duration(2000))
+    println!("Separator: {}", TestFormatter::separator())
+
+    // Print individual results
+    let pass_result = TestResult::pass("test_add".into())
+    let fail_result = TestResult::fail("test_divide".into(), "division by zero".into())
+    formatter.print_test_result(pass_result)
+    formatter.print_test_result(fail_result)
+
+    // ─── 10. Test Report ────────────────────────────────────────────
+
+    println!("\n--- 10. Test Report ---")
+
+    let mut report = TestReport::new("comprehensive suite".into())
+    let r1 = TestResult::pass("test_1".into())
+    let r2 = TestResult::pass("test_2".into())
+    let r3 = TestResult::fail("test_3".into(), "expected 42, got 0".into())
+    report.add_result(r1)
+    report.add_result(r2)
+    report.add_result(r3)
+
+    report.print_report()
+    println!("Report success: {}", report.is_success())
+
+    // ─── 11. Benchmark ──────────────────────────────────────────────
+
+    println!("\n--- 11. Benchmark ---")
+
+    let bench = BenchmarkResult::new("fibonacci(20)".into(), 1000, 50)
+    bench.print_benchmark()
+    println!("Throughput: {:.0} ops/sec", bench.throughput())
+
+    // ─── 12. Test Case ──────────────────────────────────────────────
+
+    println!("\n--- 12. Test Case ---")
+
+    let tc1 = TestCase::new("test_basic".into())
+    let tc2 = TestCase::with_category("test_math".into(), "math".into())
+    let tc3 = TestCase::should_fail("test_panic".into())
+
+    println!("Test: {} (cat: {}, should_fail: {})", tc1.get_name(), tc1.get_category(), tc1.is_should_fail())
+    println!("Test: {} (cat: {}, should_fail: {})", tc2.get_name(), tc2.get_category(), tc2.is_should_fail())
+    println!("Test: {} (cat: {}, should_fail: {})", tc3.get_name(), tc3.get_category(), tc3.is_should_fail())
+
+    // ─── 13. Test Config ────────────────────────────────────────────
+
+    println!("\n--- 13. Test Config ---")
+
+    let config = TestConfig::default_config()
+    println!("Default: verbose={}, show_passed={}", config.is_verbose(), config.should_show_passed())
+
+    let verbose_config = TestConfig::verbose()
+    println!("Verbose: verbose={}", verbose_config.is_verbose())
+
+    let quiet_config = TestConfig::quiet()
+    println!("Quiet: show_passed={}", quiet_config.should_show_passed())
+
+    // ─── 14. Run Test Group ─────────────────────────────────────────
+
+    println!("\n--- 14. Run Test Group ---")
+
+    let tests = vec![
+        tc1,
+        tc2,
+        tc3,
+    ]
+    let group_suite = run_test_group("my tests".into(), tests)
+    group_suite.print_summary()
+
+    // ─── Summary ────────────────────────────────────────────────────
+
+    println!("\n=== All Testing Module Features Demonstrated ===")
+    println!("Assertions: assert, assert_msg, assert_eq/ne, assert_true/false")
+    println!("Numeric: assert_approx_eq/ne, assert_gt/gte/lt/lte")
+    println!("Strings: assert_str_eq/ne, assert_str_contains/starts/ends")
+    println!("Results: assert_result_ok/err, assert_option_some/none")
+    println!("Runner: TestRunner with run_assertion, print_results")
+    println!("Suite: TestSuite with add_pass/fail, print_summary")
+    println!("Stats: TestStats with pass_rate, merge")
+    println!("Discovery: TestDiscovery with register, filter_by_category")
+    println!("Formatting: TestFormatter with format_pass/fail/skip")
+    println!("Report: TestReport with add_result, print_report")
+    println!("Benchmark: BenchmarkResult with throughput")
+    println!("Config: TestConfig with verbose, quiet, filter")
+    println!("Test Case: TestCase with new, with_category, should_fail")
+}

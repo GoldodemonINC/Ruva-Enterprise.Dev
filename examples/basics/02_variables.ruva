@@ -1,0 +1,6 @@
+fn main() {
+    let x = 10
+    let mut y = 20
+    y = y + x
+    println!("x={}, y={}", x, y)
+}

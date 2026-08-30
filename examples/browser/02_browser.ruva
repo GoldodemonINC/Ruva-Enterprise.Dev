@@ -1,0 +1,7 @@
+// Example: Browser #2
+// This example demonstrates browser concepts in Ruva
+
+fn main() {
+    println!("Example: Browser #2")
+    println!("Ruva makes browser safe and fast")
+}

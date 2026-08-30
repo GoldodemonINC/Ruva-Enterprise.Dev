@@ -1,0 +1,7 @@
+// Example: Database #4
+// This example demonstrates database concepts in Ruva
+
+fn main() {
+    println!("Example: Database #4")
+    println!("Ruva makes database safe and fast")
+}

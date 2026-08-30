@@ -1,0 +1,20 @@
+struct Pair<T> {
+    first: T,
+    second: T,
+}
+
+impl<T> Pair<T> {
+    pub fn new(first: T, second: T) -> Self {
+        return Self { first, second }
+    }
+}
+
+fn max<T: Ord>(a: T, b: T) -> T {
+    if a >= b { a } else { b }
+}
+
+fn main() {
+    let p = Pair::new(1, 2)
+    let m = max(10, 20)
+    println!("{} {}", p.first, m)
+}

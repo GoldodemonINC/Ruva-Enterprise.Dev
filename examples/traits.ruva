@@ -1,0 +1,82 @@
+// Traits — interfaces with power
+
+trait Drawable {
+    fn draw(&self)
+    fn bounding_box(&self) -> (f64, f64, f64, f64)
+}
+
+trait Area {
+    fn area(&self) -> f64
+}
+
+struct Circle {
+    pub x: f64,
+    pub y: f64,
+    pub radius: f64,
+}
+
+impl Area for Circle {
+    fn area(&self) -> f64 {
+        return 3.14159 * self.radius * self.radius
+    }
+}
+
+impl Drawable for Circle {
+    fn draw(&self) {
+        println!("Drawing circle at ({}, {}) r={}", self.x, self.y, self.radius)
+    }
+
+    fn bounding_box(&self) -> (f64, f64, f64, f64) {
+        return (
+            self.x - self.radius,
+            self.y - self.radius,
+            self.x + self.radius,
+            self.y + self.radius
+        )
+    }
+}
+
+struct Rect {
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
+}
+
+impl Area for Rect {
+    fn area(&self) -> f64 {
+        return self.w * self.h
+    }
+}
+
+impl Drawable for Rect {
+    fn draw(&self) {
+        println!("Drawing rect at ({}, {}) {}x{}", self.x, self.y, self.w, self.h)
+    }
+
+    fn bounding_box(&self) -> (f64, f64, f64, f64) {
+        return (self.x, self.y, self.x + self.w, self.y + self.h)
+    }
+}
+
+// Generic function with trait bounds
+fn print_area(shape: &impl Area) {
+    println!("Area: {:.2}", shape.area())
+}
+
+fn draw_all(shapes: &[impl Drawable]) {
+    for s in shapes {
+        s.draw()
+    }
+}
+
+fn main() {
+    let c = Circle { x: 0.0, y: 0.0, radius: 5.0 }
+    let r = Rect { x: 1.0, y: 1.0, w: 10.0, h: 3.0 }
+
+    print_area(&c)
+    print_area(&r)
+
+    println!("---")
+    draw_all(&[c, r])
+}

@@ -1,0 +1,8 @@
+fn build_greeting(name: string) -> string {
+    let result = "Hello, " + name + "!"
+    return result
+}
+
+fn main() {
+    println!("{}", build_greeting("Ruva"))
+}

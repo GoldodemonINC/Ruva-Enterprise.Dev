@@ -1,0 +1,6 @@
+fn main() {
+    let x: bool = true
+    let y: bool = false
+    let z = x + y
+    println!("{}", z)
+}

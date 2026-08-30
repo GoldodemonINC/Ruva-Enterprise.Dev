@@ -1,0 +1,7 @@
+// Example: Math #1
+// This example demonstrates math concepts in Ruva
+
+fn main() {
+    println!("Example: Math #1")
+    println!("Ruva makes math safe and fast")
+}

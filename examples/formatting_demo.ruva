@@ -1,0 +1,369 @@
+// ─── Formatting Module Demo ──────────────────────────────────────────────
+// Demonstrates the Ruva formatter standard library: style configuration,
+// formatting rules, format results, and formatting utilities.
+
+import ruva::formatter
+
+// ─── Functions Under Test ────────────────────────────────────────────────
+
+fn add(a: i64, b: i64) -> i64 {
+    return a + b
+}
+
+fn multiply(a: i64, b: i64) -> i64 {
+    return a * b
+}
+
+fn factorial(n: i64) -> i64 {
+    if n <= 1 {
+        return 1
+    }
+    let mut result = 1
+    let mut i = 2
+    while i <= n {
+        result = result * i
+        i = i + 1
+    }
+    return result
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────
+
+fn main() {
+    println!("=== Ruva Formatting Module Demo ===")
+    println!("")
+
+    // ─── 1. Style Configuration ────────────────────────────────────
+
+    println!("--- 1. Style Configuration ---")
+
+    // Default style
+    let default_style = StyleConfig::default_config()
+    println!("Default indent: {}", default_style.get_indent_size())
+    println!("Default line width: {}", default_style.get_line_width())
+    println!("Uses tabs: {}", default_style.use_tabs)
+    println!("Trailing commas: {}", default_style.should_trail_comma())
+    println!("Sort imports: {}", default_style.should_sort_imports())
+    println!("Wrap lines: {}", default_style.should_wrap_lines())
+    println!("Brace style: {}", default_style.get_brace_style())
+
+    // Compact style
+    let compact_style = StyleConfig::compact()
+    println!("Compact indent: {}", compact_style.get_indent_size())
+    println!("Compact line width: {}", compact_style.get_line_width())
+
+    // Rustfmt style
+    let rust_style = StyleConfig::rustfmt()
+    println!("Rustfmt indent: {}", rust_style.get_indent_size())
+    println!("Rustfmt brace: {}", rust_style.get_brace_style())
+
+    // Python style
+    let py_style = StyleConfig::python_style()
+    println!("Python indent: {}", py_style.get_indent_size())
+    println!("Python line width: {}", py_style.get_line_width())
+
+    // Zig style
+    let zig_style = StyleConfig::zig_style()
+    println!("Zig indent: {}", zig_style.get_indent_size())
+
+    println!("")
+
+    // ─── 2. Format Options ─────────────────────────────────────────
+
+    println!("--- 2. Format Options ---")
+
+    let opts = FormatOptions::default_options()
+    println!("Default: check_only={}, dry_run={}, verbose={}", opts.is_check_only(), opts.is_dry_run(), opts.is_verbose())
+
+    let check_opts = FormatOptions::check_only_option()
+    println!("Check-only: check_only={}", check_opts.is_check_only())
+
+    let dry_opts = FormatOptions::dry_run_option()
+    println!("Dry-run: dry_run={}", dry_opts.is_dry_run())
+
+    let verb_opts = FormatOptions::verbose_option()
+    println!("Verbose: verbose={}", verb_opts.is_verbose())
+
+    println!("")
+
+    // ─── 3. Format Results ─────────────────────────────────────────
+
+    println!("--- 3. Format Results ---")
+
+    let result1 = FormatResult::new("main.ruva".into())
+    println!("New result: changed={}, file={}", result1.is_changed(), result1.get_file_path())
+
+    let result2 = FormatResult::success("main.ruva".into(), 100, 95)
+    println!("Success: changed={}, original={}, formatted={}", result2.is_changed(), result2.get_original_lines(), result2.get_formatted_lines())
+
+    let result3 = FormatResult::error("main.ruva".into(), "parse error".into())
+    println!("Error: message={}", result3.get_message())
+
+    println!("")
+
+    // ─── 4. Format Stats ───────────────────────────────────────────
+
+    println!("--- 4. Format Stats ---")
+
+    let mut stats = FormatStats::new()
+    stats.add_result(result2)
+    stats.add_result(result1)
+    println!("Checked: {}, Changed: {}, Unchanged: {}", stats.get_checked(), stats.get_changed(), stats.get_unchanged())
+    println!("All formatted: {}", stats.is_all_formatted())
+
+    println!("")
+
+    // ─── 5. Format Rules ───────────────────────────────────────────
+
+    println!("--- 5. Format Rules ---")
+
+    let rule1 = FormatRule::new("trailing_commas".into(), "Add trailing commas to function calls".into())
+    println!("Rule: {} — {} (enabled: {})", rule1.get_name(), rule1.get_description(), rule1.is_enabled())
+
+    let rule2 = FormatRule::with_priority("indentation".into(), "Normalize indentation".into(), 10)
+    println!("Rule: {} — priority: {}", rule2.get_name(), rule2.get_priority())
+
+    let mut rule3 = FormatRule::disabled("sort_imports".into(), "Sort import statements".into())
+    println!("Rule: {} — enabled: {}", rule3.get_name(), rule3.is_enabled())
+    rule3.enable()
+    println!("After enable: enabled={}", rule3.is_enabled())
+
+    println!("")
+
+    // ─── 6. Format Context ─────────────────────────────────────────
+
+    println!("--- 6. Format Context ---")
+
+    let mut ctx = FormatContext::new()
+    println!("Initial indent: {}", ctx.get_indent_level())
+
+    ctx.indent()
+    ctx.enter_function()
+    println!("After indent+enter_function: level={}, in_fn={}", ctx.get_indent_level(), ctx.is_in_function())
+
+    ctx.indent()
+    ctx.enter_struct()
+    println!("After indent+enter_struct: level={}, in_struct={}", ctx.get_indent_level(), ctx.is_in_struct())
+
+    ctx.dedent()
+    ctx.exit_struct()
+    println!("After dedent+exit_struct: level={}, in_struct={}", ctx.get_indent_level(), ctx.is_in_struct())
+
+    ctx.dedent()
+    ctx.exit_function()
+    println!("After dedent+exit_function: level={}, in_fn={}", ctx.get_indent_level(), ctx.is_in_function())
+
+    println!("")
+
+    // ─── 7. Format Errors ──────────────────────────────────────────
+
+    println!("--- 7. Format Errors ---")
+
+    let err = FormatError::new("main.ruva".into(), 10, 5, "expected ';'".into(), "syntax".into())
+    println!("Error in {} at {}:{} — {} (rule: {})", err.get_file(), err.get_line(), err.get_column(), err.get_message(), err.get_rule())
+
+    println!("")
+
+    // ─── 8. Format Diff ────────────────────────────────────────────
+
+    println!("--- 8. Format Diff ---")
+
+    let hunk = FormatHunk::new(5, 7, "old code".into(), "new code".into())
+    println!("Hunk: lines {}-{}", hunk.get_start_line(), hunk.get_end_line())
+
+    let mut diff = FormatDiff::new("main.ruva".into(), "original".into(), "formatted".into())
+    diff.add_hunk(hunk)
+    println!("Diff has changes: {}", diff.has_changes())
+    println!("Hunks count: {}", diff.get_hunks().len())
+
+    println!("")
+
+    // ─── 9. Formatting Functions (Stubs) ───────────────────────────
+
+    println!("--- 9. Formatting Functions ---")
+
+    let source = "fn main() {\n    let x = 1\n}\n"
+    let formatted = format_source(source, default_style)
+    println!("Format source: same={}", source == formatted)
+
+    let trimmed = trim_trailing_whitespace("hello   \n".into())
+    println!("Trim whitespace: \"{}\"", trimmed)
+
+    let with_newline = ensure_trailing_newline("hello".into())
+    println!("Ensure newline: \"{}\"", with_newline)
+
+    let normalized = normalize_line_endings("line1\\r\\nline2\\n".into())
+    println!("Normalize line endings: done")
+
+    println!("")
+
+    // ─── 10. Indentation Functions ─────────────────────────────────
+
+    println!("--- 10. Indentation Functions ---")
+
+    let indented = indent_line("let x = 1".into(), 2, default_style)
+    println!("Indent(2): \"{}\"", indented)
+
+    let dedented = dedent_line("    let x = 1".into(), default_style)
+    println!("Dedent: \"{}\"", dedented)
+
+    let stripped = strip_indentation("        let x = 1".into())
+    println!("Strip: \"{}\"", stripped)
+
+    let indent_str = make_indent_string(3, default_style)
+    println!("Indent string(3): \"{}\"", indent_str)
+
+    println!("")
+
+    // ─── 11. Spacing Functions ─────────────────────────────────────
+
+    println!("--- 11. Spacing Functions ---")
+
+    let normalized_spacing = normalize_spacing("let  x=1+2\n".into())
+    println!("Normalize spacing: done")
+
+    let with_space = ensure_space_after_keyword("if(true){}".into(), "if".into())
+    println!("Space after keyword: done")
+
+    let before_brace = ensure_space_before_brace("if(true) {}".into())
+    println!("Space before brace: done")
+
+    let comma_space = ensure_space_after_comma("foo(a,b,c)".into())
+    println!("Space after comma: done")
+
+    let op_spacing = normalize_operator_spacing("a+b*c".into())
+    println!("Normalize operators: done")
+
+    println!("")
+
+    // ─── 12. Brace Formatting ──────────────────────────────────────
+
+    println!("--- 12. Brace Formatting ---")
+
+    let next_line = move_brace_to_next_line("fn foo() {}".into())
+    println!("Brace next line: done")
+
+    let same_line = move_brace_to_same_line("fn foo()\n{}".into())
+    println!("Brace same line: done")
+
+    let single_block = format_single_line_block("fn foo() { return 1 }".into(), default_style)
+    println!("Single line block: done")
+
+    println!("")
+
+    // ─── 13. Import Formatting ─────────────────────────────────────
+
+    println!("--- 13. Import Formatting ---")
+
+    let sorted = sort_imports("import c::foo\\nimport a::bar\\nimport b::baz".into())
+    println!("Sort imports: done")
+
+    let grouped = group_imports("import ruva::core\\nimport foo::bar".into())
+    println!("Group imports: done")
+
+    let merged = merge_duplicate_imports("import foo::bar\\nimport foo::baz".into())
+    println!("Merge imports: done")
+
+    println!("")
+
+    // ─── 14. Trailing Comma Functions ──────────────────────────────
+
+    println!("--- 14. Trailing Comma Functions ---")
+
+    let with_commas = add_trailing_commas("foo(a, b, c)".into())
+    println!("Add trailing commas: done")
+
+    let no_commas = remove_trailing_commas("foo(a, b, c,)".into())
+    println!("Remove trailing commas: done")
+
+    println!("")
+
+    // ─── 15. Line Wrapping ─────────────────────────────────────────
+
+    println!("--- 15. Line Wrapping ---")
+
+    let long_line = "fn very_long_function_name(param1: i64, param2: string, param3: bool, param4: f64) -> Result<string, string> {"
+    let wrapped = wrap_long_lines(long_line.into(), 80)
+    println!("Wrap long lines: done")
+
+    let should_wrap = should_wrap_line(long_line.into(), 80)
+    println!("Should wrap (80): {}", should_wrap)
+
+    let short_line = "fn add(a: i64, b: i64) -> i64"
+    let should_not_wrap = should_wrap_line(short_line.into(), 80)
+    println!("Should wrap short (80): {}", should_not_wrap)
+
+    println!("")
+
+    // ─── 16. Match / Pattern Formatting ────────────────────────────
+
+    println!("--- 16. Match / Pattern Formatting ---")
+
+    let match_formatted = format_match_arms("match x { 0 => \"zero\", _ => \"other\" }".into(), default_style)
+    println!("Format match arms: done")
+
+    let pattern = format_pattern("(a, b)".into(), default_style)
+    println!("Format pattern: done")
+
+    let arrow = normalize_arrow_spacing("x=>1".into())
+    println!("Normalize arrows: done")
+
+    println!("")
+
+    // ─── 17. Comment Formatting ────────────────────────────────────
+
+    println!("--- 17. Comment Formatting ---")
+
+    let aligned = align_comments("let x = 1  // comment".into())
+    println!("Align comments: done")
+
+    let space_before = ensure_space_before_comment("let x = 1// comment".into())
+    println!("Space before comment: done")
+
+    let doc = format_doc_comments("/// This is a doc comment".into())
+    println!("Format doc comments: done")
+
+    println!("")
+
+    // ─── 18. Config Loading ────────────────────────────────────────
+
+    println!("--- 18. Config Loading ---")
+
+    let loaded = load_config(".ruva.toml".into())
+    println!("Loaded config: indent={}", loaded.get_indent_size())
+
+    let found = find_config_file()
+    match found {
+        Option::Some(path) => println!("Config found: {}", path),
+        Option::None => println!("No config found (using defaults)"),
+    }
+
+    println!("")
+
+    // ─── 19. Formatting Rules ──────────────────────────────────────
+
+    println!("--- 19. Formatting Rules ---")
+
+    let rules = get_default_rules()
+    println!("Default rules count: {}", rules.len())
+
+    let all_rules = get_all_rules()
+    println!("All rules count: {}", all_rules.len())
+
+    println!("")
+
+    // ─── 20. Integration: Format a Function ────────────────────────
+
+    println!("--- 20. Integration: Format a Function ---")
+
+    let test_source = "fn add(a: i64, b: i64) -> i64 {\nreturn a + b\n}\n"
+    let formatted = format_source(test_source.into(), default_style)
+    println!("Original length: {}", test_source.len())
+    println!("Formatted length: {}", formatted.len())
+
+    let result = format_source_with_options(test_source.into(), default_style, FormatOptions::default_options())
+    println!("Format result: changed={}", result.is_changed())
+
+    println!("")
+    println!("=== All Formatting Module Features Demonstrated ===")
+}

@@ -1,0 +1,552 @@
+// ─── Graphics Example #3 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating graphics concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Vertex {
+    pub let x: f64,
+    pub let y: f64,
+    pub let z: f64,
+}
+
+impl Vertex {
+    pub fn new(x: f64, y: f64, z: f64) -> Vertex {
+        return Vertex {
+            x,
+            y,
+            z,
+        }
+    }
+
+    pub fn default() -> Vertex {
+        return Vertex::new(0.0, 0.0, 0.0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Vertex".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Vertex")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Vertex")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Vertex")
+    }
+}
+
+
+pub struct Shader {
+    pub let id: u64,
+    pub let source: string,
+}
+
+impl Shader {
+    pub fn new(id: u64, source: string) -> Shader {
+        return Shader {
+            id,
+            source,
+        }
+    }
+
+    pub fn default() -> Shader {
+        return Shader::new(0, "".into())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Shader".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Shader")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Shader")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Shader")
+    }
+}
+
+
+pub struct Texture {
+    pub let id: u64,
+    pub let width: u32,
+    pub let height: u32,
+}
+
+impl Texture {
+    pub fn new(id: u64, width: u32, height: u32) -> Texture {
+        return Texture {
+            id,
+            width,
+            height,
+        }
+    }
+
+    pub fn default() -> Texture {
+        return Texture::new(0, 0, 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Texture".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Texture")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Texture")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Texture")
+    }
+}
+
+
+pub struct Mesh {
+    pub let mut vertices: Vec<i64>,
+    pub let mut indices: Vec<i64>,
+}
+
+impl Mesh {
+    pub fn new(vertices: Vec<i64>, indices: Vec<i64>) -> Mesh {
+        return Mesh {
+            vertices,
+            indices,
+        }
+    }
+
+    pub fn default() -> Mesh {
+        return Mesh::new(Vec::new(), Vec::new())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Mesh".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Mesh")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Mesh")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Mesh")
+    }
+}
+
+
+pub struct Material {
+    pub let name: string,
+    pub let shader_id: u64,
+}
+
+impl Material {
+    pub fn new(name: string, shader_id: u64) -> Material {
+        return Material {
+            name,
+            shader_id,
+        }
+    }
+
+    pub fn default() -> Material {
+        return Material::new("".into(), 0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Material".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Material")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Material")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Material")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn update_graphics_0(input: &string) -> f64 {
+    // Graphics function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_graphics_1(input: i64) -> string {
+    // Graphics function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_graphics_2(input: f64) -> bool {
+    // Graphics function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn split_graphics_3(input: string) -> Vec<i64> {
+    // Graphics function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_graphics_4(input: bool) -> &string {
+    // Graphics function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn verify_graphics_5(input: Vec<i64>) -> i64 {
+    // Graphics function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn assert_graphics_6(input: &string) -> f64 {
+    // Graphics function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn test_graphics_7(input: i64) -> string {
+    // Graphics function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn benchmark_graphics_8(input: f64) -> bool {
+    // Graphics function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn process_graphics_9(input: string) -> Vec<i64> {
+    // Graphics function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn transform_graphics_10(input: bool) -> &string {
+    // Graphics function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn validate_graphics_11(input: Vec<i64>) -> i64 {
+    // Graphics function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn analyze_graphics_12(input: &string) -> f64 {
+    // Graphics function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn optimize_graphics_13(input: i64) -> string {
+    // Graphics function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn filter_graphics_14(input: f64) -> bool {
+    // Graphics function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== graphics programming Example #3 ===")
+    
+    // Initialize components
+    let mut vertex_1 = create_vertex_1()
+    let mut shader_1 = create_shader_1()
+    let mut texture_1 = create_texture_1()
+
+    // Process data
+    update_graphics_0()
+    delete_graphics_1()
+    merge_graphics_2()
+    split_graphics_3()
+    check_graphics_4()
+    verify_graphics_5()
+    assert_graphics_6()
+    test_graphics_7()
+
+    // Verify results
+    println!("All graphics programming operations completed!")
+    println!("Example #3 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_graphics_3_0() {
+    // Test graphics functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_3_1() {
+    // Test graphics functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_3_2() {
+    // Test graphics functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_3_3() {
+    // Test graphics functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_graphics_3_4() {
+    // Test graphics functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

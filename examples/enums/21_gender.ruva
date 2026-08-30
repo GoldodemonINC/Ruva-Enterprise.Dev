@@ -1,0 +1,18 @@
+enum MaleEnum {
+    Male,
+    Female,
+    Other,
+}
+
+fn describe(v: &MaleEnum) -> string {
+    match v {
+        MaleEnum::Male => "Male".into(),
+        MaleEnum::Female => "Female".into(),
+        MaleEnum::Other => "Other".into(),
+    }
+}
+
+fn main() {
+    let v = MaleEnum::Male
+    println!("{}", describe(&v))
+}

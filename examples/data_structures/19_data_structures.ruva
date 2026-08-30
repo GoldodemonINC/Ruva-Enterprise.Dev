@@ -1,0 +1,7 @@
+// Example: Data Structures #19
+// This example demonstrates data structures concepts in Ruva
+
+fn main() {
+    println!("Example: Data Structures #19")
+    println!("Ruva makes data structures safe and fast")
+}

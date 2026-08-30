@@ -1,0 +1,8 @@
+fn hypotenuse(a: f64, b: f64) -> f64 {
+    return (a * a + b * b)
+}
+
+fn main() {
+    println!("hypotenuse(3,4) = {}", hypotenuse(3.0, 4.0))
+    println!("hypotenuse(5,12) = {}", hypotenuse(5.0, 12.0))
+}

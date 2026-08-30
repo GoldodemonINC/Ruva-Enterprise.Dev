@@ -1,0 +1,15 @@
+fn is_palindrome(n: i64) -> bool {
+    let original = n
+    let mut reversed = 0
+    let mut temp = n
+    while temp > 0 {
+        reversed = reversed * 10 + temp % 10
+        temp = temp / 10
+    }
+    return original == reversed
+}
+
+fn main() {
+    println!("121 palindrome? {}", is_palindrome(121))
+    println!("123 palindrome? {}", is_palindrome(123))
+}

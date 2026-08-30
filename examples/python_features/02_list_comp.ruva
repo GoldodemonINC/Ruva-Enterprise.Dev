@@ -1,0 +1,8 @@
+// Python-style list comprehension
+// Transpiles to Rust iterator chain
+
+fn main() {
+    let numbers = [1, 2, 3, 4, 5]
+    let doubled = [x * 2 for x in numbers]
+    println!("Doubled: {:?}", doubled)
+}

@@ -1,0 +1,169 @@
+// Example: Web Application with Browser Module
+
+import ruva::browser::dom
+import ruva::browser::canvas
+import ruva::browser::fetch
+import ruva::browser::websocket
+
+// Application state
+class AppState {
+    pub let mut counter: i32
+    pub let mut username: string
+    pub let mut is_connected: bool
+
+    pub fn new() -> Self {
+        return Self {
+            counter: 0,
+            username: "".into(),
+            is_connected: false,
+        }
+    }
+}
+
+// Main application
+class App {
+    pub let mut state: AppState
+    pub let mut document: dom::Document
+    pub let mut canvas: canvas::CanvasElement
+    pub let mut ctx: canvas::CanvasRenderingContext2D
+    pub let mut ws: Option<websocket::WebSocket>
+
+    pub fn new() -> App {
+        // Get browser APIs
+        let document = dom::get_document()
+        let window = dom::get_window()
+
+        // Get canvas
+        let canvas = document.get_element_by_id("game-canvas".into())
+        let ctx = canvas.get_context_2d()
+
+        return Self {
+            state: AppState::new(),
+            document,
+            canvas,
+            ctx,
+            ws: Option::None,
+        }
+    }
+
+    pub fn init(&mut self) {
+        // Set up event listeners
+        let counter_button = self.document.get_element_by_id("counter-button".into())
+        counter_button.add_event_listener("click".into(), fn() {
+            self.increment_counter()
+        })
+
+        let fetch_button = self.document.get_element_by_id("fetch-button".into())
+        fetch_button.add_event_listener("click".into(), fn() {
+            self.fetch_data()
+        })
+
+        let connect_button = self.document.get_element_by_id("connect-button".into())
+        connect_button.add_event_listener("click".into(), fn() {
+            self.connect_websocket()
+        })
+
+        // Start animation loop
+        let window = dom::get_window()
+        window.request_animation_frame(|timestamp| {
+            self.render(timestamp)
+        })
+    }
+
+    pub fn increment_counter(&mut self) {
+        self.state.counter += 1
+
+        // Update UI
+        let counter_display = self.document.get_element_by_id("counter-display".into())
+        counter_display.set_text_content(format!("Count: {}", self.state.counter))
+    }
+
+    pub fn fetch_data(&mut self) {
+        // Async fetch
+        let url = "https://api.example.com/data".into()
+
+        // Note: In real implementation, this would be async
+        // fetch::get(url).then(|response| {
+        //     let data = response.json()
+        //     self.update_ui(data)
+        // })
+    }
+
+    pub fn connect_websocket(&mut self) {
+        // Connect to WebSocket server
+        let ws = websocket::WebSocket::new("ws://localhost:8080".into())
+
+        match ws {
+            Result::Ok(mut socket) => {
+                socket.on_message(|data| {
+                    self.handle_message(data)
+                })
+
+                socket.on_open(fn() {
+                    println!("Connected to server!")
+                    self.state.is_connected = true
+                    self.update_connection_status()
+                })
+
+                self.ws = Option::Some(socket)
+            }
+            Result::Err(e) => {
+                println!("Failed to connect: {}", e)
+            }
+        }
+    }
+
+    pub fn handle_message(&mut self, data: Vec<u8>) {
+        // Handle incoming message
+        let text = String::from_utf8(data)
+        println!("Received: {}", text)
+    }
+
+    pub fn update_connection_status(&mut self) {
+        let status = self.document.get_element_by_id("connection-status".into())
+        if self.state.is_connected {
+            status.set_text_content("Connected".into())
+            status.set_class_name("connected".into())
+        } else {
+            status.set_text_content("Disconnected".into())
+            status.set_class_name("disconnected".into())
+        }
+    }
+
+    pub fn render(&mut self, timestamp: f64) {
+        // Clear canvas
+        self.ctx.clear_rect(0.0, 0.0, 800.0, 600.0)
+
+        // Draw background
+        self.ctx.set_fill_style("#ffffff".into())
+        self.ctx.fill_rect(0.0, 0.0, 800.0, 600.0)
+
+        // Draw counter
+        self.ctx.set_fill_style("#000000".into())
+        self.ctx.fill_text(format!("Counter: {}", self.state.counter), 50.0, 50.0)
+
+        // Draw some shapes
+        self.ctx.set_fill_style("#ff0000".into())
+        self.ctx.fill_rect(100.0, 100.0, 100.0, 100.0)
+
+        self.ctx.set_fill_style("#00ff00".into())
+        self.ctx.fill_rect(250.0, 100.0, 100.0, 100.0)
+
+        self.ctx.set_fill_style("#0000ff".into())
+        self.ctx.fill_rect(400.0, 100.0, 100.0, 100.0)
+
+        // Request next frame
+        let window = dom::get_window()
+        window.request_animation_frame(|timestamp| {
+            self.render(timestamp)
+        })
+    }
+}
+
+fn main() {
+    // Initialize application
+    let mut app = App::new()
+    app.init()
+
+    println!("Web application initialized!")
+}

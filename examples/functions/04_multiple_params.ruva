@@ -1,0 +1,8 @@
+fn describe(name: string, age: i32, height: f64) {
+    println!("{} is {} years old and {}m tall", name, age, height)
+}
+
+fn main() {
+    describe("Alice", 30, 1.65)
+    describe("Bob", 25, 1.80)
+}

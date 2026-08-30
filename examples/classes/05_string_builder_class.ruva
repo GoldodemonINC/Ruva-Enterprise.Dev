@@ -1,0 +1,40 @@
+class StringBuilder {
+    let mut buffer: string,
+
+    pub fn new() -> Self {
+        return Self { buffer: "".into() }
+    }
+
+    pub fn append(&mut self, text: string) {
+        self.buffer = self.buffer + text
+    }
+
+    pub fn append_line(&mut self, text: string) {
+        self.buffer = self.buffer + text + "\n"
+    }
+
+    pub fn to_string(&self) -> string {
+        return self.buffer.clone()
+    }
+
+    pub fn clear(&mut self) {
+        self.buffer = "".into()
+    }
+
+    pub fn length(&self) -> i32 {
+        let mut count = 0
+        for _ in self.buffer.chars() {
+            count += 1
+        }
+        return count
+    }
+}
+
+fn main() {
+    let mut sb = StringBuilder::new()
+    sb.append("Hello".into())
+    sb.append(", ".into())
+    sb.append("World!".into())
+    println!("{}", sb.to_string())
+    println!("length: {}", sb.length())
+}

@@ -1,0 +1,964 @@
+// ─── Ruva Standard Library — IO Module ─────────────────────────────────────
+// File operations, path utilities, directory operations,
+// stdout/stderr printing, and basic network socket stubs.
+// Designed to transpile cleanly to Rust, Zig, and Python.
+
+// ─── File Handle ────────────────────────────────────────────────────────────
+
+pub struct File {
+    pub handle: u64,
+    pub path: string,
+    pub is_open: bool,
+    pub mode: FileMode,
+}
+
+enum FileMode {
+    Read,
+    Write,
+    Append,
+    ReadWrite,
+}
+
+// ─── File Operations ────────────────────────────────────────────────────────
+
+impl File {
+    pub fn open(path: string) -> Result<File, string> {
+        return Result::Ok(File {
+            handle: 0,
+            path,
+            is_open: true,
+            mode: FileMode::Read,
+        })
+    }
+
+    pub fn create(path: string) -> Result<File, string> {
+        return Result::Ok(File {
+            handle: 0,
+            path,
+            is_open: true,
+            mode: FileMode::Write,
+        })
+    }
+
+    pub fn append(path: string) -> Result<File, string> {
+        return Result::Ok(File {
+            handle: 0,
+            path,
+            is_open: true,
+            mode: FileMode::Append,
+        })
+    }
+
+    pub fn open_with_mode(path: string, mode: FileMode) -> Result<File, string> {
+        return Result::Ok(File {
+            handle: 0,
+            path,
+            is_open: true,
+            mode,
+        })
+    }
+
+    pub fn file_read_all(&self) -> Result<string, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_read_bytes_all(&self) -> Result<Vec<u8>, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_read_line(&self) -> Result<string, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_read_lines(&self) -> Result<Vec<string>, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_write_all(&self, content: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_write_bytes(&self, data: Vec<u8>) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_write_line(&self, line: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn file_flush(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek(&self, position: u64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek_from_end(&self, offset: u64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn seek_current(&self, offset: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn position(&self) -> Result<u64, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn metadata(&self) -> Result<FileMetadata, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn close(&mut self) {
+        self.is_open = false
+    }
+
+    pub fn is_open(&self) -> bool {
+        return self.is_open
+    }
+
+    pub fn get_path(&self) -> string {
+        return self.path.clone()
+    }
+}
+
+// ─── File Metadata ──────────────────────────────────────────────────────────
+
+pub struct FileMetadata {
+    pub size: u64,
+    pub is_file: bool,
+    pub is_dir: bool,
+    pub readonly: bool,
+    pub created: i64,
+    pub modified: i64,
+}
+
+impl FileMetadata {
+    pub fn get_size(&self) -> u64 {
+        return self.size
+    }
+
+    pub fn is_file(&self) -> bool {
+        return self.is_file
+    }
+
+    pub fn is_dir(&self) -> bool {
+        return self.is_dir
+    }
+
+    pub fn is_readonly(&self) -> bool {
+        return self.readonly
+    }
+
+    pub fn get_modified(&self) -> i64 {
+        return self.modified
+    }
+
+    pub fn get_created(&self) -> i64 {
+        return self.created
+    }
+}
+
+// ─── Convenience File Functions ─────────────────────────────────────────────
+
+pub fn read_file(path: string) -> Result<string, string> {
+    let file = File::open(path)
+    return match file {
+        Result::Ok(f) => f.read_all(),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+pub fn read_file_bytes(path: string) -> Result<Vec<u8>, string> {
+    let file = File::open(path)
+    return match file {
+        Result::Ok(f) => f.read_bytes(),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+pub fn write_file(path: string, content: string) -> Result<(), string> {
+    let file = File::create(path)
+    return match file {
+        Result::Ok(f) => f.write_all(content),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+pub fn write_file_bytes(path: string, data: Vec<u8>) -> Result<(), string> {
+    let file = File::create(path)
+    return match file {
+        Result::Ok(f) => f.write_bytes(data),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+pub fn append_file(path: string, content: string) -> Result<(), string> {
+    let file = File::append(path)
+    return match file {
+        Result::Ok(f) => f.write_all(content),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+pub fn file_exists(path: string) -> bool {
+    return false
+}
+
+pub fn file_size(path: string) -> Result<u64, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn copy_file(source: string, destination: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn move_file(source: string, destination: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn remove_file(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn rename_file(old_path: string, new_path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn file_metadata(path: string) -> Result<FileMetadata, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn is_file(path: string) -> bool {
+    return false
+}
+
+pub fn is_symlink(path: string) -> bool {
+    return false
+}
+
+// ─── Stdout / Stderr / Stdin ────────────────────────────────────────────────
+
+pub struct Stdout {
+    pub handle: u64,
+}
+
+pub struct Stderr {
+    pub handle: u64,
+}
+
+pub struct Stdin {
+    pub handle: u64,
+}
+
+impl Stdout {
+    pub fn new() -> Stdout {
+        return Stdout { handle: 0 }
+    }
+
+    pub fn stdout_write(&self, data: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stdout_write_line(&self, data: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stdout_flush(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+impl Stderr {
+    pub fn new() -> Stderr {
+        return Stderr { handle: 0 }
+    }
+
+    pub fn stderr_write(&self, data: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stderr_write_line(&self, data: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stderr_flush(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+impl Stdin {
+    pub fn new() -> Stdin {
+        return Stdin { handle: 0 }
+    }
+
+    pub fn stdin_read_line(&self) -> Result<string, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stdin_read_all(&self) -> Result<string, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn stdin_read_bytes_count(&self, count: i64) -> Result<Vec<u8>, string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+pub fn stdout() -> Stdout {
+    return Stdout::new()
+}
+
+pub fn stderr() -> Stderr {
+    return Stderr::new()
+}
+
+pub fn stdin() -> Stdin {
+    return Stdin::new()
+}
+
+// ─── Print helpers ──────────────────────────────────────────────────────────
+
+pub fn print_to_stdout(data: string) {
+    println!("{}", data)
+}
+
+pub fn print_to_stderr(data: string) {
+    eprintln!("{}", data)
+}
+
+pub fn eprint(data: string) {
+    eprint!("{}", data)
+}
+
+pub fn eprintln(data: string) {
+    eprintln!("{}", data)
+}
+
+// ─── Path Utilities ─────────────────────────────────────────────────────────
+
+pub struct PathBuf {
+    pub path: string,
+}
+
+impl PathBuf {
+    pub fn new(path: string) -> PathBuf {
+        return PathBuf { path }
+    }
+
+    pub fn from_str(path: string) -> PathBuf {
+        return PathBuf { path }
+    }
+
+    pub fn join(&self, other: string) -> PathBuf {
+        return PathBuf { path: self.path.clone() }
+    }
+
+    pub fn parent(&self) -> Option<PathBuf> {
+        return Option::None
+    }
+
+    pub fn file_name(&self) -> Option<string> {
+        return Option::None
+    }
+
+    pub fn stem(&self) -> Option<string> {
+        return Option::None
+    }
+
+    pub fn extension(&self) -> Option<string> {
+        return Option::None
+    }
+
+    pub fn with_extension(&self, ext: string) -> PathBuf {
+        return PathBuf { path: self.path.clone() }
+    }
+
+    pub fn with_file_name(&self, name: string) -> PathBuf {
+        return PathBuf { path: self.path.clone() }
+    }
+
+    pub fn exists(&self) -> bool {
+        return false
+    }
+
+    pub fn is_absolute(&self) -> bool {
+        return false
+    }
+
+    pub fn is_relative(&self) -> bool {
+        return true
+    }
+
+    pub fn to_string(&self) -> string {
+        return self.path.clone()
+    }
+
+    pub fn display(&self) -> string {
+        return self.path.clone()
+    }
+
+    pub fn canonicalize(&self) -> Result<PathBuf, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn is_dir(&self) -> bool {
+        return false
+    }
+
+    pub fn is_file(&self) -> bool {
+        return false
+    }
+
+    pub fn starts_with(&self, base: string) -> bool {
+        return false
+    }
+
+    pub fn ends_with(&self, suffix: string) -> bool {
+        return false
+    }
+}
+
+// Path helper functions
+pub fn path_join(base: string, other: string) -> string {
+    return base
+}
+
+pub fn path_exists(path: string) -> bool {
+    return false
+}
+
+pub fn path_is_absolute(path: string) -> bool {
+    return false
+}
+
+pub fn path_parent(path: string) -> string {
+    return path
+}
+
+pub fn path_file_name(path: string) -> string {
+    return path
+}
+
+pub fn path_extension(path: string) -> string {
+    return ""
+}
+
+pub fn path_stem(path: string) -> string {
+    return path
+}
+
+pub fn current_dir() -> Result<PathBuf, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn set_current_dir(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn temp_dir() -> PathBuf {
+    return PathBuf::new("/tmp".into())
+}
+
+pub fn home_dir() -> Result<PathBuf, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn absolute(path: string) -> Result<PathBuf, string> {
+    return Result::Err("Not implemented".into())
+}
+
+// ─── Directory Operations ───────────────────────────────────────────────────
+
+pub struct DirEntry {
+    pub name: string,
+    pub path: string,
+    pub is_file: bool,
+    pub is_dir: bool,
+}
+
+pub struct ReadDir {
+    pub entries: Vec<DirEntry>,
+}
+
+impl DirEntry {
+    pub fn get_name(&self) -> string {
+        return self.name.clone()
+    }
+
+    pub fn get_path(&self) -> string {
+        return self.path.clone()
+    }
+
+    pub fn is_file(&self) -> bool {
+        return self.is_file
+    }
+
+    pub fn is_dir(&self) -> bool {
+        return self.is_dir
+    }
+
+    pub fn file_type(&self) -> FileType {
+        if self.is_dir {
+            return FileType::Directory
+        }
+        if self.is_file {
+            return FileType::File
+        }
+        return FileType::Unknown
+    }
+}
+
+enum FileType {
+    File,
+    Directory,
+    Symlink,
+    Unknown,
+}
+
+impl ReadDir {
+    pub fn new() -> ReadDir {
+        return ReadDir { entries: Vec::new() }
+    }
+
+    pub fn len(&self) -> i64 {
+        return self.entries.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.entries.len() == 0
+    }
+}
+
+impl DirEntry {
+    pub fn new(name: string, path: string, is_file: bool, is_dir: bool) -> DirEntry {
+        return DirEntry { name, path, is_file, is_dir }
+    }
+}
+
+pub fn read_dir(path: string) -> Result<ReadDir, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn read_dir_entries(path: string) -> Result<Vec<DirEntry>, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn create_dir(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn create_dir_all(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn remove_dir(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn remove_dir_all(path: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn dir_exists(path: string) -> bool {
+    return false
+}
+
+pub fn dir_is_empty(path: string) -> Result<bool, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn dir_size(path: string) -> Result<u64, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn walk_dir(path: string) -> Result<Vec<DirEntry>, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn walk_dir_with_depth(path: string, max_depth: i64) -> Result<Vec<DirEntry>, string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn find_files(path: string, pattern: string) -> Result<Vec<DirEntry>, string> {
+    return Result::Err("Not implemented".into())
+}
+
+// ─── Network — TCP Sockets (stubs) ──────────────────────────────────────────
+
+pub struct TcpStream {
+    pub handle: u64,
+    pub addr: string,
+    pub port: u16,
+    pub is_connected: bool,
+}
+
+pub struct TcpListener {
+    pub handle: u64,
+    pub addr: string,
+    pub port: u16,
+    pub is_bound: bool,
+}
+
+pub struct UdpSocket {
+    pub handle: u64,
+    pub addr: string,
+    pub port: u16,
+    pub is_bound: bool,
+}
+
+pub struct SocketAddr {
+    pub ip: string,
+    pub port: u16,
+}
+
+impl TcpStream {
+    pub fn connect(addr: string) -> Result<TcpStream, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn connect_timeout(addr: string, timeout_ms: i64) -> Result<TcpStream, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_read(&self) -> Result<Vec<u8>, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_read_exact(&self, count: i64) -> Result<Vec<u8>, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_read_line(&self) -> Result<string, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_write_all(&self, data: Vec<u8>) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_write_str(&self, data: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn tcp_flush(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn shutdown(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn peer_addr(&self) -> Result<SocketAddr, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn local_addr(&self) -> Result<SocketAddr, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_read_timeout(&self, timeout_ms: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_write_timeout(&self, timeout_ms: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn is_connected(&self) -> bool {
+        return self.is_connected
+    }
+}
+
+impl TcpListener {
+    pub fn bind(addr: string) -> Result<TcpListener, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn bind_with_port(addr: string, port: u16) -> Result<TcpListener, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn accept(&self) -> Result<(TcpStream, SocketAddr), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn incoming(&self) -> Vec<TcpStream> {
+        return Vec::new()
+    }
+
+    pub fn local_addr(&self) -> Result<SocketAddr, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_nonblocking(&self, nonblocking: bool) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn is_bound(&self) -> bool {
+        return self.is_bound
+    }
+}
+
+impl UdpSocket {
+    pub fn bind(addr: string) -> Result<UdpSocket, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn send_to(&self, data: Vec<u8>, target: SocketAddr) -> Result<usize, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn recv_from(&self, buf_size: usize) -> Result<(Vec<u8>, SocketAddr), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn send(&self, data: Vec<u8>) -> Result<usize, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn recv(&self, buf_size: usize) -> Result<Vec<u8>, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn connect(&self, addr: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn local_addr(&self) -> Result<SocketAddr, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_broadcast(&self, on: bool) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn set_read_timeout(&self, timeout_ms: i64) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn is_bound(&self) -> bool {
+        return self.is_bound
+    }
+}
+
+impl SocketAddr {
+    pub fn new(ip: string, port: u16) -> SocketAddr {
+        return SocketAddr { ip, port }
+    }
+
+    pub fn get_ip(&self) -> string {
+        return self.ip.clone()
+    }
+
+    pub fn get_port(&self) -> u16 {
+        return self.port
+    }
+
+    pub fn to_string(&self) -> string {
+        return self.ip.clone()
+    }
+}
+
+pub fn lookup_host(host: string) -> Result<Vec<SocketAddr>, string> {
+    return Result::Err("Not implemented".into())
+}
+
+// ─── Process / Environment (stubs) ──────────────────────────────────────────
+
+pub struct Command {
+    pub program: string,
+    pub args: Vec<string>,
+    pub env_vars: Vec<Pair>,
+}
+
+pub struct Pair {
+    pub key: string,
+    pub value: string,
+}
+
+pub struct Output {
+    pub status: i32,
+    pub stdout: string,
+    pub stderr: string,
+}
+
+impl Command {
+    pub fn new(program: string) -> Command {
+        return Command {
+            program,
+            args: Vec::new(),
+            env_vars: Vec::new(),
+        }
+    }
+
+    pub fn arg(&mut self, arg: string) {
+        self.args.push(arg)
+    }
+
+    pub fn args(&mut self, new_args: Vec<string>) {
+        self.args = new_args
+    }
+
+    pub fn env(&mut self, key: string, value: string) {
+        let pair = Pair { key, value }
+        self.env_vars.push(pair)
+    }
+
+    pub fn output(&self) -> Result<Output, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn status(&self) -> Result<i32, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn spawn(&self) -> Result<ChildProcess, string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+pub struct ChildProcess {
+    pub id: u32,
+}
+
+impl ChildProcess {
+    pub fn wait(&self) -> Result<i32, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn kill(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn get_id(&self) -> u32 {
+        return self.id
+    }
+}
+
+pub fn run_command(program: string) -> Result<Output, string> {
+    let cmd = Command::new(program)
+    return cmd.output()
+}
+
+pub fn run_command_with_args(program: string, args: Vec<string>) -> Result<Output, string> {
+    let mut cmd = Command::new(program)
+    cmd.args(args)
+    return cmd.output()
+}
+
+pub fn env_var(key: string) -> Option<string> {
+    return Option::None
+}
+
+pub fn env_var_or(key: string, default: string) -> string {
+    return default
+}
+
+pub fn set_env_var(key: string, value: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn remove_env_var(key: string) -> Result<(), string> {
+    return Result::Err("Not implemented".into())
+}
+
+pub fn env_vars() -> Vec<Pair> {
+    return Vec::new()
+}
+
+// ─── Temporary Files / Directories ──────────────────────────────────────────
+
+pub struct TempFile {
+    pub path: string,
+}
+
+impl TempFile {
+    pub fn new() -> Result<TempFile, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn new_with_prefix(prefix: string) -> Result<TempFile, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn new_with_suffix(suffix: string) -> Result<TempFile, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn path(&self) -> string {
+        return self.path.clone()
+    }
+
+    pub fn keep(&self, path: string) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+}
+
+pub struct TempDir {
+    pub path: string,
+}
+
+impl TempDir {
+    pub fn new() -> Result<TempDir, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn new_with_prefix(prefix: string) -> Result<TempDir, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn path(&self) -> string {
+        return self.path.clone()
+    }
+
+    pub fn into_path(self) -> string {
+        return self.path
+    }
+}
+
+// ─── File Watcher (stubs) ───────────────────────────────────────────────────
+
+pub struct FileWatcher {
+    pub path: string,
+    pub recursive: bool,
+}
+
+enum FileEvent {
+    Created,
+    Modified,
+    Deleted,
+    Renamed,
+}
+
+pub struct FileEventEntry {
+    pub event: FileEvent,
+    pub path: string,
+}
+
+impl FileWatcher {
+    pub fn new(path: string) -> Result<FileWatcher, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn new_recursive(path: string) -> Result<FileWatcher, string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn watch(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn unwatch(&self) -> Result<(), string> {
+        return Result::Err("Not implemented".into())
+    }
+
+    pub fn poll_event(&self) -> Option<FileEventEntry> {
+        return Option::None
+    }
+
+    pub fn poll_events(&self) -> Vec<FileEventEntry> {
+        return Vec::new()
+    }
+}

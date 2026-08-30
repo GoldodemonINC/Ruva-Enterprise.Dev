@@ -1,0 +1,475 @@
+// Snake Game - Plain ASCII, Windows compatible
+// Uses print! format strings instead of string concatenation
+
+const BOARD_WIDTH: i64 = 30
+const BOARD_HEIGHT: i64 = 15
+const INITIAL_SPEED: i64 = 150
+const MIN_SPEED: i64 = 50
+const SPEED_DECREASE: i64 = 5
+const INITIAL_SNAKE_LENGTH: i64 = 3
+
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl Direction {
+    pub fn opposite(&self) -> Direction {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+
+    pub fn dx(&self) -> i64 {
+        match self {
+            Direction::Left => -1,
+            Direction::Right => 1,
+            _ => 0,
+        }
+    }
+
+    pub fn dy(&self) -> i64 {
+        match self {
+            Direction::Up => -1,
+            Direction::Down => 1,
+            _ => 0,
+        }
+    }
+}
+
+struct Pos {
+    pub x: i64,
+    pub y: i64,
+}
+
+impl Pos {
+    pub fn new(x: i64, y: i64) -> Self {
+        return Self { x, y }
+    }
+
+    pub fn equals(&self, other: &Pos) -> bool {
+        return self.x == other.x && self.y == other.y
+    }
+}
+
+enum GameState {
+    Menu,
+    Playing,
+    Paused,
+    GameOver,
+}
+
+class Snake {
+    pub let mut body: Vec<Pos>
+    pub let mut direction: Direction
+    pub let mut next_direction: Direction
+    pub let mut growing: bool
+
+    pub fn new(start_x: i64, start_y: i64, length: i64) -> Self {
+        let mut body = Vec::new()
+        let mut i = 0
+        while i < length {
+            body.push(Pos::new(start_x - i, start_y))
+            i += 1
+        }
+        return Self {
+            body,
+            direction: Direction::Right,
+            next_direction: Direction::Right,
+            growing: false,
+        }
+    }
+
+    pub fn head(&self) -> Pos {
+        return self.body[0].clone()
+    }
+
+    pub fn set_direction(&mut self, dir: Direction) {
+        let dir_copy = dir.clone()
+        let dir_val = dir_copy as i64
+        let opp_val = self.direction.clone().opposite() as i64
+        if dir_val != opp_val {
+            self.next_direction = dir
+        }
+    }
+
+    pub fn update(&mut self) -> Pos {
+        self.direction = self.next_direction.clone()
+        let head = self.head()
+        let new_head = Pos::new(
+            head.x + self.direction.dx(),
+            head.y + self.direction.dy(),
+        )
+        self.body.insert(0, new_head.clone())
+        if !self.growing {
+            self.body.pop()
+        }
+        self.growing = false
+        return new_head
+    }
+
+    pub fn grow(&mut self) {
+        self.growing = true
+    }
+
+    pub fn length(&self) -> i64 {
+        return self.body.len() as i64
+    }
+
+    pub fn check_self_collision(&self) -> bool {
+        let head = self.head()
+        let mut i = 1
+        while i < self.body.len() as i64 {
+            if head.equals(&self.body[i as usize]) {
+                return true
+            }
+            i += 1
+        }
+        return false
+    }
+
+    pub fn occupies(&self, pos: &Pos) -> bool {
+        let mut i = 0
+        while i < self.body.len() as i64 {
+            if pos.equals(&self.body[i as usize]) {
+                return true
+            }
+            i += 1
+        }
+        return false
+    }
+}
+
+class Food {
+    pub let mut position: Pos
+    pub let mut food_type: i64
+    pub let mut timer: i64
+
+    pub fn new(pos: Pos) -> Self {
+        return Self {
+            position: pos,
+            food_type: 0,
+            timer: 0,
+        }
+    }
+
+    pub fn spawn_bonus(&mut self, pos: Pos) {
+        self.position = pos
+        self.food_type = 1
+        self.timer = 20
+    }
+
+    pub fn update(&mut self) {
+        if self.food_type == 1 {
+            self.timer -= 1
+            if self.timer <= 0 {
+                self.food_type = 0
+            }
+        }
+    }
+
+    pub fn points(&self) -> i64 {
+        match self.food_type {
+            1 => 5,
+            _ => 1,
+        }
+    }
+
+    pub fn symbol(&self) -> string {
+        match self.food_type {
+            1 => "*",
+            _ => "@",
+        }
+    }
+}
+
+class Score {
+    pub let mut current: i64
+    pub let mut high: i64
+    pub let mut food_eaten: i64
+    pub let mut combo: i64
+    pub let mut max_combo: i64
+
+    pub fn new() -> Self {
+        return Self {
+            current: 0,
+            high: 0,
+            food_eaten: 0,
+            combo: 0,
+            max_combo: 0,
+        }
+    }
+
+    pub fn add_food(&mut self, points: i64) {
+        self.combo += 1
+        if self.combo > self.max_combo {
+            self.max_combo = self.combo
+        }
+        self.current += points * self.combo
+        self.food_eaten += 1
+        if self.current > self.high {
+            self.high = self.current
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.current = 0
+        self.food_eaten = 0
+        self.combo = 0
+    }
+}
+
+class Game {
+    pub let mut width: i64
+    pub let mut height: i64
+    pub let mut snake: Snake
+    pub let mut food: Food
+    pub let mut score: Score
+    pub let mut state: GameState
+    pub let mut speed: i64
+    pub let mut tick_count: i64
+
+    pub fn new() -> Self {
+        let w = BOARD_WIDTH
+        let h = BOARD_HEIGHT
+        let snake = Snake::new(w / 4, h / 2, INITIAL_SNAKE_LENGTH)
+        let food = Food::new(Pos::new(w / 2, h / 2))
+        let score = Score::new()
+        return Self {
+            width: w,
+            height: h,
+            snake,
+            food,
+            score,
+            state: GameState::Menu,
+            speed: INITIAL_SPEED,
+            tick_count: 0,
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.state = GameState::Playing
+        self.score.reset()
+        self.speed = INITIAL_SPEED
+        self.tick_count = 0
+        self.snake = Snake::new(self.width / 4, self.height / 2, INITIAL_SNAKE_LENGTH)
+        self.spawn_food()
+    }
+
+    pub fn spawn_food(&mut self) {
+        let mut empty_cells = Vec::new()
+        let mut y = 1
+        while y < self.height - 1 {
+            let mut x = 1
+            while x < self.width - 1 {
+                if !self.snake.occupies(&Pos::new(x, y)) {
+                    empty_cells.push(Pos::new(x, y))
+                }
+                x += 1
+            }
+            y += 1
+        }
+        if empty_cells.len() > 0 {
+            let idx = (self.tick_count * 7919 + 104729) % (empty_cells.len() as i64)
+            self.food.position = empty_cells[idx as usize].clone()
+            if self.tick_count % 10 == 0 {
+                self.food.spawn_bonus(empty_cells[idx as usize].clone())
+            }
+        }
+    }
+
+    pub fn handle_input(&mut self, key: string) {
+        if matches!(self.state, GameState::Menu) {
+            if key == " " || key == "enter" {
+                self.start()
+            }
+            if key == "q" {
+                self.state = GameState::GameOver
+            }
+        }
+        if matches!(self.state, GameState::Playing) {
+            if key == "w" || key == "up" {
+                self.snake.set_direction(Direction::Up)
+            }
+            if key == "s" || key == "down" {
+                self.snake.set_direction(Direction::Down)
+            }
+            if key == "a" || key == "left" {
+                self.snake.set_direction(Direction::Left)
+            }
+            if key == "d" || key == "right" {
+                self.snake.set_direction(Direction::Right)
+            }
+            if key == "p" || key == "escape" {
+                self.state = GameState::Paused
+            }
+            if key == "q" {
+                self.state = GameState::GameOver
+            }
+        }
+        if matches!(self.state, GameState::Paused) {
+            if key == "p" || key == "escape" || key == " " {
+                self.state = GameState::Playing
+            }
+            if key == "q" {
+                self.state = GameState::GameOver
+            }
+        }
+        if matches!(self.state, GameState::GameOver) {
+            if key == " " || key == "enter" {
+                self.start()
+            }
+        }
+    }
+
+    pub fn update(&mut self) -> bool {
+        if !matches!(self.state, GameState::Playing) {
+            return true
+        }
+        self.tick_count += 1
+        self.food.update()
+        let new_head = self.snake.update()
+
+        if new_head.x <= 0 || new_head.x >= self.width - 1
+            || new_head.y <= 0 || new_head.y >= self.height - 1
+        {
+            self.state = GameState::GameOver
+            return false
+        }
+
+        if self.snake.check_self_collision() {
+            self.state = GameState::GameOver
+            return false
+        }
+
+        if new_head.equals(&self.food.position) {
+            let points = self.food.points()
+            self.score.add_food(points)
+            self.snake.grow()
+            if self.speed > MIN_SPEED {
+                self.speed -= SPEED_DECREASE
+            }
+            self.spawn_food()
+        }
+        return true
+    }
+
+    pub fn render(&self) {
+        print!("\n")
+        print!("+========================================+\n")
+        print!("|           SNAKE GAME                   |\n")
+        print!("+========================================+\n")
+
+        // Board
+        let mut y = 0
+        while y < self.height {
+            let mut x = 0
+            while x < self.width {
+                let mut ch: string = " "
+
+                if y == 0 || y == self.height - 1 {
+                    ch = "-"
+                }
+                if x == 0 || x == self.width - 1 {
+                    ch = "|"
+                }
+                if (x == 0 && y == 0) || (x == 0 && y == self.height - 1)
+                    || (x == self.width - 1 && y == 0)
+                    || (x == self.width - 1 && y == self.height - 1)
+                {
+                    ch = "+"
+                }
+
+                if x == self.food.position.x && y == self.food.position.y {
+                    ch = self.food.symbol()
+                }
+
+                let mut si = 0
+                while si < self.snake.body.len() as i64 {
+                    let seg = &self.snake.body[si as usize]
+                    if seg.x == x && seg.y == y {
+                        if si == 0 {
+                            ch = "O"
+                        } else {
+                            ch = "o"
+                        }
+                    }
+                    si += 1
+                }
+
+                print!("{}", ch)
+                x += 1
+            }
+            print!("\n")
+            y += 1
+        }
+
+        print!("\n")
+        print!("Score: {}  High: {}  Food: {}  Length: {}  Speed: {}\n",
+            self.score.current, self.score.high, self.score.food_eaten,
+            self.snake.length(), self.speed)
+        print!("WASD=Move  P=Pause  Q=Quit\n")
+
+        if matches!(self.state, GameState::Menu) {
+            print!("\n+----------------------------------------+\n")
+            print!("|   SNAKE GAME - Press SPACE to start    |\n")
+            print!("|   Guide the snake to eat food (@)      |\n")
+            print!("|   Stars (*) give bonus points!         |\n")
+            print!("|   Don't hit walls or yourself!         |\n")
+            print!("|   Press Q to quit                      |\n")
+            print!("+----------------------------------------+\n")
+        }
+
+        if matches!(self.state, GameState::Paused) {
+            print!("\n+----------------------------------------+\n")
+            print!("|            PAUSED                      |\n")
+            print!("|   Press P to resume, Q to quit         |\n")
+            print!("+----------------------------------------+\n")
+        }
+
+        if matches!(self.state, GameState::GameOver) {
+            print!("\n+----------------------------------------+\n")
+            print!("|            GAME OVER!                  |\n")
+            print!("|   Final Score: {}\n", self.score.current)
+            print!("|   High Score: {}\n", self.score.high)
+            print!("|   Press SPACE to play again, Q to quit |\n")
+            print!("+----------------------------------------+\n")
+        }
+    }
+}
+
+fn main() {
+    let mut game = Game::new()
+
+    // Auto-play demo
+    while !matches!(game.state, GameState::GameOver) || game.score.current == 0 {
+        game.render()
+
+        if matches!(game.state, GameState::Playing) {
+            let head = game.snake.head()
+            let food_pos = game.food.position.clone()
+            if head.x < food_pos.x {
+                game.handle_input("d")
+            }
+            if head.x > food_pos.x {
+                game.handle_input("a")
+            }
+            if head.y < food_pos.y {
+                game.handle_input("s")
+            }
+            if head.y > food_pos.y {
+                game.handle_input("w")
+            }
+        }
+
+        game.update()
+    }
+
+    game.render()
+    print!("Thanks for playing Snake!\n")
+}

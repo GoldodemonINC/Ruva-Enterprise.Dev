@@ -1,0 +1,22 @@
+enum FileType {
+    Text,
+    Binary,
+    Image,
+    Video,
+    Audio,
+}
+
+fn extension(ft: &FileType) -> string {
+    match ft {
+        FileType::Text => ".txt".into(),
+        FileType::Binary => ".bin".into(),
+        FileType::Image => ".png".into(),
+        FileType::Video => ".mp4".into(),
+        FileType::Audio => ".mp3".into(),
+    }
+}
+
+fn main() {
+    let ft = FileType::Image
+    println!("Extension: {}", extension(&ft))
+}

@@ -1,0 +1,25 @@
+class Circle {
+    pub let radius: f64,
+
+    pub fn new(radius: f64) -> Self {
+        return Self { radius }
+    }
+
+    pub fn area(&self) -> f64 {
+        return 3.14159 * self.radius * self.radius
+    }
+
+    pub fn circumference(&self) -> f64 {
+        return 2.0 * 3.14159 * self.radius
+    }
+
+    pub fn diameter(&self) -> f64 {
+        return 2.0 * self.radius
+    }
+}
+
+fn main() {
+    let c = Circle::new(5.0)
+    println!("area = {:.2}", c.area())
+    println!("circumference = {:.2}", c.circumference())
+}

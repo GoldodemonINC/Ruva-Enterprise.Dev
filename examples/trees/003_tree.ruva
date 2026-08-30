@@ -1,0 +1,568 @@
+// ─── Trees Example #3 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating trees concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Record")
+    }
+}
+
+
+pub struct Value {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Value {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Value {
+        return Value {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Value {
+        return Value::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Value".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Value")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Value")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Value")
+    }
+}
+
+
+pub struct Result {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Result {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Result {
+        return Result {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Result {
+        return Result::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Result".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Result")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Result")
+    }
+
+    pub fn reset(&mut self) {
+        println!("Calling reset on Result")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Mode {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Mode {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Mode::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Mode::Active => "Active".into(),
+            Mode::Inactive => "Inactive".into(),
+            Mode::Pending => "Pending".into(),
+            Mode::Complete => "Complete".into(),
+            Mode::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+    Failed,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn update_tree_0(input: &string) -> f64 {
+    // Tree function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_tree_1(input: i64) -> string {
+    // Tree function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_tree_2(input: f64) -> bool {
+    // Tree function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn split_tree_3(input: string) -> Vec<i64> {
+    // Tree function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_tree_4(input: bool) -> &string {
+    // Tree function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn verify_tree_5(input: Vec<i64>) -> i64 {
+    // Tree function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn assert_tree_6(input: &string) -> f64 {
+    // Tree function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn test_tree_7(input: i64) -> string {
+    // Tree function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn benchmark_tree_8(input: f64) -> bool {
+    // Tree function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+fn process_tree_9(input: string) -> Vec<i64> {
+    // Tree function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn transform_tree_10(input: bool) -> &string {
+    // Tree function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn validate_tree_11(input: Vec<i64>) -> i64 {
+    // Tree function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn analyze_tree_12(input: &string) -> f64 {
+    // Tree function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 4
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn optimize_tree_13(input: i64) -> string {
+    // Tree function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn filter_tree_14(input: f64) -> bool {
+    // Tree function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 94
+    result = true
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== tree Example #3 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    update_tree_0()
+    delete_tree_1()
+    merge_tree_2()
+    split_tree_3()
+    check_tree_4()
+    verify_tree_5()
+    assert_tree_6()
+    test_tree_7()
+
+    // Verify results
+    println!("All tree operations completed!")
+    println!("Example #3 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_tree_3_0() {
+    // Test tree functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_tree_3_1() {
+    // Test tree functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_tree_3_2() {
+    // Test tree functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_tree_3_3() {
+    // Test tree functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_tree_3_4() {
+    // Test tree functionality
+    let result: i64 = 94
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+

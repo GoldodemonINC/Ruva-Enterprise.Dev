@@ -1,0 +1,14 @@
+class Warranty {
+    pub let product: string,
+
+    pub fn new() -> Self {
+        return Self { product: "" }
+    }
+
+    pub fn is_expired(&self) -> bool { return false }
+}
+
+fn main() {
+    let obj = Warranty::new()
+    println!("Warranty class created")
+}

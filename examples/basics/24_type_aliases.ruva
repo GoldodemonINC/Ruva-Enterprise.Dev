@@ -1,0 +1,6 @@
+fn main() {
+    let distance: f64 = 100.0
+    let time: f64 = 9.58
+    let speed: f64 = distance / time
+    println!("Speed: {} m/s", speed)
+}

@@ -1,0 +1,15 @@
+fn classify(x: i32) -> string {
+    if x < 0 {
+        return "negative"
+    }
+    if x == 0 {
+        return "zero"
+    }
+    return "positive"
+}
+
+fn main() {
+    println!("-5 is {}", classify(-5))
+    println!("0 is {}", classify(0))
+    println!("7 is {}", classify(7))
+}

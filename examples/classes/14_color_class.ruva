@@ -1,0 +1,24 @@
+class Color {
+    pub let r: u8,
+    pub let g: u8,
+    pub let b: u8,
+
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        return Self { r, g, b }
+    }
+
+    pub fn red() -> Self { return Self::new(255, 0, 0) }
+    pub fn green() -> Self { return Self::new(0, 255, 0) }
+    pub fn blue() -> Self { return Self::new(0, 0, 255) }
+    pub fn white() -> Self { return Self::new(255, 255, 255) }
+    pub fn black() -> Self { return Self::new(0, 0, 0) }
+
+    pub fn to_hex(&self) -> string {
+        return f"#{self.r:02x}{self.g:02x}{self.b:02x}"
+    }
+}
+
+fn main() {
+    let red = Color::red()
+    println!("red hex: {}", red.to_hex())
+}

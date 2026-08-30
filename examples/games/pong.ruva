@@ -1,0 +1,449 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// Pong Game — A classic 2-player Pong game written in Ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Features:
+//   • 2-player local multiplayer
+//   • AI opponent mode
+//   • Score tracking (first to 10 wins)
+//   • Ball speed increases over time
+//   • Paddle collision physics
+//   • Visual effects and animations
+//
+// Run:  ruva run examples/games/pong.ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SCREEN_WIDTH: i64 = 60
+const SCREEN_HEIGHT: i64 = 30
+const PADDLE_HEIGHT: i64 = 5
+const PADDLE_SPEED: i64 = 2
+const BALL_SPEED_INITIAL: f64 = 0.5
+const BALL_SPEED_INCREMENT: f64 = 0.05
+const WINNING_SCORE: i64 = 10
+const TICK_RATE: i64 = 50  // milliseconds
+
+// ─── ANSI Colors ──────────────────────────────────────────────────────────────
+
+const RESET: string = "\u{001b}[0m"
+const BOLD: string = "\u{001b}[1m"
+const DIM: string = "\u{001b}[2m"
+
+const FG_WHITE: string = "\u{001b}[37m"
+const FG_CYAN: string = "\u{001b}[36m"
+const FG_YELLOW: string = "\u{001b}[33m"
+const FG_GREEN: string = "\u{001b}[32m"
+const FG_RED: string = "\u{001b}[31m"
+const FG_BLUE: string = "\u{001b}[34m"
+const FG_MAGENTA: string = "\u{001b}[35m"
+
+// ─── Vector2D ─────────────────────────────────────────────────────────────────
+
+struct Vec2 {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl Vec2 {
+    pub fn new(x: f64, y: f64) -> Self {
+        return Self { x, y }
+    }
+
+    pub fn add(&self, other: &Vec2) -> Vec2 {
+        return Vec2::new(self.x + other.x, self.y + other.y)
+    }
+
+    pub fn scale(&self, factor: f64) -> Vec2 {
+        return Vec2::new(self.x * factor, self.y * factor)
+    }
+
+    pub fn length(&self) -> f64 {
+        return (self.x * self.x + self.y * self.y).sqrt()
+    }
+
+    pub fn normalize(&self) -> Vec2 {
+        let len = self.length()
+        if len > 0.0 {
+            return Vec2::new(self.x / len, self.y / len)
+        }
+        return Vec2::new(0.0, 0.0)
+    }
+}
+
+// ─── Paddle ───────────────────────────────────────────────────────────────────
+
+class Paddle {
+    pub let mut y: f64
+    pub let mut score: i64
+    pub let player_id: i64  // 0 = left, 1 = right
+
+    pub fn new(player_id: i64) -> Self {
+        let start_y = (SCREEN_HEIGHT - PADDLE_HEIGHT) as f64 / 2.0
+        return Self {
+            y: start_y,
+            score: 0,
+            player_id,
+        }
+    }
+
+    pub fn move_up(&mut self) {
+        self.y -= PADDLE_SPEED as f64
+        if self.y < 0.0 {
+            self.y = 0.0
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        self.y += PADDLE_SPEED as f64
+        let max_y = (SCREEN_HEIGHT - PADDLE_HEIGHT) as f64
+        if self.y > max_y {
+            self.y = max_y
+        }
+    }
+
+    pub fn center(&self) -> f64 {
+        return self.y + PADDLE_HEIGHT as f64 / 2.0
+    }
+
+    pub fn contains(&self, ball_y: f64) -> bool {
+        return ball_y >= self.y && ball_y <= self.y + PADDLE_HEIGHT as f64
+    }
+
+    pub fn x(&self) -> i64 {
+        match self.player_id {
+            0 => 1,  // left paddle
+            _ => SCREEN_WIDTH - 2,  // right paddle
+        }
+    }
+}
+
+// ─── Ball ─────────────────────────────────────────────────────────────────────
+
+class Ball {
+    pub let mut position: Vec2
+    pub let mut velocity: Vec2
+    pub let mut speed: f64
+    pub let mut trail: Vec<Vec2>
+
+    pub fn new() -> Self {
+        let center_x = SCREEN_WIDTH as f64 / 2.0
+        let center_y = SCREEN_HEIGHT as f64 / 2.0
+
+        // Random initial direction
+        let angle = 0.785  // 45 degrees
+        let vx = angle.cos() * BALL_SPEED_INITIAL
+        let vy = angle.sin() * BALL_SPEED_INITIAL
+
+        return Self {
+            position: Vec2::new(center_x, center_y),
+            velocity: Vec2::new(vx, vy),
+            speed: BALL_SPEED_INITIAL,
+            trail: Vec::new(),
+        }
+    }
+
+    pub fn reset(&mut self) {
+        let center_x = SCREEN_WIDTH as f64 / 2.0
+        let center_y = SCREEN_HEIGHT as f64 / 2.0
+
+        self.position = Vec2::new(center_x, center_y)
+        self.speed = BALL_SPEED_INITIAL
+
+        // Random direction
+        let angle = 0.785
+        self.velocity = Vec2::new(angle.cos() * self.speed, angle.sin() * self.speed)
+        self.trail.clear()
+    }
+
+    pub fn update(&mut self) {
+        // Store trail
+        self.trail.push(self.position.clone())
+        if self.trail.len() > 5 {
+            self.trail.remove(0)
+        }
+
+        // Update position
+        self.position = self.position.add(&self.velocity)
+    }
+
+    pub fn check_paddle_collision(&mut self, paddle: &Paddle) -> bool {
+        let paddle_x = paddle.x() as f64
+        let ball_x = self.position.x
+        let ball_y = self.position.y
+
+        // Check if ball is at paddle x position
+        if (ball_x - paddle_x).abs() < 1.5 && paddle.contains(ball_y) {
+            // Bounce
+            self.velocity.x = -self.velocity.x
+
+            // Adjust angle based on where ball hit paddle
+            let hit_pos = (ball_y - paddle.center()) / (PADDLE_HEIGHT as f64 / 2.0)
+            self.velocity.y = hit_pos * self.speed
+
+            // Increase speed
+            self.speed += BALL_SPEED_INCREMENT
+            self.velocity = self.velocity.normalize().scale(self.speed)
+
+            return true
+        }
+        return false
+    }
+
+    pub fn check_wall_collision(&self) -> i64 {
+        // Top/bottom wall
+        if self.position.y <= 0.0 || self.position.y >= (SCREEN_HEIGHT - 1) as f64 {
+            self.velocity.y = -self.velocity.y
+            return 0
+        }
+
+        // Left wall (player 2 scores)
+        if self.position.x <= 0.0 {
+            return 2
+        }
+
+        // Right wall (player 1 scores)
+        if self.position.x >= (SCREEN_WIDTH - 1) as f64 {
+            return 1
+        }
+
+        return 0
+    }
+
+    pub fn render(&self, screen: &mut Vec<Vec<string>>) {
+        // Render trail
+        let mut i = 0
+        while i < self.trail.len() as i64 {
+            let pos = &self.trail[i as usize]
+            let x = pos.x as i64
+            let y = pos.y as i64
+            if x > 0 && x < SCREEN_WIDTH && y > 0 && y < SCREEN_HEIGHT {
+                screen[y as usize][x as usize] = format!("{}●{}", DIM, RESET)
+            }
+            i += 1
+        }
+
+        // Render ball
+        let x = self.position.x as i64
+        let y = self.position.y as i64
+        if x > 0 && x < SCREEN_WIDTH && y > 0 && y < SCREEN_HEIGHT {
+            screen[y as usize][x as usize] = format!("{}{}●{}", BOLD, FG_YELLOW, RESET)
+        }
+    }
+}
+
+// ─── AI ───────────────────────────────────────────────────────────────────────
+
+class AI {
+    pub let reaction_speed: f64
+    pub let prediction_error: f64
+
+    pub fn new(difficulty: i64) -> Self {
+        let (reaction, error) = match difficulty {
+            1 => (0.3, 3.0),   // Easy
+            2 => (0.6, 1.5),   // Medium
+            3 => (0.9, 0.5),   // Hard
+            _ => (0.5, 2.0),   // Default medium
+        }
+        return Self {
+            reaction_speed: reaction,
+            prediction_error: error,
+        }
+    }
+
+    pub fn update(&self, paddle: &mut Paddle, ball: &Ball) {
+        // Predict where ball will be
+        let target_y = ball.position.y + ball.velocity.y * 5.0
+
+        // Add some error
+        let target_y = target_y + (self.prediction_error * 0.5)
+
+        // Move towards target
+        let paddle_center = paddle.center()
+        if target_y < paddle_center - 0.5 {
+            paddle.move_up()
+        } else if target_y > paddle_center + 0.5 {
+            paddle.move_down()
+        }
+    }
+}
+
+// ─── Game ─────────────────────────────────────────────────────────────────────
+
+class Game {
+    pub let mut paddle1: Paddle
+    pub let mut paddle2: Paddle
+    pub let mut ball: Ball
+    pub let mut ai: AI
+    pub let mut game_mode: i64  // 0 = 2-player, 1 = vs AI
+    pub let mut game_over: bool
+    pub let mut winner: i64
+    pub let mut tick: i64
+
+    pub fn new() -> Self {
+        return Self {
+            paddle1: Paddle::new(0),
+            paddle2: Paddle::new(1),
+            ball: Ball::new(),
+            ai: AI::new(2),
+            game_mode: 1,
+            game_over: false,
+            winner: 0,
+            tick: 0,
+        }
+    }
+
+    pub fn update(&mut self) {
+        if self.game_over {
+            return
+        }
+
+        self.tick += 1
+
+        // Update ball
+        self.ball.update()
+
+        // Check paddle collisions
+        self.ball.check_paddle_collision(&self.paddle1)
+        self.ball.check_paddle_collision(&self.paddle2)
+
+        // Check wall collisions
+        let scorer = self.ball.check_wall_collision()
+        if scorer == 1 {
+            self.paddle1.score += 1
+            self.ball.reset()
+        } else if scorer == 2 {
+            self.paddle2.score += 1
+            self.ball.reset()
+        }
+
+        // Check for winner
+        if self.paddle1.score >= WINNING_SCORE {
+            self.game_over = true
+            self.winner = 1
+        } else if self.paddle2.score >= WINNING_SCORE {
+            self.game_over = true
+            self.winner = 2
+        }
+
+        // Update AI if in AI mode
+        if self.game_mode == 1 {
+            self.ai.update(&mut self.paddle2, &self.ball)
+        }
+    }
+
+    pub fn render(&self) {
+        // Create screen buffer
+        let mut screen = Vec::new()
+        let mut y = 0
+        while y < SCREEN_HEIGHT {
+            let mut row = Vec::new()
+            let mut x = 0
+            while x < SCREEN_WIDTH {
+                row.push(" ".to_string())
+                x += 1
+            }
+            screen.push(row)
+            y += 1
+        }
+
+        // Draw border
+        let mut x = 0
+        while x < SCREEN_WIDTH {
+            screen[0][x as usize] = format!("{}═{}", FG_CYAN, RESET)
+            screen[(SCREEN_HEIGHT - 1) as usize][x as usize] = format!("{}═{}", FG_CYAN, RESET)
+            x += 1
+        }
+        let mut y = 0
+        while y < SCREEN_HEIGHT {
+            screen[y as usize][0] = format!("{}║{}", FG_CYAN, RESET)
+            screen[y as usize][(SCREEN_WIDTH - 1) as usize] = format!("{}║{}", FG_CYAN, RESET)
+            y += 1
+        }
+
+        // Draw center line
+        let mut y = 1
+        while y < SCREEN_HEIGHT - 1 {
+            if y % 2 == 0 {
+                screen[y as usize][(SCREEN_WIDTH / 2) as usize] = format!("{}│{}", DIM, RESET)
+            }
+            y += 1
+        }
+
+        // Draw paddles
+        let mut i = 0
+        while i < PADDLE_HEIGHT {
+            let y1 = (self.paddle1.y as i64 + i) as usize
+            let y2 = (self.paddle2.y as i64 + i) as usize
+            if y1 < SCREEN_HEIGHT as usize {
+                screen[y1][self.paddle1.x() as usize] = format!("{}█{}", FG_GREEN, RESET)
+            }
+            if y2 < SCREEN_HEIGHT as usize {
+                screen[y2][self.paddle2.x() as usize] = format!("{}█{}", FG_RED, RESET)
+            }
+            i += 1
+        }
+
+        // Draw ball
+        self.ball.render(&mut screen)
+
+        // Draw scores
+        let score1 = format!("{}", self.paddle1.score)
+        let score2 = format!("{}", self.paddle2.score)
+        let mid = (SCREEN_WIDTH / 2) as usize
+        screen[1][mid - 1] = format!("{}{}{}", BOLD, FG_GREEN, RESET)
+        screen[1][mid + 1] = format!("{}{}{}", BOLD, FG_RED, RESET)
+
+        // Clear screen and render
+        print!("\u{001b}[2J\u{001b}[H")
+
+        // Header
+        print!("{}{}╔══════════════════════════════════════════════════════════╗{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}{}║                    PONG GAME 🏓                         ║{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}{}╚══════════════════════════════════════════════════════════╝{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}\n", RESET)
+
+        // Render screen
+        let mut y = 0
+        while y < SCREEN_HEIGHT {
+            let mut line = String::new()
+            let mut x = 0
+            while x < SCREEN_WIDTH {
+                line.push_str(&screen[y as usize][x as usize])
+                x += 1
+            }
+            print!("{}\n", line)
+            y += 1
+        }
+
+        // Footer
+        print!("\n")
+        print!("{}{}Player 1 (W/S): {}{}   ", BOLD, FG_GREEN, self.paddle1.score, RESET)
+        print!("{}{}Player 2 (↑/↓): {}{}   ", BOLD, FG_RED, self.paddle2.score, RESET)
+        print!("{}First to {} wins!{}\n", BOLD, WINNING_SCORE, RESET)
+        print!("{}{}Controls: W/S=Player1, ↑/↓=Player2, Q=Quit{}\n", DIM, FG_WHITE, RESET)
+
+        if self.game_over {
+            print!("\n")
+            print!("{}{}╔══════════════════════════════════════════╗{}\n", BOLD, FG_YELLOW, RESET)
+            print!("{}{}║           PLAYER {} WINS! 🏆              ║{}\n", BOLD, FG_YELLOW, self.winner, RESET)
+            print!("{}{}╚══════════════════════════════════════════╝{}\n", BOLD, FG_YELLOW, RESET)
+        }
+    }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+fn main() {
+    let mut game = Game::new()
+
+    // Main game loop
+    while !game.game_over {
+        game.render()
+        game.update()
+    }
+
+    // Final render
+    game.render()
+    print!("\n{}Thanks for playing Pong! 🏓{}\n", BOLD, RESET)
+}

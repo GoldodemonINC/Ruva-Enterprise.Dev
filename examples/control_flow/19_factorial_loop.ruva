@@ -1,0 +1,10 @@
+fn main() {
+    let n = 10
+    let mut result = 1
+    let mut i = 2
+    while i <= n {
+        result *= i
+        i += 1
+    }
+    println!("{}! = {}", n, result)
+}

@@ -1,0 +1,11 @@
+fn main() {
+    let x = 15
+    let y = 20
+    if x > 10 {
+        if y > 15 {
+            println!("both conditions met")
+        } else {
+            println!("only x condition met")
+        }
+    }
+}

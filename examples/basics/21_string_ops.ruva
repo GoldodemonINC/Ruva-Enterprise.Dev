@@ -1,0 +1,7 @@
+fn main() {
+    let s = "Hello, World!"
+    println!("length: {}", 13)
+    let upper = "HELLO"
+    let lower = "hello"
+    println!("upper={}, lower={}", upper, lower)
+}

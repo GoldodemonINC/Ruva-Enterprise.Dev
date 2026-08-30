@@ -1,0 +1,14 @@
+fn find_max(arr: [i32; 5]) -> i32 {
+    let mut max = arr[0]
+    for i in 1..5 {
+        if arr[i] > max {
+            max = arr[i]
+        }
+    }
+    return max
+}
+
+fn main() {
+    let numbers = [3, 7, 2, 9, 5]
+    println!("max = {}", find_max(numbers))
+}

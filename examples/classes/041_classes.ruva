@@ -1,0 +1,488 @@
+// ─── Classes Example #41 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating classes concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// Enemy class with OOP patterns
+
+
+// ─── Class Definition ──────────────────────────────────────────
+
+class Enemy {
+    pub let name:string;
+    pub let health:i64;
+    pub let damage:i64;
+    pub let speed:f64;
+    pub let mut created_at: i64,
+
+    pub fn new(name: string, health: i64, damage: i64, speed: f64) -> Self {
+        return Self {
+            name,
+            health,
+            damage,
+            speed,
+            created_at: 0,
+        }
+    }
+
+
+    pub fn chase(&mut self) {
+        println!("Calling chase on Enemy")
+    }
+
+    pub fn attack(&mut self) {
+        println!("Calling attack on Enemy")
+    }
+
+    pub fn retreat(&mut self) {
+        println!("Calling retreat on Enemy")
+    }
+
+    pub fn die(&mut self) {
+        println!("Calling die on Enemy")
+    }
+
+
+    pub fn to_string(&self) -> string {
+        return "Enemy object".into()
+    }
+}
+
+
+// ─── Implementation ────────────────────────────────────────────
+
+impl Enemy {
+    pub fn default() -> Enemy {
+        return Enemy::new("default".into(), 0, 0, 0.0)
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn destroy(&mut self) {
+        println!("Destroying Enemy")
+    }
+}
+
+
+// ─── Usage ─────────────────────────────────────────────────────
+
+fn main() {
+    // Create instance
+    let mut obj = Enemy::new("test_41".into(), 42, 42, 41.0)
+
+    println!("Created: {}", obj.to_string())
+    println!("Valid: {}", obj.is_valid())
+    
+
+    // Call methods
+undefined
+
+    // Array of objects
+    let mut objects = Vec::new()
+    objects.push(Enemy::default())
+    objects.push(Enemy::default())
+    println!("Object count: {}", objects.len())
+    
+
+    // HashMap of objects
+    let mut registry = HashMap::new()
+    registry.insert("primary", Enemy::default())
+    registry.insert("secondary", Enemy::default())
+    println!("Registry size: {}", registry.len())
+    
+
+    println!("Enemy demo complete!")
+}
+
+// Additional Enemy examples and patterns
+
+fn extra_enemy_0() {
+    // Demonstrate Enemy in scenario 1
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 1, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 1
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_1() {
+    // Demonstrate Enemy in scenario 2
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 2, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 2
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_2() {
+    // Demonstrate Enemy in scenario 3
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 3, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 3
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_3() {
+    // Demonstrate Enemy in scenario 4
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 4, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 4
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_4() {
+    // Demonstrate Enemy in scenario 5
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 5, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 5
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_5() {
+    // Demonstrate Enemy in scenario 6
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 6, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 6
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_6() {
+    // Demonstrate Enemy in scenario 7
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 7, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 7
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_7() {
+    // Demonstrate Enemy in scenario 8
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 8, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 8
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_8() {
+    // Demonstrate Enemy in scenario 9
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 9, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 9
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_9() {
+    // Demonstrate Enemy in scenario 10
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 10, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 10
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_10() {
+    // Demonstrate Enemy in scenario 11
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 11, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 11
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_11() {
+    // Demonstrate Enemy in scenario 12
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 12, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 12
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_12() {
+    // Demonstrate Enemy in scenario 13
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 13, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 13
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_13() {
+    // Demonstrate Enemy in scenario 14
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 14, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 14
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_14() {
+    // Demonstrate Enemy in scenario 15
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 15, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 15
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_15() {
+    // Demonstrate Enemy in scenario 16
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 16, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 16
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_16() {
+    // Demonstrate Enemy in scenario 17
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 17, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 17
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_17() {
+    // Demonstrate Enemy in scenario 18
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 18, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 18
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_18() {
+    // Demonstrate Enemy in scenario 19
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 19, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 19
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_19() {
+    // Demonstrate Enemy in scenario 20
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 20, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 20
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_20() {
+    // Demonstrate Enemy in scenario 21
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 21, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 21
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_21() {
+    // Demonstrate Enemy in scenario 22
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 22, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 22
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_22() {
+    // Demonstrate Enemy in scenario 23
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 23, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 23
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_23() {
+    // Demonstrate Enemy in scenario 24
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 24, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 24
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_24() {
+    // Demonstrate Enemy in scenario 25
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 25, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 25
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_25() {
+    // Demonstrate Enemy in scenario 26
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 26, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 26
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_26() {
+    // Demonstrate Enemy in scenario 27
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 27, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 27
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_27() {
+    // Demonstrate Enemy in scenario 28
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 28, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 28
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_28() {
+    // Demonstrate Enemy in scenario 29
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 29, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 29
+    }
+    println!("Result: {}", result)
+}
+
+fn extra_enemy_29() {
+    // Demonstrate Enemy in scenario 30
+    let mut obj = Enemy::default()
+    println!("Scenario {}: {}", 30, obj.to_string())
+    
+    // Process data
+    let mut result = 0
+    for j in 0..10 {
+        result = result + j * 30
+    }
+    println!("Result: {}", result)
+}

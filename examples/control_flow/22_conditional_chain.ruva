@@ -1,0 +1,13 @@
+fn main() {
+    let age = 25
+    let category = if age < 13 {
+        "child"
+    } else if age < 18 {
+        "teenager"
+    } else if age < 65 {
+        "adult"
+    } else {
+        "senior"
+    }
+    println!("You are a {}", category)
+}

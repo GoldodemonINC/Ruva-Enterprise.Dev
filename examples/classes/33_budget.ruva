@@ -1,0 +1,14 @@
+class Budget {
+    pub let limit: f64,
+
+    pub fn new() -> Self {
+        return Self { limit: 0.0 }
+    }
+
+    pub fn is_over(&self, s: f64) -> bool { return s > self.limit }
+}
+
+fn main() {
+    let obj = Budget::new()
+    println!("Budget class created")
+}

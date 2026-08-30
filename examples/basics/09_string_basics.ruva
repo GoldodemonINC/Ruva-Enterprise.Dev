@@ -1,0 +1,6 @@
+fn main() {
+    let s1 = "Hello"
+    let s2 = "World"
+    println!("{}, {}!", s1, s2)
+    println!("Hello, World!")
+}

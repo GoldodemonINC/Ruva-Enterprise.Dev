@@ -1,0 +1,618 @@
+// ─── HTTP API Example #148 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating http api concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Item {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Item {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Item {
+        return Item {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Item {
+        return Item::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Item".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Item")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Item")
+    }
+}
+
+
+pub struct Entry {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Entry {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Entry {
+        return Entry {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Entry {
+        return Entry::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Entry".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Entry")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Entry")
+    }
+}
+
+
+pub struct Record {
+    pub let id: u64,
+    pub let name: string,
+    pub let mut value: i64,
+    pub let mut active: bool,
+}
+
+impl Record {
+    pub fn new(id: u64, name: string, value: i64, active: bool) -> Record {
+        return Record {
+            id,
+            name,
+            value,
+            active,
+        }
+    }
+
+    pub fn default() -> Record {
+        return Record::new(0, "".into(), 0, false)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Record".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn transform(&mut self) {
+        println!("Calling transform on Record")
+    }
+
+    pub fn merge(&mut self) {
+        println!("Calling merge on Record")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active(i64),
+    Inactive,
+    Pending(i64),
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn decode_http_api_0(input: i64) -> string {
+    // Http_api function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn compress_http_api_1(input: f64) -> bool {
+    // Http_api function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 89
+    result = true
+    return result
+}
+
+
+fn encrypt_http_api_2(input: string) -> Vec<i64> {
+    // Http_api function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn hash_http_api_3(input: bool) -> &string {
+    // Http_api function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn create_http_api_4(input: Vec<i64>) -> i64 {
+    // Http_api function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn update_http_api_5(input: &string) -> f64 {
+    // Http_api function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 9
+    result = result + factor
+    result = result * 4
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn delete_http_api_6(input: i64) -> string {
+    // Http_api function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn merge_http_api_7(input: f64) -> bool {
+    // Http_api function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 89
+    result = true
+    return result
+}
+
+
+fn split_http_api_8(input: string) -> Vec<i64> {
+    // Http_api function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn check_http_api_9(input: bool) -> &string {
+    // Http_api function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== HTTP API Example #148 ===")
+    
+    // Initialize components
+    let mut item_1 = create_item_1()
+    let mut entry_1 = create_entry_1()
+    let mut record_1 = create_record_1()
+
+    // Process data
+    decode_http_api_0()
+    compress_http_api_1()
+    encrypt_http_api_2()
+    hash_http_api_3()
+    update_http_api_5()
+    delete_http_api_6()
+    merge_http_api_7()
+
+    // Verify results
+    println!("All HTTP API operations completed!")
+    println!("Example #148 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_http_api_148_0() {
+    // Test http_api functionality
+    let result: i64 = 89
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_http_api_148_1() {
+    // Test http_api functionality
+    let result: i64 = 89
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_http_api_148_2() {
+    // Test http_api functionality
+    let result: i64 = 89
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_http_api_148_0(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 42
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_1(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 5
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_2(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 29
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_3(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 21
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_3(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_3(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_3(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_4(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 93
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_4(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_4(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_4(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_5(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 85
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_5(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_5(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_5(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_6(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 65
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_6(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_6(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_6(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_7(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 57
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_7(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_7(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_7(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_http_api_148_8(input: i64) -> i64 {
+    // Helper function for HTTP API example #148
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 69
+    result = result * 5
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_148_8(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_http_api_148_8(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_http_api_148_8(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

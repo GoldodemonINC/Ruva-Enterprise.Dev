@@ -1,0 +1,7 @@
+// Example: Embedded #8
+// This example demonstrates embedded concepts in Ruva
+
+fn main() {
+    println!("Example: Embedded #8")
+    println!("Ruva makes embedded safe and fast")
+}

@@ -1,0 +1,19 @@
+fn add(a: i32, b: i32) -> i32 {
+    return a + b
+}
+
+pub fn greet(name: &str) -> string {
+    return format!("Hello, {}!", name)
+}
+
+fn apply(f: fn(i32) -> i32, x: i32) -> i32 {
+    return f(x)
+}
+
+fn main() {
+    let sum = add(3, 4)
+    let message = greet("World")
+    let closure = |x: i32| -> i32 { x * 2 }
+    let doubled = apply(closure, 21)
+    println!("{} {} {}", sum, message, doubled)
+}

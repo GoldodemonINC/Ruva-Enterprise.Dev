@@ -1,0 +1,19 @@
+fn collatz_steps(n: i64) -> i64 {
+    let mut num = n
+    let mut steps = 0
+    while num != 1 {
+        if num % 2 == 0 {
+            num = num / 2
+        } else {
+            num = num * 3 + 1
+        }
+        steps += 1
+    }
+    return steps
+}
+
+fn main() {
+    for i in 1..=10 {
+        println!("collatz({}) = {} steps", i, collatz_steps(i))
+    }
+}

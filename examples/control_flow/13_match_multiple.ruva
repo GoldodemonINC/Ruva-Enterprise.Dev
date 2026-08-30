@@ -1,0 +1,8 @@
+fn main() {
+    let x = 15
+    match x {
+        1 | 3 | 5 | 7 | 9 => println!("odd single digit or 15"),
+        2 | 4 | 6 | 8 | 10 => println!("even single digit"),
+        _ => println!("other"),
+    }
+}

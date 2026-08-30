@@ -1,0 +1,532 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// Flappy Bird Game — A classic Flappy Bird clone written in Ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Features:
+//   • Gravity and flap physics
+//   • Procedurally generated pipes
+//   • Collision detection
+//   • Score tracking
+//   • Day/night cycle
+//   • Particle effects
+//   • Smooth animations
+//
+// Run:  ruva run examples/games/flappy_bird.ruva
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SCREEN_WIDTH: i64 = 60
+const SCREEN_HEIGHT: i64 = 30
+const GRAVITY: f64 = 0.1
+const FLAP_STRENGTH: f64 = -1.5
+const PIPE_SPEED: f64 = 0.5
+const PIPE_GAP: i64 = 8
+const PIPE_WIDTH: i64 = 4
+const PIPE_SPACING: i64 = 20
+
+// ─── ANSI Colors ──────────────────────────────────────────────────────────────
+
+const RESET: string = "\u{001b}[0m"
+const BOLD: string = "\u{001b}[1m"
+const DIM: string = "\u{001b}[2m"
+
+const FG_WHITE: string = "\u{001b}[37m"
+const FG_CYAN: string = "\u{001b}[36m"
+const FG_YELLOW: string = "\u{001b}[33m"
+const FG_GREEN: string = "\u{001b}[32m"
+const FG_RED: string = "\u{001b}[31m"
+const FG_BLUE: string = "\u{001b}[34m"
+const FG_MAGENTA: string = "\u{001b}[35m"
+
+const BG_BLUE: string = "\u{001b}[44m"
+const BG_GREEN: string = "\u{001b}[42m"
+const BG_DARK: string = "\u{001b}[40m"
+
+// ─── Bird ─────────────────────────────────────────────────────────────────────
+
+class Bird {
+    pub let mut y: f64
+    pub let mut velocity: f64
+    pub let mut rotation: f64
+    pub let mut flap_animation: i64
+    pub let mut is_flapping: bool
+
+    pub fn new() -> Self {
+        return Self {
+            y: SCREEN_HEIGHT as f64 / 2.0,
+            velocity: 0.0,
+            rotation: 0.0,
+            flap_animation: 0,
+            is_flapping: false,
+        }
+    }
+
+    pub fn flap(&mut self) {
+        self.velocity = FLAP_STRENGTH
+        self.is_flapping = true
+        self.flap_animation = 3
+    }
+
+    pub fn update(&mut self) {
+        // Apply gravity
+        self.velocity += GRAVITY
+        self.y += self.velocity
+
+        // Update rotation based on velocity
+        self.rotation = self.velocity * 10.0
+        if self.rotation > 30.0 {
+            self.rotation = 30.0
+        }
+        if self.rotation < -30.0 {
+            self.rotation = -30.0
+        }
+
+        // Update flap animation
+        if self.flap_animation > 0 {
+            self.flap_animation -= 1
+        } else {
+            self.is_flapping = false
+        }
+
+        // Keep bird on screen
+        if self.y < 0.0 {
+            self.y = 0.0
+            self.velocity = 0.0
+        }
+        if self.y >= (SCREEN_HEIGHT - 1) as f64 {
+            self.y = (SCREEN_HEIGHT - 2) as f64
+            self.velocity = 0.0
+        }
+    }
+
+    pub fn x(&self) -> i64 {
+        return 10  // Fixed x position
+    }
+
+    pub fn render(&self, screen: &mut Vec<Vec<string>>) {
+        let x = self.x() as usize
+        let y = self.y as i64 as usize
+
+        if y < SCREEN_HEIGHT as usize && x < SCREEN_WIDTH as usize {
+            // Bird body
+            let bird_char = if self.is_flapping {
+                "🦜"
+            } else {
+                "🐦"
+            }
+            screen[y][x] = format!("{}{}{}", BOLD, FG_YELLOW, bird_char)
+
+            // Eye
+            if y > 0 {
+                screen[y - 1][x] = format!("{}●{}", FG_WHITE, RESET)
+            }
+        }
+    }
+}
+
+// ─── Pipe ─────────────────────────────────────────────────────────────────────
+
+class Pipe {
+    pub let mut x: f64
+    pub let gap_y: i64
+    pub let width: i64
+    pub let passed: bool
+
+    pub fn new(x: f64, gap_y: i64) -> Self {
+        return Self {
+            x,
+            gap_y,
+            width: PIPE_WIDTH,
+            passed: false,
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.x -= PIPE_SPEED
+    }
+
+    pub fn is_off_screen(&self) -> bool {
+        return self.x < -(self.width as f64)
+    }
+
+    pub fn check_collision(&self, bird_x: i64, bird_y: i64) -> bool {
+        let pipe_x = self.x as i64
+        let pipe_end = pipe_x + self.width
+
+        // Check if bird is in pipe x range
+        if bird_x >= pipe_x && bird_x < pipe_end {
+            // Check if bird is outside gap
+            if bird_y < self.gap_y || bird_y >= self.gap_y + PIPE_GAP {
+                return true
+            }
+        }
+        return false
+    }
+
+    pub fn render(&self, screen: &mut Vec<Vec<string>>) {
+        let pipe_x = self.x as i64
+        let pipe_end = pipe_x + self.width
+
+        // Draw top pipe
+        let mut y = 0
+        while y < self.gap_y {
+            let mut x = pipe_x
+            while x < pipe_end && x >= 0 && x < SCREEN_WIDTH {
+                if y >= 0 && y < SCREEN_HEIGHT as i64 {
+                    screen[y as usize][x as usize] = format!("{}█{}", FG_GREEN, RESET)
+                }
+                x += 1
+            }
+            y += 1
+        }
+
+        // Draw bottom pipe
+        let mut y = self.gap_y + PIPE_GAP
+        while y < SCREEN_HEIGHT {
+            let mut x = pipe_x
+            while x < pipe_end && x >= 0 && x < SCREEN_WIDTH {
+                if y >= 0 && y < SCREEN_HEIGHT as i64 {
+                    screen[y as usize][x as usize] = format!("{}█{}", FG_GREEN, RESET)
+                }
+                x += 1
+            }
+            y += 1
+        }
+    }
+}
+
+// ─── Particle ─────────────────────────────────────────────────────────────────
+
+struct Particle {
+    pub x: f64,
+    pub y: f64,
+    pub vx: f64,
+    pub vy: f64,
+    pub life: i64,
+    pub color: string,
+}
+
+impl Particle {
+    pub fn new(x: f64, y: f64, color: string) -> Self {
+        return Self {
+            x,
+            y,
+            vx: (rand() % 100) as f64 / 100.0 - 0.5,
+            vy: (rand() % 100) as f64 / 100.0 - 0.5,
+            life: 10,
+            color,
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.x += self.vx
+        self.y += self.vy
+        self.vy += 0.05  // gravity
+        self.life -= 1
+    }
+
+    pub fn is_alive(&self) -> bool {
+        return self.life > 0
+    }
+}
+
+// ─── Game State ───────────────────────────────────────────────────────────────
+
+enum GameState {
+    Menu,
+    Playing,
+    GameOver,
+}
+
+// ─── Game ─────────────────────────────────────────────────────────────────────
+
+class Game {
+    pub let mut bird: Bird
+    pub let mut pipes: Vec<Pipe>
+    pub let mut particles: Vec<Particle>
+    pub let mut score: i64
+    pub let mut high_score: i64
+    pub let mut state: GameState
+    pub let mut tick: i64
+    pub let mut pipe_timer: i64
+    pub let mut is_day: bool
+    pub let mut cloud_positions: Vec<f64>
+
+    pub fn new() -> Self {
+        let mut cloud_positions = Vec::new()
+        let mut i = 0
+        while i < 5 {
+            cloud_positions.push((rand() % SCREEN_WIDTH) as f64)
+            i += 1
+        }
+
+        return Self {
+            bird: Bird::new(),
+            pipes: Vec::new(),
+            particles: Vec::new(),
+            score: 0,
+            high_score: 0,
+            state: GameState::Menu,
+            tick: 0,
+            pipe_timer: 0,
+            is_day: true,
+            cloud_positions,
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.state = GameState::Playing
+        self.bird = Bird::new()
+        self.pipes.clear()
+        self.particles.clear()
+        self.score = 0
+        self.tick = 0
+        self.pipe_timer = 0
+    }
+
+    pub fn flap(&mut self) {
+        if matches!(self.state, GameState::Playing) {
+            self.bird.flap()
+
+            // Add flap particles
+            let mut i = 0
+            while i < 3 {
+                self.particles.push(Particle::new(
+                    self.bird.x() as f64,
+                    self.bird.y,
+                    FG_WHITE.to_string(),
+                ))
+                i += 1
+            }
+        }
+    }
+
+    pub fn update(&mut self) {
+        if !matches!(self.state, GameState::Playing) {
+            return
+        }
+
+        self.tick += 1
+
+        // Update bird
+        self.bird.update()
+
+        // Day/night cycle
+        if self.tick % 100 == 0 {
+            self.is_day = !self.is_day
+        }
+
+        // Update clouds
+        let mut i = 0
+        while i < self.cloud_positions.len() as i64 {
+            self.cloud_positions[i as usize] -= 0.1
+            if self.cloud_positions[i as usize] < -5.0 {
+                self.cloud_positions[i as usize] = (SCREEN_WIDTH + 5) as f64
+            }
+            i += 1
+        }
+
+        // Spawn pipes
+        self.pipe_timer += 1
+        if self.pipe_timer >= PIPE_SPACING {
+            self.pipe_timer = 0
+            let gap_y = 3 + (rand() % (SCREEN_HEIGHT - PIPE_GAP - 6) as i64)
+            self.pipes.push(Pipe::new(SCREEN_WIDTH as f64, gap_y))
+        }
+
+        // Update pipes
+        let mut i = 0
+        while i < self.pipes.len() as i64 {
+            self.pipes[i as usize].update()
+
+            // Check if bird passed pipe
+            if !self.pipes[i as usize].passed && self.pipes[i as usize].x < self.bird.x() as f64 {
+                self.pipes[i as usize].passed = true
+                self.score += 1
+
+                // Add score particles
+                let mut j = 0
+                while j < 5 {
+                    self.particles.push(Particle::new(
+                        self.bird.x() as f64,
+                        self.bird.y,
+                        FG_YELLOW.to_string(),
+                    ))
+                    j += 1
+                }
+            }
+
+            // Check collision
+            if self.pipes[i as usize].check_collision(self.bird.x(), self.bird.y as i64) {
+                self.state = GameState::GameOver
+                if self.score > self.high_score {
+                    self.high_score = self.score
+                }
+
+                // Explosion particles
+                let mut j = 0
+                while j < 20 {
+                    self.particles.push(Particle::new(
+                        self.bird.x() as f64,
+                        self.bird.y,
+                        FG_RED.to_string(),
+                    ))
+                    j += 1
+                }
+                return
+            }
+
+            // Remove off-screen pipes
+            if self.pipes[i as usize].is_off_screen() {
+                self.pipes.remove(i as usize)
+            } else {
+                i += 1
+            }
+        }
+
+        // Update particles
+        let mut i = 0
+        while i < self.particles.len() as i64 {
+            self.particles[i as usize].update()
+            if !self.particles[i as usize].is_alive() {
+                self.particles.remove(i as usize)
+            } else {
+                i += 1
+            }
+        }
+    }
+
+    pub fn render(&self) {
+        // Clear screen
+        print!("\u{001b}[2J\u{001b}[H")
+
+        // Create screen buffer
+        let mut screen = Vec::new()
+        let mut y = 0
+        while y < SCREEN_HEIGHT {
+            let mut row = Vec::new()
+            let mut x = 0
+            while x < SCREEN_WIDTH {
+                if self.is_day {
+                    row.push(format!("{} {}", BG_BLUE, RESET))
+                } else {
+                    row.push(format!("{} {}", BG_DARK, RESET))
+                }
+                x += 1
+            }
+            screen.push(row)
+            y += 1
+        }
+
+        // Draw clouds
+        for cloud_x in &self.cloud_positions {
+            let x = *cloud_x as i64
+            if x >= 0 && x < SCREEN_WIDTH - 3 {
+                screen[2][x as usize] = format!("{}☁{}", FG_WHITE, RESET)
+                screen[2][(x + 1) as usize] = format!("{}☁{}", FG_WHITE, RESET)
+                screen[2][(x + 2) as usize] = format!("{}☁{}", FG_WHITE, RESET)
+            }
+        }
+
+        // Draw ground
+        let mut x = 0
+        while x < SCREEN_WIDTH {
+            screen[(SCREEN_HEIGHT - 1) as usize][x as usize] = format!("{}█{}", FG_GREEN, RESET)
+            screen[(SCREEN_HEIGHT - 2) as usize][x as usize] = format!("{}▄{}", FG_GREEN, RESET)
+            x += 1
+        }
+
+        // Draw pipes
+        for pipe in &self.pipes {
+            pipe.render(&mut screen)
+        }
+
+        // Draw bird
+        self.bird.render(&mut screen)
+
+        // Draw particles
+        for particle in &self.particles {
+            let x = particle.x as i64
+            let y = particle.y as i64
+            if x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT {
+                screen[y as usize][x as usize] = format!("{}●{}", particle.color, RESET)
+            }
+        }
+
+        // Render header
+        print!("{}{}╔══════════════════════════════════════════╗{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}{}║         FLAPPY BIRD 🐦                  ║{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}{}╚══════════════════════════════════════════╝{}\n", BOLD, FG_CYAN, RESET)
+        print!("{}\n", RESET)
+
+        // Render screen
+        let mut y = 0
+        while y < SCREEN_HEIGHT {
+            let mut line = String::new()
+            let mut x = 0
+            while x < SCREEN_WIDTH {
+                line.push_str(&screen[y as usize][x as usize])
+                x += 1
+            }
+            print!("{}\n", line)
+            y += 1
+        }
+
+        // Footer
+        print!("\n")
+        print!("{}Score: {}{}{}  ", BOLD, FG_YELLOW, self.score, RESET)
+        print!("{}High Score: {}{}{}\n", BOLD, FG_YELLOW, self.high_score, RESET)
+        print!("{}{}Controls: SPACE/UP=Flap, Q=Quit{}\n", DIM, FG_WHITE, RESET)
+
+        // State-specific UI
+        match self.state {
+            GameState::Menu => {
+                self.render_menu()
+            }
+            GameState::GameOver => {
+                self.render_game_over()
+            }
+            _ => {}
+        }
+    }
+
+    pub fn render_menu(&self) {
+        print!("\n")
+        print!("{}{}╔══════════════════════════════════════════╗{}\n", BOLD, FG_YELLOW, RESET)
+        print!("{}{}║         FLAPPY BIRD 🐦                  ║{}\n", BOLD, FG_YELLOW, RESET)
+        print!("{}{}╚══════════════════════════════════════════╝{}\n", BOLD, FG_YELLOW, RESET)
+        print!("{}\n", RESET)
+        print!("{}  Press SPACE or UP to flap and start{}\n", BOLD, FG_GREEN, RESET)
+        print!("{}  Press Q to quit{}\n", BOLD, FG_RED, RESET)
+    }
+
+    pub fn render_game_over(&self) {
+        print!("\n")
+        print!("{}{}╔══════════════════════════════════════════╗{}\n", BOLD, FG_RED, RESET)
+        print!("{}{}║            GAME OVER! 💀                 ║{}\n", BOLD, FG_RED, RESET)
+        print!("{}{}╚══════════════════════════════════════════╝{}\n", BOLD, FG_RED, RESET)
+        print!("{}\n", RESET)
+        print!("{}  Final Score: {}{}{}\n", BOLD, FG_YELLOW, self.score, RESET)
+        print!("{}  High Score:  {}{}{}\n", BOLD, FG_YELLOW, self.high_score, RESET)
+        print!("{}\n", RESET)
+        print!("{}  Press SPACE to play again{}\n", BOLD, FG_GREEN, RESET)
+        print!("{}  Press Q to quit{}\n", BOLD, FG_RED, RESET)
+    }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+fn main() {
+    let mut game = Game::new()
+
+    // Main game loop
+    while !matches!(game.state, GameState::GameOver) || game.score == 0 {
+        game.render()
+        game.update()
+    }
+
+    // Final render
+    game.render()
+    print!("\n{}Thanks for playing Flappy Bird! 🐦{}\n", BOLD, RESET)
+}

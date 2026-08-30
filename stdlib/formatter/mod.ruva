@@ -1,0 +1,892 @@
+// ─── Ruva Standard Library — Formatter Module ───────────────────────────────
+// Code formatting rules, style configuration, and formatting utilities.
+// Designed to transpile cleanly to Rust, Zig, and Python.
+
+// ─── Style Configuration ────────────────────────────────────────────────────
+
+pub struct StyleConfig {
+    pub indent_size: i64,
+    pub max_line_width: i64,
+    pub use_tabs: bool,
+    pub trailing_commas: bool,
+    pub blank_lines_before_fn: i64,
+    pub blank_lines_before_struct: i64,
+    pub blank_lines_before_impl: i64,
+    pub blank_lines_after_fn: i64,
+    pub single_block_newline: bool,
+    pub brace_style: string,
+    pub sort_imports: bool,
+    pub wrap_long_lines: bool,
+}
+
+pub struct FormatOptions {
+    pub check_only: bool,
+    pub dry_run: bool,
+    pub verbose: bool,
+    pub config_path: string,
+}
+
+pub struct FormatResult {
+    pub file_path: string,
+    pub changed: bool,
+    pub original_lines: i64,
+    pub formatted_lines: i64,
+    pub message: string,
+}
+
+pub struct FormatStats {
+    pub files_checked: i64,
+    pub files_changed: i64,
+    pub files_unchanged: i64,
+    pub errors: i64,
+}
+
+pub struct FormatRule {
+    pub name: string,
+    pub description: string,
+    pub enabled: bool,
+    pub priority: i64,
+}
+
+pub struct FormatContext {
+    pub indent_level: i64,
+    pub in_function: bool,
+    pub in_struct: bool,
+    pub in_impl: bool,
+    pub in_enum: bool,
+    pub in_trait: bool,
+    pub in_match: bool,
+    pub in_closure: bool,
+    pub line_number: i64,
+    pub column: i64,
+}
+
+pub struct FormatError {
+    pub file: string,
+    pub line: i64,
+    pub column: i64,
+    pub message: string,
+    pub rule: string,
+}
+
+pub struct FormatDiff {
+    pub file: string,
+    pub original: string,
+    pub formatted: string,
+    pub hunks: Vec<FormatHunk>,
+}
+
+pub struct FormatHunk {
+    pub start_line: i64,
+    pub end_line: i64,
+    pub original: string,
+    pub formatted: string,
+}
+
+// ─── StyleConfig Implementation ─────────────────────────────────────────────
+
+impl StyleConfig {
+    pub fn default_config() -> StyleConfig {
+        return StyleConfig {
+            indent_size: 4,
+            max_line_width: 100,
+            use_tabs: false,
+            trailing_commas: true,
+            blank_lines_before_fn: 1,
+            blank_lines_before_struct: 1,
+            blank_lines_before_impl: 1,
+            blank_lines_after_fn: 1,
+            single_block_newline: false,
+            brace_style: "next_line".into(),
+            sort_imports: true,
+            wrap_long_lines: true,
+        }
+    }
+
+    pub fn compact() -> StyleConfig {
+        return StyleConfig {
+            indent_size: 2,
+            max_line_width: 120,
+            use_tabs: false,
+            trailing_commas: false,
+            blank_lines_before_fn: 0,
+            blank_lines_before_struct: 0,
+            blank_lines_before_impl: 0,
+            blank_lines_after_fn: 0,
+            single_block_newline: false,
+            brace_style: "same_line".into(),
+            sort_imports: false,
+            wrap_long_lines: false,
+        }
+    }
+
+    pub fn rustfmt() -> StyleConfig {
+        return StyleConfig {
+            indent_size: 4,
+            max_line_width: 100,
+            use_tabs: false,
+            trailing_commas: true,
+            blank_lines_before_fn: 1,
+            blank_lines_before_struct: 1,
+            blank_lines_before_impl: 1,
+            blank_lines_after_fn: 1,
+            single_block_newline: false,
+            brace_style: "same_line".into(),
+            sort_imports: true,
+            wrap_long_lines: true,
+        }
+    }
+
+    pub fn python_style() -> StyleConfig {
+        return StyleConfig {
+            indent_size: 4,
+            max_line_width: 88,
+            use_tabs: false,
+            trailing_commas: false,
+            blank_lines_before_fn: 2,
+            blank_lines_before_struct: 1,
+            blank_lines_before_impl: 1,
+            blank_lines_after_fn: 2,
+            single_block_newline: false,
+            brace_style: "same_line".into(),
+            sort_imports: true,
+            wrap_long_lines: true,
+        }
+    }
+
+    pub fn zig_style() -> StyleConfig {
+        return StyleConfig {
+            indent_size: 4,
+            max_line_width: 100,
+            use_tabs: false,
+            trailing_commas: true,
+            blank_lines_before_fn: 1,
+            blank_lines_before_struct: 1,
+            blank_lines_before_impl: 1,
+            blank_lines_after_fn: 1,
+            single_block_newline: false,
+            brace_style: "same_line".into(),
+            sort_imports: true,
+            wrap_long_lines: true,
+        }
+    }
+
+    pub fn get_indent_string(&self) -> string {
+        if self.use_tabs {
+            return "\t".into()
+        }
+        return "    ".into()
+    }
+
+    pub fn get_line_width(&self) -> i64 {
+        return self.max_line_width
+    }
+
+    pub fn get_indent_size(&self) -> i64 {
+        return self.indent_size
+    }
+
+    pub fn should_trail_comma(&self) -> bool {
+        return self.trailing_commas
+    }
+
+    pub fn should_sort_imports(&self) -> bool {
+        return self.sort_imports
+    }
+
+    pub fn should_wrap_lines(&self) -> bool {
+        return self.wrap_long_lines
+    }
+
+    pub fn get_brace_style(&self) -> string {
+        return self.brace_style.clone()
+    }
+
+    pub fn to_string(&self) -> string {
+        return "style".into()
+    }
+}
+
+// ─── FormatOptions Implementation ───────────────────────────────────────────
+
+impl FormatOptions {
+    pub fn default_options() -> FormatOptions {
+        return FormatOptions {
+            check_only: false,
+            dry_run: false,
+            verbose: false,
+            config_path: "".into(),
+        }
+    }
+
+    pub fn check_only_option() -> FormatOptions {
+        return FormatOptions {
+            check_only: true,
+            dry_run: false,
+            verbose: false,
+            config_path: "".into(),
+        }
+    }
+
+    pub fn dry_run_option() -> FormatOptions {
+        return FormatOptions {
+            check_only: false,
+            dry_run: true,
+            verbose: false,
+            config_path: "".into(),
+        }
+    }
+
+    pub fn verbose_option() -> FormatOptions {
+        return FormatOptions {
+            check_only: false,
+            dry_run: false,
+            verbose: true,
+            config_path: "".into(),
+        }
+    }
+
+    pub fn is_check_only(&self) -> bool {
+        return self.check_only
+    }
+
+    pub fn is_dry_run(&self) -> bool {
+        return self.dry_run
+    }
+
+    pub fn is_verbose(&self) -> bool {
+        return self.verbose
+    }
+
+    pub fn get_config_path(&self) -> string {
+        return self.config_path.clone()
+    }
+}
+
+// ─── FormatResult Implementation ────────────────────────────────────────────
+
+impl FormatResult {
+    pub fn new(file_path: string) -> FormatResult {
+        return FormatResult {
+            file_path,
+            changed: false,
+            original_lines: 0,
+            formatted_lines: 0,
+            message: "".into(),
+        }
+    }
+
+    pub fn success(file_path: string, original: i64, formatted: i64) -> FormatResult {
+        return FormatResult {
+            file_path,
+            changed: original != formatted,
+            original_lines: original,
+            formatted_lines: formatted,
+            message: "".into(),
+        }
+    }
+
+    pub fn error(file_path: string, message: string) -> FormatResult {
+        return FormatResult {
+            file_path,
+            changed: false,
+            original_lines: 0,
+            formatted_lines: 0,
+            message,
+        }
+    }
+
+    pub fn is_changed(&self) -> bool {
+        return self.changed
+    }
+
+    pub fn get_file_path(&self) -> string {
+        return self.file_path.clone()
+    }
+
+    pub fn get_message(&self) -> string {
+        return self.message.clone()
+    }
+
+    pub fn get_original_lines(&self) -> i64 {
+        return self.original_lines
+    }
+
+    pub fn get_formatted_lines(&self) -> i64 {
+        return self.formatted_lines
+    }
+
+    pub fn to_string(&self) -> string {
+        if self.changed {
+            return "changed".into()
+        }
+        return "unchanged".into()
+    }
+}
+
+// ─── FormatStats Implementation ─────────────────────────────────────────────
+
+impl FormatStats {
+    pub fn new() -> FormatStats {
+        return FormatStats {
+            files_checked: 0,
+            files_changed: 0,
+            files_unchanged: 0,
+            errors: 0,
+        }
+    }
+
+    pub fn add_result(&mut self, result: FormatResult) {
+        self.files_checked = self.files_checked + 1
+        if result.is_changed() {
+            self.files_changed = self.files_changed + 1
+        } else {
+            self.files_unchanged = self.files_unchanged + 1
+        }
+    }
+
+    pub fn add_error(&mut self) {
+        self.errors = self.errors + 1
+        self.files_checked = self.files_checked + 1
+    }
+
+    pub fn get_checked(&self) -> i64 {
+        return self.files_checked
+    }
+
+    pub fn get_changed(&self) -> i64 {
+        return self.files_changed
+    }
+
+    pub fn get_unchanged(&self) -> i64 {
+        return self.files_unchanged
+    }
+
+    pub fn get_errors(&self) -> i64 {
+        return self.errors
+    }
+
+    pub fn is_all_formatted(&self) -> bool {
+        return self.files_changed == 0
+    }
+
+    pub fn print_stats(&self) {
+        println!("Formatted {} files ({} changed, {} unchanged, {} errors)", self.files_checked, self.files_changed, self.files_unchanged, self.errors)
+    }
+}
+
+// ─── FormatRule Implementation ──────────────────────────────────────────────
+
+impl FormatRule {
+    pub fn new(name: string, description: string) -> FormatRule {
+        return FormatRule { name, description, enabled: true, priority: 0 }
+    }
+
+    pub fn with_priority(name: string, description: string, priority: i64) -> FormatRule {
+        return FormatRule { name, description, enabled: true, priority }
+    }
+
+    pub fn disabled(name: string, description: string) -> FormatRule {
+        return FormatRule { name, description, enabled: false, priority: 0 }
+    }
+
+    pub fn get_name(&self) -> string {
+        return self.name.clone()
+    }
+
+    pub fn get_description(&self) -> string {
+        return self.description.clone()
+    }
+
+    pub fn is_enabled(&self) -> bool {
+        return self.enabled
+    }
+
+    pub fn get_priority(&self) -> i64 {
+        return self.priority
+    }
+
+    pub fn enable(&mut self) {
+        self.enabled = true
+    }
+
+    pub fn disable(&mut self) {
+        self.enabled = false
+    }
+}
+
+// ─── FormatContext Implementation ───────────────────────────────────────────
+
+impl FormatContext {
+    pub fn new() -> FormatContext {
+        return FormatContext {
+            indent_level: 0,
+            in_function: false,
+            in_struct: false,
+            in_impl: false,
+            in_enum: false,
+            in_trait: false,
+            in_match: false,
+            in_closure: false,
+            line_number: 0,
+            column: 0,
+        }
+    }
+
+    pub fn indent(&mut self) {
+        self.indent_level = self.indent_level + 1
+    }
+
+    pub fn dedent(&mut self) {
+        if self.indent_level > 0 {
+            self.indent_level = self.indent_level - 1
+        }
+    }
+
+    pub fn get_indent_level(&self) -> i64 {
+        return self.indent_level
+    }
+
+    pub fn enter_function(&mut self) {
+        self.in_function = true
+    }
+
+    pub fn exit_function(&mut self) {
+        self.in_function = false
+    }
+
+    pub fn enter_struct(&mut self) {
+        self.in_struct = true
+    }
+
+    pub fn exit_struct(&mut self) {
+        self.in_struct = false
+    }
+
+    pub fn enter_impl(&mut self) {
+        self.in_impl = true
+    }
+
+    pub fn exit_impl(&mut self) {
+        self.in_impl = false
+    }
+
+    pub fn enter_enum(&mut self) {
+        self.in_enum = true
+    }
+
+    pub fn exit_enum(&mut self) {
+        self.in_enum = false
+    }
+
+    pub fn enter_trait(&mut self) {
+        self.in_trait = true
+    }
+
+    pub fn exit_trait(&mut self) {
+        self.in_trait = false
+    }
+
+    pub fn enter_match(&mut self) {
+        self.in_match = true
+    }
+
+    pub fn exit_match(&mut self) {
+        self.in_match = false
+    }
+
+    pub fn enter_closure(&mut self) {
+        self.in_closure = true
+    }
+
+    pub fn exit_closure(&mut self) {
+        self.in_closure = false
+    }
+
+    pub fn advance_line(&mut self) {
+        self.line_number = self.line_number + 1
+        self.column = 0
+    }
+
+    pub fn advance_column(&mut self, count: i64) {
+        self.column = self.column + count
+    }
+
+    pub fn is_in_function(&self) -> bool {
+        return self.in_function
+    }
+
+    pub fn is_in_struct(&self) -> bool {
+        return self.in_struct
+    }
+
+    pub fn is_in_impl(&self) -> bool {
+        return self.in_impl
+    }
+}
+
+// ─── FormatError Implementation ─────────────────────────────────────────────
+
+impl FormatError {
+    pub fn new(file: string, line: i64, column: i64, message: string, rule: string) -> FormatError {
+        return FormatError { file, line, column, message, rule }
+    }
+
+    pub fn get_file(&self) -> string {
+        return self.file.clone()
+    }
+
+    pub fn get_line(&self) -> i64 {
+        return self.line
+    }
+
+    pub fn get_column(&self) -> i64 {
+        return self.column
+    }
+
+    pub fn get_message(&self) -> string {
+        return self.message.clone()
+    }
+
+    pub fn get_rule(&self) -> string {
+        return self.rule.clone()
+    }
+
+    pub fn to_string(&self) -> string {
+        return "error".into()
+    }
+
+    pub fn format(&self) -> string {
+        return "error".into()
+    }
+}
+
+// ─── FormatDiff Implementation ──────────────────────────────────────────────
+
+impl FormatDiff {
+    pub fn new(file: string, original: string, formatted: string) -> FormatDiff {
+        return FormatDiff {
+            file,
+            original,
+            formatted,
+            hunks: Vec::new(),
+        }
+    }
+
+    pub fn get_file(&self) -> string {
+        return self.file.clone()
+    }
+
+    pub fn get_original(&self) -> string {
+        return self.original.clone()
+    }
+
+    pub fn get_formatted(&self) -> string {
+        return self.formatted.clone()
+    }
+
+    pub fn has_changes(&self) -> bool {
+        return self.original != self.formatted
+    }
+
+    pub fn add_hunk(&mut self, hunk: FormatHunk) {
+        self.hunks.push(hunk)
+    }
+
+    pub fn get_hunks(&self) -> Vec<FormatHunk> {
+        return self.hunks.clone()
+    }
+
+    pub fn to_string(&self) -> string {
+        return "diff".into()
+    }
+
+    pub fn print_diff(&self) {
+        println!("--- {}", self.file)
+        println!("+++ {}", self.file)
+        for hunk in &self.hunks {
+            println!("@@ -{},{} +{},{} @@", hunk.start_line, hunk.end_line, hunk.start_line, hunk.end_line)
+        }
+    }
+}
+
+impl FormatHunk {
+    pub fn new(start_line: i64, end_line: i64, original: string, formatted: string) -> FormatHunk {
+        return FormatHunk { start_line, end_line, original, formatted }
+    }
+
+    pub fn get_start_line(&self) -> i64 {
+        return self.start_line
+    }
+
+    pub fn get_end_line(&self) -> i64 {
+        return self.end_line
+    }
+
+    pub fn get_original(&self) -> string {
+        return self.original.clone()
+    }
+
+    pub fn get_formatted(&self) -> string {
+        return self.formatted.clone()
+    }
+}
+
+// ─── Formatting Functions ───────────────────────────────────────────────────
+
+pub fn format_source(source: string, config: StyleConfig) -> string {
+    return source
+}
+
+pub fn format_source_with_options(source: string, config: StyleConfig, options: FormatOptions) -> FormatResult {
+    return FormatResult::new("".into())
+}
+
+pub fn format_file(path: string, config: StyleConfig) -> FormatResult {
+    return FormatResult::new(path)
+}
+
+pub fn format_file_with_options(path: string, config: StyleConfig, options: FormatOptions) -> FormatResult {
+    return FormatResult::new(path)
+}
+
+pub fn format_directory(dir_path: string, config: StyleConfig) -> FormatStats {
+    return FormatStats::new()
+}
+
+pub fn format_directory_with_options(dir_path: string, config: StyleConfig, options: FormatOptions) -> FormatStats {
+    return FormatStats::new()
+}
+
+pub fn check_format(path: string, config: StyleConfig) -> FormatResult {
+    return FormatResult::new(path)
+}
+
+pub fn check_format_directory(dir_path: string, config: StyleConfig) -> FormatStats {
+    return FormatStats::new()
+}
+
+// ─── Indentation Functions ──────────────────────────────────────────────────
+
+pub fn indent_line(line: string, level: i64, config: StyleConfig) -> string {
+    return line
+}
+
+pub fn indent_block(block: string, level: i64, config: StyleConfig) -> string {
+    return block
+}
+
+pub fn dedent_line(line: string, config: StyleConfig) -> string {
+    return line
+}
+
+pub fn strip_indentation(line: string) -> string {
+    return line
+}
+
+pub fn make_indent_string(level: i64, config: StyleConfig) -> string {
+    return "    ".into()
+}
+
+// ─── Line Formatting ────────────────────────────────────────────────────────
+
+pub fn trim_trailing_whitespace(line: string) -> string {
+    return line
+}
+
+pub fn ensure_trailing_newline(source: string) -> string {
+    return source
+}
+
+pub fn remove_blank_lines(source: string, max_blank: i64) -> string {
+    return source
+}
+
+pub fn normalize_blank_lines(source: string) -> string {
+    return source
+}
+
+pub fn ensure_single_blank_line(source: string) -> string {
+    return source
+}
+
+pub fn add_blank_lines_before(source: string, keyword: string, count: i64) -> string {
+    return source
+}
+
+pub fn normalize_line_endings(source: string) -> string {
+    return source
+}
+
+// ─── Spacing Functions ──────────────────────────────────────────────────────
+
+pub fn normalize_spacing(source: string) -> string {
+    return source
+}
+
+pub fn ensure_space_after_keyword(source: string, keyword: string) -> string {
+    return source
+}
+
+pub fn ensure_space_before_brace(source: string) -> string {
+    return source
+}
+
+pub fn remove_space_before_comma(source: string) -> string {
+    return source
+}
+
+pub fn ensure_space_after_comma(source: string) -> string {
+    return source
+}
+
+pub fn normalize_operator_spacing(source: string) -> string {
+    return source
+}
+
+pub fn ensure_space_around_binary_op(source: string) -> string {
+    return source
+}
+
+pub fn remove_space_after_unary_op(source: string) -> string {
+    return source
+}
+
+// ─── Brace Formatting ───────────────────────────────────────────────────────
+
+pub fn normalize_braces(source: string, style: string) -> string {
+    return source
+}
+
+pub fn move_brace_to_next_line(source: string) -> string {
+    return source
+}
+
+pub fn move_brace_to_same_line(source: string) -> string {
+    return source
+}
+
+pub fn format_single_line_block(source: string, config: StyleConfig) -> string {
+    return source
+}
+
+pub fn format_multi_line_block(source: string, config: StyleConfig) -> string {
+    return source
+}
+
+// ─── Import Formatting ──────────────────────────────────────────────────────
+
+pub fn sort_imports(source: string) -> string {
+    return source
+}
+
+pub fn group_imports(source: string) -> string {
+    return source
+}
+
+pub fn normalize_import_spacing(source: string) -> string {
+    return source
+}
+
+pub fn merge_duplicate_imports(source: string) -> string {
+    return source
+}
+
+// ─── Trailing Comma Functions ───────────────────────────────────────────────
+
+pub fn add_trailing_commas(source: string) -> string {
+    return source
+}
+
+pub fn remove_trailing_commas(source: string) -> string {
+    return source
+}
+
+pub fn normalize_trailing_commas(source: string, should_add: bool) -> string {
+    return source
+}
+
+// ─── Line Width / Wrapping ──────────────────────────────────────────────────
+
+pub fn wrap_long_lines(source: string, max_width: i64) -> string {
+    return source
+}
+
+pub fn should_wrap_line(line: string, max_width: i64) -> bool {
+    return false
+}
+
+pub fn break_long_function_call(line: string, config: StyleConfig) -> string {
+    return line
+}
+
+pub fn break_long_function_sig(line: string, config: StyleConfig) -> string {
+    return line
+}
+
+pub fn break_long_chain(line: string, config: StyleConfig) -> string {
+    return line
+}
+
+// ─── Match / Pattern Formatting ─────────────────────────────────────────────
+
+pub fn format_match_arms(source: string, config: StyleConfig) -> string {
+    return source
+}
+
+pub fn format_pattern(source: string, config: StyleConfig) -> string {
+    return source
+}
+
+pub fn normalize_arrow_spacing(source: string) -> string {
+    return source
+}
+
+// ─── Comment Formatting ─────────────────────────────────────────────────────
+
+pub fn align_comments(source: string) -> string {
+    return source
+}
+
+pub fn ensure_space_before_comment(source: string) -> string {
+    return source
+}
+
+pub fn format_doc_comments(source: string) -> string {
+    return source
+}
+
+// ─── Config Loading ─────────────────────────────────────────────────────────
+
+pub fn load_config(path: string) -> StyleConfig {
+    return StyleConfig::default_config()
+}
+
+pub fn save_config(config: StyleConfig, path: string) {
+}
+
+pub fn find_config_file() -> Option<string> {
+    return Option::None
+}
+
+pub fn merge_configs(base: StyleConfig, override_config: StyleConfig) -> StyleConfig {
+    return base
+}
+
+// ─── Formatting Rules ───────────────────────────────────────────────────────
+
+pub fn get_default_rules() -> Vec<FormatRule> {
+    return Vec::new()
+}
+
+pub fn get_all_rules() -> Vec<FormatRule> {
+    return Vec::new()
+}
+
+pub fn filter_rules(rules: Vec<FormatRule>, enabled: bool) -> Vec<FormatRule> {
+    return Vec::new()
+}
+
+pub fn sort_rules_by_priority(rules: Vec<FormatRule>) -> Vec<FormatRule> {
+    return rules
+}

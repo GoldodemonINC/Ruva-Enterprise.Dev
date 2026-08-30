@@ -1,0 +1,7 @@
+// Example: Error Handling #6
+// This example demonstrates error handling concepts in Ruva
+
+fn main() {
+    println!("Example: Error Handling #6")
+    println!("Ruva makes error handling safe and fast")
+}

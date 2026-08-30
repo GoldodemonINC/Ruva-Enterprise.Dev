@@ -1,0 +1,6 @@
+fn main() {
+    let colors = ["red", "green", "blue"]
+    for i in 0..3 {
+        println!("{}. {}", i + 1, colors[i])
+    }
+}

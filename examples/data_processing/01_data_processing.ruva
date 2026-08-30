@@ -1,0 +1,7 @@
+// Example: Data Processing #1
+// This example demonstrates data processing concepts in Ruva
+
+fn main() {
+    println!("Example: Data Processing #1")
+    println!("Ruva makes data processing safe and fast")
+}

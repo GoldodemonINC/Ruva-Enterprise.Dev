@@ -1,0 +1,32 @@
+fn main() {
+    let x = 42
+
+    if x > 0 {
+        println!("positive")
+    } else if x == 0 {
+        println!("zero")
+    } else {
+        println!("negative")
+    }
+
+    let mut i = 0
+    while i < 5 {
+        i += 1
+    }
+
+    for n in 0..10 {
+        println!("{}", n)
+    }
+
+    let result = loop {
+        break 42
+    }
+
+    let val = 3
+    match val {
+        0 => println!("zero"),
+        1 => println!("one"),
+        2 | 3 => println!("two or three"),
+        _ => println!("other"),
+    }
+}

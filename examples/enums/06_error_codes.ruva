@@ -1,0 +1,20 @@
+enum ErrorCode {
+    NotFound,
+    PermissionDenied,
+    InternalError,
+    RateLimited,
+}
+
+fn error_message(code: &ErrorCode) -> string {
+    match code {
+        ErrorCode::NotFound => "Resource not found".into(),
+        ErrorCode::PermissionDenied => "Permission denied".into(),
+        ErrorCode::InternalError => "Internal server error".into(),
+        ErrorCode::RateLimited => "Rate limit exceeded".into(),
+    }
+}
+
+fn main() {
+    let err = ErrorCode::NotFound
+    println!("Error: {}", error_message(&err))
+}

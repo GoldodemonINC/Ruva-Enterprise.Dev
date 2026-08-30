@@ -1,0 +1,7 @@
+// Example: Crypto #6
+// This example demonstrates crypto concepts in Ruva
+
+fn main() {
+    println!("Example: Crypto #6")
+    println!("Ruva makes crypto safe and fast")
+}

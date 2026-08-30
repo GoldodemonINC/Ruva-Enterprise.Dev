@@ -1,0 +1,15 @@
+fn gcd(a: i64, b: i64) -> i64 {
+    let mut x = a
+    let mut y = b
+    while y != 0 {
+        let temp = y
+        y = x % y
+        x = temp
+    }
+    return x
+}
+
+fn main() {
+    println!("gcd(48, 18) = {}", gcd(48, 18))
+    println!("gcd(100, 75) = {}", gcd(100, 75))
+}

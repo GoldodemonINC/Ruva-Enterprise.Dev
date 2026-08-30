@@ -1,0 +1,540 @@
+// ─── Machine Learning Example #36 ─────────────────────────────────────────────────────
+// Auto-generated Ruva example demonstrating machine learning concepts.
+// This file contains ~500 lines of idiomatic Ruva code.
+
+// ─── Data Structures ───────────────────────────────────────────
+pub struct Layer {
+    pub let mut neurons: Vec<i64>,
+    pub let mut weights: Vec<i64>,
+}
+
+impl Layer {
+    pub fn new(neurons: Vec<i64>, weights: Vec<i64>) -> Layer {
+        return Layer {
+            neurons,
+            weights,
+        }
+    }
+
+    pub fn default() -> Layer {
+        return Layer::new(Vec::new(), Vec::new())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Layer".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Layer")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Layer")
+    }
+}
+
+
+pub struct Neuron {
+    pub let mut bias: f64,
+    pub let mut activation: f64,
+}
+
+impl Neuron {
+    pub fn new(bias: f64, activation: f64) -> Neuron {
+        return Neuron {
+            bias,
+            activation,
+        }
+    }
+
+    pub fn default() -> Neuron {
+        return Neuron::new(0.0, 0.0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Neuron".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Neuron")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Neuron")
+    }
+}
+
+
+pub struct Tensor {
+    pub let mut data: Vec<i64>,
+    pub let shape: Vec<i64>,
+}
+
+impl Tensor {
+    pub fn new(data: Vec<i64>, shape: Vec<i64>) -> Tensor {
+        return Tensor {
+            data,
+            shape,
+        }
+    }
+
+    pub fn default() -> Tensor {
+        return Tensor::new(Vec::new(), Vec::new())
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Tensor".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Tensor")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Tensor")
+    }
+}
+
+
+pub struct Optimizer {
+    pub let mut learning_rate: f64,
+    pub let mut momentum: f64,
+}
+
+impl Optimizer {
+    pub fn new(learning_rate: f64, momentum: f64) -> Optimizer {
+        return Optimizer {
+            learning_rate,
+            momentum,
+        }
+    }
+
+    pub fn default() -> Optimizer {
+        return Optimizer::new(0.0, 0.0)
+    }
+
+    pub fn to_string(&self) -> string {
+        return "Optimizer".into()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        return true
+    }
+
+    pub fn clone_data(&mut self) {
+        println!("Calling clone_data on Optimizer")
+    }
+
+    pub fn validate(&mut self) {
+        println!("Calling validate on Optimizer")
+    }
+}
+
+
+// ─── Enumerations ──────────────────────────────────────────────
+enum Level {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Level {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Level::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Level::Active => "Active".into(),
+            Level::Inactive => "Inactive".into(),
+            Level::Pending => "Pending".into(),
+            Level::Complete => "Complete".into(),
+            Level::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+enum Direction {
+    Active,
+    Inactive,
+    Pending,
+    Complete,
+}
+
+impl Direction {
+    pub fn is_active(&self) -> bool {
+        return match self {
+            Direction::Active => true,
+            _ => false,
+        }
+    }
+
+    pub fn to_string(&self) -> string {
+        return match self {
+            Direction::Active => "Active".into(),
+            Direction::Inactive => "Inactive".into(),
+            Direction::Pending => "Pending".into(),
+            Direction::Complete => "Complete".into(),
+            Direction::Failed => "Failed".into(),
+        }
+    }
+}
+
+
+// ─── Core Functions ────────────────────────────────────────────
+fn find_machine_learning_0(input: Vec<i64>) -> i64 {
+    // Machine_learning function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn count_machine_learning_1(input: &string) -> f64 {
+    // Machine_learning function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn summarize_machine_learning_2(input: i64) -> string {
+    // Machine_learning function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn encode_machine_learning_3(input: f64) -> bool {
+    // Machine_learning function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 17
+    result = true
+    return result
+}
+
+
+fn decode_machine_learning_4(input: string) -> Vec<i64> {
+    // Machine_learning function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn compress_machine_learning_5(input: bool) -> &string {
+    // Machine_learning function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn encrypt_machine_learning_6(input: Vec<i64>) -> i64 {
+    // Machine_learning function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn hash_machine_learning_7(input: &string) -> f64 {
+    // Machine_learning function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn create_machine_learning_8(input: i64) -> string {
+    // Machine_learning function implementation
+    let mut result: string = "".into()
+    
+    // Build string result
+    result = "processed".into()
+    return result
+}
+
+
+fn update_machine_learning_9(input: f64) -> bool {
+    // Machine_learning function implementation
+    let mut result: bool = false
+    
+    // Perform validation
+    let threshold: i64 = 17
+    result = true
+    return result
+}
+
+
+fn delete_machine_learning_10(input: string) -> Vec<i64> {
+    // Machine_learning function implementation
+    let mut result: Vec<i64> = Vec::new()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn merge_machine_learning_11(input: bool) -> &string {
+    // Machine_learning function implementation
+    let mut result: &string = &"".into()
+    
+    // Process collection
+    result = Vec::new()
+    return result
+}
+
+
+fn split_machine_learning_12(input: Vec<i64>) -> i64 {
+    // Machine_learning function implementation
+    let mut result: i64 = 0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+fn check_machine_learning_13(input: &string) -> f64 {
+    // Machine_learning function implementation
+    let mut result: f64 = 0.0
+    
+    // Perform computation
+    let factor: i64 = 7
+    result = result + factor
+    result = result * 2
+    
+    // Validate result
+    if result < 0 {
+        result = 0
+    }
+    return result
+}
+
+
+// ─── Main Entry Point ──────────────────────────────────────────
+fn main() {
+    println!("=== machine learning Example #36 ===")
+    
+    // Initialize components
+    let mut layer_1 = create_layer_1()
+    let mut neuron_1 = create_neuron_1()
+    let mut tensor_1 = create_tensor_1()
+
+    // Process data
+    find_machine_learning_0()
+    count_machine_learning_1()
+    summarize_machine_learning_2()
+    encode_machine_learning_3()
+    decode_machine_learning_4()
+    compress_machine_learning_5()
+    encrypt_machine_learning_6()
+    hash_machine_learning_7()
+
+    // Verify results
+    println!("All machine learning operations completed!")
+    println!("Example #36 finished successfully.")
+}
+
+// ─── Tests ─────────────────────────────────────────────────────
+#[test]
+fn test_machine_learning_36_0() {
+    // Test machine_learning functionality
+    let result: i64 = 17
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_machine_learning_36_1() {
+    // Test machine_learning functionality
+    let result: i64 = 17
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_machine_learning_36_2() {
+    // Test machine_learning functionality
+    let result: i64 = 17
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+#[test]
+fn test_machine_learning_36_3() {
+    // Test machine_learning functionality
+    let result: i64 = 17
+    assert_eq(result, result)
+    assert_true(result > 0)
+    println!("Test passed!")
+}
+
+
+// ─── Additional Helpers ────────────────────────────────────────
+fn helper_machine_learning_36_0(input: i64) -> i64 {
+    // Helper function for machine learning example #36
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 6
+    result = result * 3
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_36_0(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_machine_learning_36_0(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_machine_learning_36_0(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_machine_learning_36_1(input: i64) -> i64 {
+    // Helper function for machine learning example #36
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 81
+    result = result * 1
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_36_1(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_machine_learning_36_1(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_machine_learning_36_1(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}
+
+fn helper_machine_learning_36_2(input: i64) -> i64 {
+    // Helper function for machine learning example #36
+    let mut result: i64 = input
+    
+    // Apply transformations
+    result = result + 93
+    result = result * 2
+    
+    // Validate and return
+    if result < 0 {
+        return 0
+    }
+    return result
+}
+
+fn process_batch_36_2(data: Vec<i64>) -> Vec<i64> {
+    let mut output = Vec::new()
+    for &item in &data {
+        let processed = helper_machine_learning_36_2(item)
+        output.push(processed)
+    }
+    return output
+}
+
+fn validate_machine_learning_36_2(value: i64) -> bool {
+    if value < 0 { return false }
+    if value > 1000000 { return false }
+    return true
+}

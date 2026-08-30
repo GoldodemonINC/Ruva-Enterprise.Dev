@@ -1,0 +1,7 @@
+fn main() {
+    let a = true
+    let b = false
+    println!("AND: {}", a && b)
+    println!("OR: {}", a || b)
+    println!("NOT: {}", !a)
+}

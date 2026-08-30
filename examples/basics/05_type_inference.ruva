@@ -1,0 +1,7 @@
+fn main() {
+    let x = 42          // inferred as i64
+    let y = 3.14        // inferred as f64
+    let z = "hello"     // inferred as string
+    let b = true        // inferred as bool
+    println!("x={}, y={}, z={}, b={}", x, y, z, b)
+}

@@ -1,0 +1,7 @@
+// Example: Systems Programming #1
+// This example demonstrates systems programming concepts in Ruva
+
+fn main() {
+    println!("Example: Systems Programming #1")
+    println!("Ruva makes systems programming safe and fast")
+}

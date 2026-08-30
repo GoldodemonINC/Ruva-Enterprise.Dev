@@ -1,0 +1,414 @@
+// ─── Serialization Module Demo ───────────────────────────────────────────
+// Demonstrates JSON, TOML, YAML parsing and serialization, format detection,
+// encoding/decoding, schema validation, and conversion utilities.
+
+import ruva::serialization
+
+fn main() {
+    println!("=== Ruva Serialization Module Demo ===")
+    println!("")
+
+    // ─── 1. Format Enum ────────────────────────────────────────────
+
+    println!("--- 1. Format Enum ---")
+
+    let json_fmt = Format::JSON
+    let toml_fmt = Format::TOML
+    let yaml_fmt = Format::YAML
+
+    println!("JSON extension: {}", json_fmt.extension())
+    println!("TOML extension: {}", toml_fmt.extension())
+    println!("YAML extension: {}", yaml_fmt.extension())
+
+    println!("JSON mime: {}", json_fmt.mime_type())
+    println!("TOML mime: {}", toml_fmt.mime_type())
+    println!("YAML mime: {}", yaml_fmt.mime_type())
+
+    println!("JSON name: {}", json_fmt.to_string())
+
+    // Format detection from extension
+    let detected_json = Format::from_extension("json".into())
+    match detected_json {
+        Option::Some(f) => println!("Detected from .json: {}", f.to_string()),
+        Option::None => println!("Not detected"),
+    }
+
+    let detected_yaml = Format::from_extension("yml".into())
+    match detected_yaml {
+        Option::Some(f) => println!("Detected from .yml: {}", f.to_string()),
+        Option::None => println!("Not detected"),
+    }
+
+    println!("")
+
+    // ─── 2. JSON Value Types ───────────────────────────────────────
+
+    println!("--- 2. JSON Value Types ---")
+
+    let json_null = JsonValue::Null
+    let json_bool = JsonValue::Bool(true)
+    let json_int = JsonValue::Int(42)
+    let json_float = JsonValue::Float(3.14)
+    let json_str = JsonValue::Str("hello".into())
+    let json_arr = JsonValue::Array(Vec::new())
+    let json_obj = JsonValue::Object(Vec::new())
+
+    println!("Null is_null: {}", json_null.is_null())
+    println!("Bool is_bool: {}", json_bool.is_bool())
+    println!("Int is_number: {}", json_int.is_number())
+    println!("Float is_number: {}", json_float.is_number())
+    println!("Str is_string: {}", json_str.is_string())
+    println!("Array is_array: {}", json_arr.is_array())
+    println!("Object is_object: {}", json_obj.is_object())
+
+    println!("Bool as_bool: {}", json_bool.as_bool())
+    println!("Int as_int: {}", json_int.as_int())
+    println!("Float as_float: {}", json_float.as_float())
+    println!("Str as_string: {}", json_str.as_string())
+
+    println!("")
+
+    // ─── 3. TOML Value Types ───────────────────────────────────────
+
+    println!("--- 3. TOML Value Types ---")
+
+    let toml_bool = TomlValue::Bool(true)
+    let toml_int = TomlValue::Int(100)
+    let toml_float = TomlValue::Float(2.718)
+    let toml_str = TomlValue::Str("world".into())
+    let toml_dt = TomlValue::Datetime("2024-01-01T00:00:00Z".into())
+    let toml_arr = TomlValue::Array(Vec::new())
+    let toml_tbl = TomlValue::Table(Vec::new())
+
+    println!("Bool is_bool: {}", toml_bool.is_bool())
+    println!("Int is_int: {}", toml_int.is_int())
+    println!("Float is_float: {}", toml_float.is_float())
+    println!("Str is_string: {}", toml_str.is_string())
+    println!("Datetime is_datetime: {}", toml_dt.is_datetime())
+    println!("Array is_array: {}", toml_arr.is_array())
+    println!("Table is_table: {}", toml_tbl.is_table())
+
+    println!("")
+
+    // ─── 4. YAML Value Types ───────────────────────────────────────
+
+    println!("--- 4. YAML Value Types ---")
+
+    let yaml_null = YamlValue::Null
+    let yaml_bool = YamlValue::Bool(false)
+    let yaml_int = YamlValue::Int(-5)
+    let yaml_float = YamlValue::Float(1.414)
+    let yaml_str = YamlValue::Str("yaml".into())
+    let yaml_seq = YamlValue::Seq(Vec::new())
+    let yaml_map = YamlValue::Map(Vec::new())
+
+    println!("Null is_null: {}", yaml_null.is_null())
+    println!("Bool is_bool: {}", yaml_bool.is_bool())
+    println!("Int is_number: {}", yaml_int.is_number())
+    println!("Float is_number: {}", yaml_float.is_number())
+    println!("Str is_string: {}", yaml_str.is_string())
+    println!("Seq is_sequence: {}", yaml_seq.is_sequence())
+    println!("Map is_mapping: {}", yaml_map.is_mapping())
+
+    println!("")
+
+    // ─── 5. Serializer Configs ─────────────────────────────────────
+
+    println!("--- 5. Serializer Configs ---")
+
+    let json_config = SerializerConfig::default_json()
+    println!("JSON config: pretty={}, indent={}, sort_keys={}", json_config.is_pretty(), json_config.get_indent(), json_config.should_sort_keys())
+
+    let toml_config = SerializerConfig::default_toml()
+    println!("TOML config: pretty={}, indent={}", toml_config.is_pretty(), toml_config.get_indent())
+
+    let yaml_config = SerializerConfig::default_yaml()
+    println!("YAML config: pretty={}, indent={}", yaml_config.is_pretty(), yaml_config.get_indent())
+
+    let compact = SerializerConfig::compact_json()
+    println!("Compact JSON: pretty={}", compact.is_pretty())
+
+    println!("")
+
+    // ─── 6. Serializer Results ─────────────────────────────────────
+
+    println!("--- 6. Serializer Results ---")
+
+    let ok_result = SerializerResult::success("{\"key\":\"value\"}".into(), Format::JSON, 15)
+    println!("OK result: is_ok={}, bytes={}", ok_result.is_ok(), ok_result.get_bytes_written())
+    println!("OK output: {}", ok_result.get_output())
+
+    let err_result = SerializerResult::failure("parse error".into(), Format::JSON)
+    println!("Error result: is_ok={}, error={}", err_result.is_ok(), err_result.get_error())
+
+    println!("")
+
+    // ─── 7. Deserializer Configs ───────────────────────────────────
+
+    println!("--- 7. Deserializer Configs ---")
+
+    let json_de = DeserializerConfig::default_json()
+    println!("JSON deserializer: strict={}, comments={}", json_de.is_strict(), json_de.allows_comments())
+
+    let lenient = DeserializerConfig::lenient_json()
+    println!("Lenient JSON: strict={}, trailing_commas={}", lenient.is_strict(), lenient.allow_trailing_commas)
+
+    let yaml_de = DeserializerConfig::default_yaml()
+    println!("YAML deserializer: strict={}, comments={}", yaml_de.is_strict(), yaml_de.allows_comments())
+
+    println!("")
+
+    // ─── 8. Deserializer Results ───────────────────────────────────
+
+    println!("--- 8. Deserializer Results ---")
+
+    let de_ok = DeserializerResult::success(json_obj, Format::JSON, 100)
+    println!("De OK: is_ok={}, bytes={}", de_ok.is_ok(), de_ok.get_bytes_read())
+
+    let de_err = DeserializerResult::failure("invalid JSON".into(), Format::JSON)
+    println!("De error: is_ok={}, error={}", de_err.is_ok(), de_err.get_error())
+
+    println!("")
+
+    // ─── 9. Schema Validation ──────────────────────────────────────
+
+    println!("--- 9. Schema Validation ---")
+
+    let mut schema = Schema::new("User".into())
+    schema.add_field("name".into(), "string".into(), true)
+    schema.add_field("age".into(), "integer".into(), true)
+    schema.add_field("email".into(), "string".into(), false)
+    schema.add_field_with_default("active".into(), "boolean".into(), false, "true".into())
+
+    println!("Schema: {} v{}", schema.get_name(), schema.get_version())
+    println!("Field count: {}", schema.get_field_count())
+
+    let field = SchemaField::new("username".into(), "string".into())
+    println!("Field: {} (type: {}, required: {})", field.get_name(), field.get_type(), field.is_required())
+
+    let optional_field = SchemaField::optional("bio".into(), "string".into())
+    println!("Optional field: {} (required: {})", optional_field.get_name(), optional_field.is_required())
+
+    let validation = schema.validate(json_obj)
+    match validation {
+        Result::Ok(_) => println!("Validation: OK"),
+        Result::Err(e) => println!("Validation error: {}", e),
+    }
+
+    println!("")
+
+    // ─── 10. Format Detection ──────────────────────────────────────
+
+    println!("--- 10. Format Detection ---")
+
+    let detected = detect_format("{}".into())
+    println!("Detected from content: {}", detected.to_string())
+
+    let path_fmt = detect_format_from_path("config.toml".into())
+    match path_fmt {
+        Option::Some(f) => println!("Detected from path: {}", f.to_string()),
+        Option::None => println!("Not detected from path"),
+    }
+
+    let ext_fmt = detect_format_from_extension("yaml".into())
+    match ext_fmt {
+        Option::Some(f) => println!("Detected from extension: {}", f.to_string()),
+        Option::None => println!("Not detected from extension"),
+    }
+
+    println!("")
+
+    // ─── 11. Format Conversion ─────────────────────────────────────
+
+    println!("--- 11. Format Conversion ---")
+
+    let convert_result = convert("{}".into(), Format::JSON, Format::YAML)
+    println!("Convert JSON->YAML: success={}", convert_result.is_ok())
+
+    let json_to_toml = convert_json_to_toml("{\"key\":\"value\"}".into())
+    println!("JSON->TOML: success={}", json_to_toml.is_ok())
+
+    let yaml_to_json = convert_yaml_to_json("key: value".into())
+    println!("YAML->JSON: success={}", yaml_to_json.is_ok())
+
+    println!("")
+
+    // ─── 12. Validation Functions ──────────────────────────────────
+
+    println!("--- 12. Validation Functions ---")
+
+    let json_val = validate_json("{}".into())
+    match json_val {
+        Result::Ok(_) => println!("JSON validation: OK"),
+        Result::Err(e) => println!("JSON validation error: {}", e),
+    }
+
+    let toml_val = validate_toml("key = \"value\"".into())
+    match toml_val {
+        Result::Ok(_) => println!("TOML validation: OK"),
+        Result::Err(e) => println!("TOML validation error: {}", e),
+    }
+
+    let yaml_val = validate_yaml("key: value".into())
+    match yaml_val {
+        Result::Ok(_) => println!("YAML validation: OK"),
+        Result::Err(e) => println!("YAML validation error: {}", e),
+    }
+
+    println!("")
+
+    // ─── 13. Query / Path Functions ────────────────────────────────
+
+    println!("--- 13. Query / Path Functions ---")
+
+    let query_result = query(json_obj, "users.0.name".into())
+    match query_result {
+        Option::Some(v) => println!("Query result: {}", v.as_string()),
+        Option::None => println!("Query: no result"),
+    }
+
+    let has = has_path(json_obj, "config.debug".into())
+    println!("Has path: {}", has)
+
+    println!("")
+
+    // ─── 14. Merge / Diff Functions ────────────────────────────────
+
+    println!("--- 14. Merge / Diff Functions ---")
+
+    let merged = merge_json(json_obj, json_obj)
+    println!("Merge: done")
+
+    let patched = patch(json_obj, json_obj)
+    println!("Patch: done")
+
+    let diffs = diff(json_obj, json_obj)
+    println!("Diff count: {}", diffs.len())
+
+    println!("")
+
+    // ─── 15. Transform Functions ───────────────────────────────────
+
+    println!("--- 15. Transform Functions ---")
+
+    let flattened = flatten(json_obj)
+    println!("Flatten: done")
+
+    let unflattened = unflatten(json_obj)
+    println!("Unflatten: done")
+
+    let selected = select_keys(json_obj, Vec::new())
+    println!("Select keys: done")
+
+    let omitted = omit_keys(json_obj, Vec::new())
+    println!("Omit keys: done")
+
+    println!("")
+
+    // ─── 16. JSON Builder ──────────────────────────────────────────
+
+    println!("--- 16. JSON Builder ---")
+
+    let mut builder = JsonBuilder::new()
+    builder.begin_object()
+    builder.add_key("name".into())
+    builder.add_string_value("Ruva".into())
+    builder.add_key("version".into())
+    builder.add_int_value(1)
+    builder.add_key("active".into())
+    builder.add_bool_value(true)
+    builder.end_object()
+    let json_output = builder.build()
+    println!("JSON builder output: {}", json_output)
+
+    println!("")
+
+    // ─── 17. TOML Builder ──────────────────────────────────────────
+
+    println!("--- 17. TOML Builder ---")
+
+    let mut toml_builder = TomlBuilder::new()
+    toml_builder.add_section("package".into())
+    toml_builder.add_key_value("name".into(), "ruva".into())
+    toml_builder.add_key_value("version".into(), "0.1.0".into())
+    toml_builder.add_section("dependencies".into())
+    toml_builder.add_key_value("serde".into(), "1.0".into())
+    let toml_output = toml_builder.build()
+    println!("TOML builder output: {}", toml_output)
+
+    println!("")
+
+    // ─── 18. YAML Builder ──────────────────────────────────────────
+
+    println!("--- 18. YAML Builder ---")
+
+    let mut yaml_builder = YamlBuilder::new()
+    yaml_builder.add_document_start()
+    yaml_builder.add_mapping_start()
+    yaml_builder.add_key_value("name".into(), "ruva".into())
+    yaml_builder.add_key_value("version".into(), "0.1.0".into())
+    yaml_builder.add_mapping_end()
+    yaml_builder.add_document_end()
+    let yaml_output = yaml_builder.build()
+    println!("YAML builder output: {}", yaml_output)
+
+    println!("")
+
+    // ─── 19. Encoding Functions ────────────────────────────────────
+
+    println!("--- 19. Encoding Functions ---")
+
+    let enc_json = encode_json(json_int)
+    println!("Encode JSON: is_ok={}", enc_json.is_ok())
+
+    let enc_pretty = encode_json_pretty(json_int, 4)
+    println!("Encode JSON pretty: is_ok={}", enc_pretty.is_ok())
+
+    let enc_toml = encode_toml(toml_int)
+    println!("Encode TOML: is_ok={}", enc_toml.is_ok())
+
+    let enc_yaml = encode_yaml(yaml_int)
+    println!("Encode YAML: is_ok={}", enc_yaml.is_ok())
+
+    let encoded = encode_to_string(json_int, Format::JSON)
+    println!("Encode to string: \"{}\"", encoded)
+
+    println!("")
+
+    // ─── 20. Decoding Functions ────────────────────────────────────
+
+    println!("--- 20. Decoding Functions ---")
+
+    let dec_json = decode_json("{}".into())
+    println!("Decode JSON: is_ok={}", dec_json.is_ok())
+
+    let dec_toml = decode_toml("key = \"value\"".into())
+    println!("Decode TOML: is_ok={}", dec_toml.is_ok())
+
+    let dec_yaml = decode_yaml("key: value".into())
+    println!("Decode YAML: is_ok={}", dec_yaml.is_ok())
+
+    println!("")
+
+    // ─── 21. Utility Functions ─────────────────────────────────────
+
+    println!("--- 21. Utility Functions ---")
+
+    let escaped = escape_json_string("hello \"world\"".into())
+    println!("Escaped: \"{}\"", escaped)
+
+    let yaml_esc = escape_yaml_string("hello: world".into())
+    println!("YAML escaped: \"{}\"", yaml_esc)
+
+    let pretty = pretty_print_json("{\"a\":1,\"b\":2}".into())
+    println!("Pretty print: done")
+
+    let minified = minify_json("{ \"a\" : 1 , \"b\" : 2 }".into())
+    println!("Minified: \"{}\"", minified)
+
+    let sorted = sort_json_keys("{}".into())
+    println!("Sorted keys: done")
+
+    println!("")
+    println!("=== All Serialization Module Features Demonstrated ===")
+}

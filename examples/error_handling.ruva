@@ -1,0 +1,149 @@
+// Error handling — Result, Option, try/catch, custom errors
+
+enum app_error {
+    NotFound(string),
+    Validation(string),
+    Internal(string),
+}
+
+class user_repository {
+    pub let mut user_names: Vec<string>
+    pub let mut user_emails: Vec<string>
+
+    pub fn new() -> Self {
+        return Self { user_names: vec![], user_emails: vec![] }
+    }
+
+    pub fn add_user(&mut self, name: string, email: string) -> Result<(), app_error> {
+        if name.is_empty() {
+            return Err(app_error::Validation("Name cannot be empty".into()))
+        }
+        self.user_names.push(name)
+        self.user_emails.push(email)
+        return Ok(())
+    }
+
+    pub fn find_user_name(&self, name: string) -> Option<string> {
+        let mut i = 0
+        while i < self.user_names.len() {
+            if self.user_names[i] == name {
+                return Some(self.user_emails[i].clone())
+            }
+            i = i + 1
+        }
+        return None
+    }
+
+    pub fn delete_user(&mut self, name: string) -> Result<(), app_error> {
+        let initial_len = self.user_names.len()
+        let mut new_names = vec![]
+        let mut new_emails = vec![]
+        let mut i = 0
+        while i < self.user_names.len() {
+            if self.user_names[i] != name {
+                new_names.push(self.user_names[i].clone())
+                new_emails.push(self.user_emails[i].clone())
+            }
+            i = i + 1
+        }
+        self.user_names = new_names
+        self.user_emails = new_emails
+        if self.user_names.len() == initial_len {
+            return Err(app_error::NotFound(format!("User '{}' not found", name)))
+        }
+        return Ok(())
+    }
+}
+
+class config {
+    pub let mut keys: Vec<string>
+    pub let mut values: Vec<string>
+
+    pub fn new() -> Self {
+        return Self { keys: vec![], values: vec![] }
+    }
+
+    pub fn set(&mut self, key: string, value: string) {
+        self.keys.push(key)
+        self.values.push(value)
+    }
+
+    pub fn get(&self, key: string) -> Option<string> {
+        let mut i = 0
+        while i < self.keys.len() {
+            if self.keys[i] == key {
+                return Some(self.values[i].clone())
+            }
+            i = i + 1
+        }
+        return None
+    }
+
+    pub fn get_or_default(&self, key: string, default_val: string) -> string {
+        let result = self.get(key)
+        match result {
+            Some(value) => value,
+            None => default_val,
+        }
+    }
+}
+
+class file_processor {
+    pub fn process_file(path: string) -> Result<string, app_error> {
+        try {
+            let content = file_processor::read_file(path.clone())?
+            let processed = file_processor::transform(content)?
+            return Ok(processed)
+        } catch (e) {
+            println!("Error processing {}: {}", path, e)
+            return Err(app_error::Internal(e))
+        }
+    }
+
+    fn read_file(path: string) -> Result<string, app_error> {
+        if path.is_empty() {
+            return Err(app_error::Validation("Path cannot be empty".into()))
+        }
+        return Ok("file content here".into())
+    }
+
+    fn transform(content: string) -> Result<string, app_error> {
+        if content.is_empty() {
+            return Err(app_error::Validation("Empty content".into()))
+        }
+        return Ok(format!("PROCESSED: {}", content))
+    }
+}
+
+fn main() {
+    let mut repo = user_repository::new()
+
+    match repo.add_user("alice".into(), "alice@example.com".into()) {
+        Ok(()) => println!("Added alice"),
+        Err(e) => println!("Error: {:?}", e),
+    }
+
+    match repo.find_user_name("alice".into()) {
+        Some(email) => println!("Found alice: {}", email),
+        None => println!("alice not found"),
+    }
+
+    match repo.find_user_name("bob".into()) {
+        Some(email) => println!("Found bob: {}", email),
+        None => println!("Expected: bob not found"),
+    }
+
+    let mut cfg = config::new()
+    cfg.set("host".into(), "localhost".into())
+    cfg.set("port".into(), "8080".into())
+
+    let host = cfg.get_or_default("host".into(), "0.0.0.0".into())
+    let port = cfg.get_or_default("port".into(), "3000".into())
+    println!("Server: {}:{}", host, port)
+
+    let processor = file_processor {}
+    match processor.process_file("data.txt".into()) {
+        Ok(result) => println!("Success: {}", result),
+        Err(e) => println!("Error: {:?}", e),
+    }
+}

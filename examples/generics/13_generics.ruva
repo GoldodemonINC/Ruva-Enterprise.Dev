@@ -1,0 +1,7 @@
+// Example: Generics #13
+// This example demonstrates generics concepts in Ruva
+
+fn main() {
+    println!("Example: Generics #13")
+    println!("Ruva makes generics safe and fast")
+}

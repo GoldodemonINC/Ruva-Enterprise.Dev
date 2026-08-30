@@ -1,0 +1,25 @@
+enum Weekday {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday,
+}
+
+fn is_weekend(day: &Weekday) -> bool {
+    match day {
+        Weekday::Saturday | Weekday::Sunday => true,
+        _ => false,
+    }
+}
+
+fn main() {
+    let today = Weekday::Wednesday
+    if is_weekend(&today) {
+        println!("It's the weekend!")
+    } else {
+        println!("It's a weekday")
+    }
+}
