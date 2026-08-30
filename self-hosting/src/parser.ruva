@@ -251,18 +251,12 @@ impl Parser {
     fn parse_block(&mut self) -> Block {
         self.expect_kind(TokenKind::LBrace)
         let mut stmts = Vec::new()
-        let mut tail_expr = None
         while !self.at(TokenKind::RBrace) && !self.at(TokenKind::Eof) {
             let stmt = self.parse_stmt()
-            match stmt {
-                Stmt::Expr(e) if !self.last_expr_had_semicolon && self.at(TokenKind::RBrace) => {
-                    tail_expr = Some(Box::new(e))
-                }
-                stmt => stmts.push(stmt),
-            }
+            stmts.push(stmt)
         }
         self.expect_kind(TokenKind::RBrace)
-        return Block { stmts: stmts, expr: tail_expr }
+        return Block { stmts: stmts, expr: None }
     }
 
 
@@ -273,8 +267,17 @@ impl Parser {
         if self.at(TokenKind::KwFor) { return self.parse_for() }
         if self.at(TokenKind::KwLoop) { return self.parse_loop_stmt() }
         if self.at(TokenKind::KwReturn) { return self.parse_return() }
-        if self.at(TokenKind::KwBreak) { self.advance(); let v = self.parse_break_value(); if self.at(TokenKind::Semicolon) { self.advance() }; return Stmt::Break(v) }
-        if self.at(TokenKind::KwContinue) { self.advance(); if self.at(TokenKind::Semicolon) { self.advance() }; return Stmt::Continue }
+        if self.at(TokenKind::KwBreak) {
+            self.advance()
+            let v = self.parse_break_value()
+            if self.at(TokenKind::Semicolon) { self.advance() }
+            return Stmt::Break(v)
+        }
+        if self.at(TokenKind::KwContinue) {
+            self.advance()
+            if self.at(TokenKind::Semicolon) { self.advance() }
+            return Stmt::Continue
+        }
         if self.at(TokenKind::KwMatch) { return self.parse_match_stmt() }
         if self.at(TokenKind::KwUnsafe) { self.advance(); return Stmt::Unsafe(self.parse_block()) }
         if self.at(TokenKind::LBrace) { return Stmt::Block(self.parse_block()) }
@@ -475,6 +478,14 @@ impl Parser {
                 let index = self.parse_expr()
                 self.expect_kind(TokenKind::RBracket)
                 expr = Expr::Index { object: Box::new(expr), index: Box::new(index) }
+            } else if self.at(TokenKind::DoubleColon) {
+                self.advance()
+                let seg = self.advance().value
+                match expr {
+                    Expr::Ident(name) => { expr = Expr::Path(vec![name, seg]) }
+                    Expr::Path(mut v) => { v.push(seg); expr = Expr::Path(v) }
+                    _ => { expr = Expr::Path(vec![seg]) }
+                }
             } else if self.at(TokenKind::As) {
                 self.advance()
                 let ty = self.parse_type()

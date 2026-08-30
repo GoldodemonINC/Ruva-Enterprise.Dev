@@ -69,8 +69,6 @@ pub enum Token {
 
     Comptime,
 
-    Decorator,
-
 
     Plus,
 

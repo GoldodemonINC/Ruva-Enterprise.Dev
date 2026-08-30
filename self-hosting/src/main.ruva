@@ -1,7 +1,14 @@
+mod ast
+mod lexer
+mod parser
+
 fn main() {
     let source = "fn add(a: i32, b: i32) -> i32 { return a + b }"
-    let mut parser = Parser::new(source)
-    let program = parser.parse_program()
+    let mut lex = Lexer::new(source)
+    let tokens = lex.tokenize()
+    println!("Lexed {} tokens", tokens.len())
+
+    let mut pars = Parser::new(source)
+    let program = pars.parse_program()
     println!("Parsed {} items", program.items.len())
 }
-

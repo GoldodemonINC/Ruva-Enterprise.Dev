@@ -36,11 +36,6 @@ pub fn info(msg: &str) -> String {
     format!("{}⟳{} {}", CYAN, RESET, msg)
 }
 
-#[allow(dead_code)]
-pub fn header(msg: &str) -> String {
-    format!("{}{}{}{}", BOLD, msg, RESET, "")
-}
-
 pub fn dim(msg: &str) -> String {
     format!("{}{}{}{}", DIM, msg, RESET, "")
 }

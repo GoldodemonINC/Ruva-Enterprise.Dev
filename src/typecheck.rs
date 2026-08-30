@@ -40,8 +40,7 @@ type TypeVar = usize;
 
 
 struct Scope {
-
-    bindings: std::collections::HashMap<String, (Ty, bool)>,
+    bindings: std::collections::HashMap<String, (Ty, bool, bool)>,
 }
 
 pub struct TypeChecker {
@@ -57,12 +56,20 @@ pub struct TypeChecker {
     current_col: usize,
     pub warning_count: usize,
     pub error_count: usize,
+
+    /// Maps type variable IDs to their resolved types.
+    type_var_values: std::collections::HashMap<usize, Option<Ty>>,
+    /// Counter for generating fresh type variable IDs.
+    next_type_var: usize,
 }
 
 #[derive(Clone)]
 struct FunctionSig {
     params: Vec<(String, Ty)>,
     return_type: Option<Ty>,
+    /// Generic parameter names and their corresponding type variable IDs.
+    /// E.g. for `fn id<T>(x: T) -> T`, this would be [("T", 0)].
+    generic_params: Vec<(String, usize)>,
 }
 
 #[derive(Debug, Clone)]
@@ -104,11 +111,13 @@ impl TypeChecker {
             current_col: 0,
             warning_count: 0,
             error_count: 0,
+            type_var_values: std::collections::HashMap::new(),
+            next_type_var: 0,
         };
 
 
         for b in &["Some", "None", "Ok", "Err", "Self"] {
-            checker.define_var(b.to_string(), Ty::Named(b.to_string()), 0);
+            checker.define_var(b.to_string(), Ty::Named(b.to_string()), false, 0);
         }
         checker
     }
@@ -136,37 +145,53 @@ impl TypeChecker {
     fn register_item(&mut self, item: &Item) {
         match item {
             Item::Function(f) => {
+                // Create type variables for generic parameters
+                let mut generic_params = Vec::new();
+                for gp in &f.generics {
+                    let var_id = self.next_type_var;
+                    self.next_type_var += 1;
+                    self.type_var_values.insert(var_id, None);
+                    generic_params.push((gp.name.clone(), var_id));
+                }
+
+                // Build a mapping from generic param names to their type variables
+                let generic_map: std::collections::HashMap<String, Ty> = generic_params
+                    .iter()
+                    .map(|(name, id)| (name.clone(), Ty::Var(*id)))
+                    .collect();
+
                 let params: Vec<(String, Ty)> = f.params.iter().map(|p| {
-                    (p.name.clone(), self.ast_type_to_ty(&p.ty))
+                    let ty = self.ast_type_to_ty_with_generics(&p.ty, &generic_map);
+                    (p.name.clone(), ty)
                 }).collect();
-                let ret_type = f.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                self.functions.insert(f.name.clone(), FunctionSig { params, return_type: ret_type });
-                self.define_var(f.name.clone(), Ty::Named(f.name.clone()), f.span.line);
+                let ret_type = f.return_type.as_ref().map(|t| self.ast_type_to_ty_with_generics(t, &generic_map));
+                self.functions.insert(f.name.clone(), FunctionSig { params, return_type: ret_type, generic_params });
+                self.define_var(f.name.clone(), Ty::Named(f.name.clone()), false, f.span.line);
             }
             Item::Class(c) => {
                 let fields: Vec<(String, Ty)> = c.fields.iter().map(|f| {
                     (f.name.clone(), self.ast_type_to_ty(&f.ty))
                 }).collect();
                 self.struct_fields.insert(c.name.clone(), fields);
-                self.define_var(c.name.clone(), Ty::Named(c.name.clone()), c.span.line);
+                self.define_var(c.name.clone(), Ty::Named(c.name.clone()), false, c.span.line);
 
                 for m in &c.methods {
                     let params: Vec<(String, Ty)> = m.params.iter().map(|p| {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
-                    let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret, generic_params: vec![] });
                 }
             }
+
             Item::Struct(s) => {
                 let fields: Vec<(String, Ty)> = s.fields.iter().map(|f| {
                     (f.name.clone(), self.ast_type_to_ty(&f.ty))
                 }).collect();
                 self.struct_fields.insert(s.name.clone(), fields);
-                self.define_var(s.name.clone(), Ty::Named(s.name.clone()), s.span.line);
+                self.define_var(s.name.clone(), Ty::Named(s.name.clone()), false, s.span.line);
             }
             Item::Enum(e) => {
-                self.define_var(e.name.clone(), Ty::Named(e.name.clone()), e.span.line);
+                self.define_var(e.name.clone(), Ty::Named(e.name.clone()), false, e.span.line);
 
                 for v in &e.variants {
                     let ret = Ty::Generic(e.name.clone(), vec![]);
@@ -175,6 +200,7 @@ impl TypeChecker {
                             (format!("__{}_{}", v.name, i), self.ast_type_to_ty(t))
                         }).collect(),
                         return_type: Some(ret),
+                        generic_params: vec![],
                     });
                 }
             }
@@ -184,7 +210,7 @@ impl TypeChecker {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
                     let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret, generic_params: vec![] });
                 }
             }
             Item::Trait(t) => {
@@ -193,30 +219,30 @@ impl TypeChecker {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
                     }).collect();
                     let ret = m.return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret });
+                    self.functions.insert(m.name.clone(), FunctionSig { params, return_type: ret, generic_params: vec![] });
                 }
             }
             Item::Use(u) => {
                 if u.wildcard {
                     if let Some(last) = u.path.last() {
-                        self.define_var(last.to_string(), Ty::Named(last.to_string()), 0);
+                        self.define_var(last.to_string(), Ty::Named(last.to_string()), false, 0);
                     }
                 } else if !u.selective.is_empty() {
                     for item in &u.selective {
                         let name = item.alias.as_ref().unwrap_or(&item.name);
-                        self.define_var(name.to_string(), Ty::Inferred, 0);
+                        self.define_var(name.to_string(), Ty::Inferred, false, 0);
                     }
                 } else if let Some(ref alias) = u.alias {
-                    self.define_var(alias.to_string(), Ty::Inferred, 0);
+                    self.define_var(alias.to_string(), Ty::Inferred, false, 0);
                 } else if let Some(last) = u.path.last() {
-                    self.define_var(last.to_string(), Ty::Named(last.to_string()), 0);
+                    self.define_var(last.to_string(), Ty::Named(last.to_string()), false, 0);
                 }
             }
             Item::TypeAlias(ta) => {
-                self.define_var(ta.name.clone(), self.ast_type_to_ty(&ta.ty), 0);
+                self.define_var(ta.name.clone(), self.ast_type_to_ty(&ta.ty), false, 0);
             }
             Item::Module(m) => {
-                self.define_var(m.name.clone(), Ty::Named(m.name.clone()), 0);
+                self.define_var(m.name.clone(), Ty::Named(m.name.clone()), false, 0);
                 if let Some(ref body) = m.body {
                     for inner in body {
                         self.register_item(inner);
@@ -263,7 +289,7 @@ impl TypeChecker {
                                 (p.name.clone(), self.ast_type_to_ty(&p.ty))
                             }).collect();
                             let ret = return_type.as_ref().map(|t| self.ast_type_to_ty(t));
-                            self.functions.insert(name.clone(), FunctionSig { params: ps, return_type: ret });
+                            self.functions.insert(name.clone(), FunctionSig { params: ps, return_type: ret, generic_params: vec![] });
                         }
                         ExternItem::Static { name, ty, is_mut, .. } => {
 
@@ -274,10 +300,10 @@ impl TypeChecker {
                                     0, 0,
                                 );
                             }
-                            self.define_var(name.clone(), self.ast_type_to_ty(ty), 0);
+                            self.define_var(name.clone(), self.ast_type_to_ty(ty), false, 0);
                         }
                         ExternItem::Const { name, ty, .. } => {
-                            self.define_var(name.clone(), self.ast_type_to_ty(ty), 0);
+                            self.define_var(name.clone(), self.ast_type_to_ty(ty), false, 0);
                         }
                     }
                 }
@@ -316,7 +342,7 @@ impl TypeChecker {
                         for p in &method.params {
                             if !matches!(p.ty, Type::SelfType) {
                                 let ty = self.ast_type_to_ty(&p.ty);
-                                self.define_var(p.name.clone(), ty, 0);
+                                self.define_var(p.name.clone(), ty, false, 0);
                             }
                         }
                         self.check_block(body);
@@ -358,7 +384,7 @@ impl TypeChecker {
         for p in &f.params {
             if !matches!(p.ty, Type::SelfType) {
                 let ty = self.ast_type_to_ty(&p.ty);
-                self.define_var(p.name.clone(), ty, f.span.line);
+                self.define_var(p.name.clone(), ty, false, f.span.line);
             }
         }
 
@@ -406,7 +432,7 @@ impl TypeChecker {
 
     fn check_stmt(&mut self, stmt: &Stmt) {
         match stmt {
-            Stmt::Let { pattern, ty, value, .. } => {
+            Stmt::Let { pattern, ty, value, is_mut } => {
                 let val_ty = self.infer_type(value);
                 self.check_expr(value);
 
@@ -430,7 +456,7 @@ impl TypeChecker {
                     if self.is_defined_in_current_scope(&name) {
                         self.warn(format!("Variable '{}' shadows a previous binding", name), 0, 0);
                     }
-                    self.define_var(name, var_ty, 0);
+                    self.define_var(name, var_ty, *is_mut, 0);
                 }
             }
             Stmt::Expr(expr) => {
@@ -486,9 +512,10 @@ impl TypeChecker {
             Stmt::For { pattern, iterable, body } => {
                 self.check_expr(iterable);
                 self.push_scope();
+                let is_mut = matches!(pattern, Pattern::Mut(_));
                 let names = self.pattern_names(pattern);
                 for name in names {
-                    self.define_var(name, Ty::Inferred, 0);
+                    self.define_var(name, Ty::Inferred, is_mut, 0);
                 }
                 self.check_block(body);
                 self.pop_scope();
@@ -507,9 +534,10 @@ impl TypeChecker {
             Stmt::WhileLet { pattern, value, body } => {
                 self.check_expr(value);
                 self.push_scope();
+                let is_mut = matches!(pattern, Pattern::Mut(_));
                 let names = self.pattern_names(pattern);
                 for name in names {
-                    self.define_var(name, Ty::Inferred, 0);
+                    self.define_var(name, Ty::Inferred, is_mut, 0);
                 }
                 self.check_block(body);
                 self.pop_scope();
@@ -529,7 +557,7 @@ impl TypeChecker {
                     self.push_scope();
                     let names = self.pattern_names(&arm.pattern);
                     for name in names {
-                        self.define_var(name, Ty::Inferred, 0);
+                        self.define_var(name, Ty::Inferred, false, 0);
                     }
                     if let Some(ref guard) = arm.guard {
                         self.check_expr(guard);
@@ -541,7 +569,7 @@ impl TypeChecker {
             Stmt::TryCatch { try_body, catch_param, catch_body } => {
                 self.check_block(try_body);
                 self.push_scope();
-                self.define_var(catch_param.to_string(), Ty::Inferred, 0);
+                self.define_var(catch_param.to_string(), Ty::Inferred, false, 0);
                 self.check_block(catch_body);
                 self.pop_scope();
             }
@@ -655,8 +683,29 @@ impl TypeChecker {
                                 0, 0,
                             );
                         } else {
+                            // For generic functions, instantiate fresh type variables
+                            // so each call site gets its own type variable bindings
+                            let (fresh_sig, _fresh_vars) = if !sig.generic_params.is_empty() {
+                                let mut fresh_map = std::collections::HashMap::new();
+                                let mut fresh_vars = Vec::new();
+                                for (gp_name, _old_id) in &sig.generic_params {
+                                    let new_id = self.next_type_var;
+                                    self.next_type_var += 1;
+                                    self.type_var_values.insert(new_id, None);
+                                    fresh_map.insert(gp_name.clone(), Ty::Var(new_id));
+                                    fresh_vars.push(new_id);
+                                }
+                                // Substitute fresh type variables into the signature
+                                let fresh_params: Vec<(String, Ty)> = sig.params.iter().map(|(n, t)| {
+                                    (n.clone(), self.substitute_type_vars(t, &fresh_map))
+                                }).collect();
+                                let fresh_ret = sig.return_type.as_ref().map(|t| self.substitute_type_vars(t, &fresh_map));
+                                (FunctionSig { params: fresh_params, return_type: fresh_ret, generic_params: sig.generic_params.clone() }, fresh_vars)
+                            } else {
+                                (sig.clone(), Vec::new())
+                            };
 
-                            for (i, (param_name, param_ty)) in sig.params.iter().enumerate() {
+                            for (i, (param_name, param_ty)) in fresh_sig.params.iter().enumerate() {
                                 if !self.ty_is_inferred(param_ty) {
                                     let arg_ty = self.infer_type(&args[i]);
                                     if !self.ty_is_inferred(&arg_ty) && !self.types_compatible(param_ty, &arg_ty) {
@@ -712,6 +761,8 @@ impl TypeChecker {
                 if let Expr::Ident(name) = target.as_ref() {
                     if !self.is_defined(name) {
                         self.error(format!("Cannot assign to undefined variable '{}'", name), 0, 0);
+                    } else if !self.is_mutable(name) {
+                        self.error(format!("Cannot assign to immutable variable '{}'", name), 0, 0);
                     } else {
 
                         let target_ty = self.lookup_var_type(name);
@@ -734,6 +785,8 @@ impl TypeChecker {
                 if let Expr::Ident(name) = target.as_ref() {
                     if !self.is_defined(name) {
                         self.error(format!("Cannot assign to undefined variable '{}'", name), 0, 0);
+                    } else if !self.is_mutable(name) {
+                        self.error(format!("Cannot assign to immutable variable '{}'", name), 0, 0);
                     }
                 }
             }
@@ -762,7 +815,7 @@ impl TypeChecker {
                     self.push_scope();
                     let names = self.pattern_names(&arm.pattern);
                     for name in names {
-                        self.define_var(name, Ty::Inferred, 0);
+                        self.define_var(name, Ty::Inferred, false, 0);
                     }
                     if let Some(ref guard) = arm.guard {
                         self.check_expr(guard);
@@ -775,7 +828,7 @@ impl TypeChecker {
                 self.push_scope();
                 for p in params {
                     let ty = p.ty.as_ref().map(|t| self.ast_type_to_ty(t)).unwrap_or(Ty::Inferred);
-                    self.define_var(p.name.clone(), ty, 0);
+                    self.define_var(p.name.clone(), ty, false, 0);
                 }
                 self.check_expr(body);
                 self.pop_scope();
@@ -927,7 +980,7 @@ impl TypeChecker {
 
 
 
-    fn infer_type(&self, expr: &Expr) -> Ty {
+    fn infer_type(&mut self, expr: &Expr) -> Ty {
         match expr {
             Expr::Int(_) => Ty::Primitive("i64".into()),
             Expr::Float(_) => Ty::Primitive("f64".into()),
@@ -971,10 +1024,37 @@ impl TypeChecker {
                 Ty::Reference(Box::new(self.infer_type(expr)), *is_mut)
             }
 
-            Expr::Call { function, args: _ } => {
+            Expr::Call { function, args } => {
                 if let Expr::Ident(name) = function.as_ref() {
-                    if let Some(sig) = self.functions.get(name) {
-                        return sig.return_type.clone().unwrap_or(Ty::Unit);
+                    if let Some(sig) = self.functions.get(name).cloned() {
+                        // For generic functions, instantiate fresh type variables
+                        if !sig.generic_params.is_empty() {
+                            let mut fresh_map = std::collections::HashMap::new();
+                            for (gp_name, _old_id) in &sig.generic_params {
+                                let new_id = self.next_type_var;
+                                self.next_type_var += 1;
+                                self.type_var_values.insert(new_id, None);
+                                fresh_map.insert(gp_name.clone(), Ty::Var(new_id));
+                            }
+                            // Unify argument types with parameter types
+                            let non_self_params: Vec<_> = sig.params.iter()
+                                .filter(|(n, _)| n != "self")
+                                .collect();
+                            for (i, (_pn, pt)) in non_self_params.iter().enumerate() {
+                                if i < args.len() {
+                                    let fresh_pt = self.substitute_type_vars(pt, &fresh_map);
+                                    let arg_ty = self.infer_type(&args[i]);
+                                    if !self.ty_is_inferred(&arg_ty) {
+                                        self.types_compatible(&fresh_pt, &arg_ty);
+                                    }
+                                }
+                            }
+                            // Resolve the return type
+                            let ret = sig.return_type.clone().unwrap_or(Ty::Unit);
+                            let resolved = self.substitute_type_vars(&ret, &fresh_map);
+                            return self.resolve(&resolved);
+                        }
+                        return self.resolve(&sig.return_type.clone().unwrap_or(Ty::Unit));
                     }
                 }
                 Ty::Inferred
@@ -1138,8 +1218,16 @@ impl TypeChecker {
 
 
     fn ast_type_to_ty(&self, ast_ty: &Type) -> Ty {
+        self.ast_type_to_ty_with_generics(ast_ty, &std::collections::HashMap::new())
+    }
+
+    fn ast_type_to_ty_with_generics(&self, ast_ty: &Type, generic_map: &std::collections::HashMap<String, Ty>) -> Ty {
         match ast_ty {
             Type::Name(name) => {
+                // Check if this is a generic parameter (e.g., T in fn id<T>(x: T))
+                if let Some(ty) = generic_map.get(name) {
+                    return ty.clone();
+                }
                 if name == "string" || PRIMITIVE_TYPES.contains(&name.as_str()) {
                     Ty::Primitive(name.clone())
                 } else {
@@ -1148,23 +1236,23 @@ impl TypeChecker {
             }
             Type::Path(parts) => Ty::Named(parts.join("::")),
             Type::Reference { inner, is_mut } => {
-                Ty::Reference(Box::new(self.ast_type_to_ty(inner)), *is_mut)
+                Ty::Reference(Box::new(self.ast_type_to_ty_with_generics(inner, generic_map)), *is_mut)
             }
             Type::RawPointer { inner, is_mut } => {
-                Ty::RawPointer(Box::new(self.ast_type_to_ty(inner)), *is_mut)
+                Ty::RawPointer(Box::new(self.ast_type_to_ty_with_generics(inner, generic_map)), *is_mut)
             }
-            Type::Array { inner, .. } => Ty::Array(Box::new(self.ast_type_to_ty(inner))),
-            Type::Slice(inner) => Ty::Slice(Box::new(self.ast_type_to_ty(inner))),
+            Type::Array { inner, .. } => Ty::Array(Box::new(self.ast_type_to_ty_with_generics(inner, generic_map))),
+            Type::Slice(inner) => Ty::Slice(Box::new(self.ast_type_to_ty_with_generics(inner, generic_map))),
             Type::Tuple(types) => {
-                Ty::Tuple(types.iter().map(|t| self.ast_type_to_ty(t)).collect())
+                Ty::Tuple(types.iter().map(|t| self.ast_type_to_ty_with_generics(t, generic_map)).collect())
             }
             Type::Generic { name, args } => {
-                Ty::Generic(name.clone(), args.iter().map(|a| self.ast_type_to_ty(a)).collect())
+                Ty::Generic(name.clone(), args.iter().map(|a| self.ast_type_to_ty_with_generics(a, generic_map)).collect())
             }
             Type::Function { params, return_type } => {
                 Ty::FnPointer {
-                    params: params.iter().map(|p| self.ast_type_to_ty(p)).collect(),
-                    ret: Box::new(self.ast_type_to_ty(return_type)),
+                    params: params.iter().map(|p| self.ast_type_to_ty_with_generics(p, generic_map)).collect(),
+                    ret: Box::new(self.ast_type_to_ty_with_generics(return_type, generic_map)),
                 }
             }
             Type::Unit => Ty::Unit,
@@ -1206,7 +1294,7 @@ impl TypeChecker {
         }
     }
 
-    fn types_compatible(&self, a: &Ty, b: &Ty) -> bool {
+    fn types_compatible(&mut self, a: &Ty, b: &Ty) -> bool {
 
         let a = self.resolve(a);
         let b = self.resolve(b);
@@ -1219,7 +1307,16 @@ impl TypeChecker {
 
 
         if matches!(&a, Ty::Inferred) || matches!(&b, Ty::Inferred) { return true; }
-        if matches!(&a, Ty::Var(_)) || matches!(&b, Ty::Var(_)) { return true; }
+
+        // When a type variable meets a concrete type, constrain the variable
+        if let Ty::Var(id) = &a {
+            self.constrain_type_var(*id, b.clone());
+            return true;
+        }
+        if let Ty::Var(id) = &b {
+            self.constrain_type_var(*id, a.clone());
+            return true;
+        }
 
 
         let a_is_option = matches!(&a, Ty::Generic(s, _) if s == "Option")
@@ -1261,9 +1358,89 @@ impl TypeChecker {
         }
     }
 
-    fn resolve(&self, ty: &Ty) -> Ty {
+    fn fresh_type_var(&mut self) -> Ty {
+        let id = self.next_type_var;
+        self.next_type_var += 1;
+        self.type_var_values.insert(id, None);
+        Ty::Var(id)
+    }
 
-        ty.clone()
+    fn constrain_type_var(&mut self, var: usize, ty: Ty) {
+        // If the type is itself a type variable, link them
+        if let Ty::Var(other) = &ty {
+            if *other == var {
+                return; // Already the same variable
+            }
+        }
+        self.type_var_values.insert(var, Some(ty));
+    }
+
+    fn resolve(&self, ty: &Ty) -> Ty {
+        match ty {
+            Ty::Var(id) => {
+                match self.type_var_values.get(id) {
+                    Some(Some(resolved)) => {
+                        // Follow the chain — the resolved type might itself be a Var
+                        self.resolve(resolved)
+                    }
+                    _ => ty.clone(), // Unresolved — return the Var as-is
+                }
+            }
+            Ty::Reference(inner, is_mut) => {
+                let resolved = self.resolve(inner);
+                Ty::Reference(Box::new(resolved), *is_mut)
+            }
+            Ty::RawPointer(inner, is_mut) => {
+                let resolved = self.resolve(inner);
+                Ty::RawPointer(Box::new(resolved), *is_mut)
+            }
+            Ty::Array(inner) => Ty::Array(Box::new(self.resolve(inner))),
+            Ty::Slice(inner) => Ty::Slice(Box::new(self.resolve(inner))),
+            Ty::Tuple(types) => {
+                Ty::Tuple(types.iter().map(|t| self.resolve(t)).collect())
+            }
+            Ty::Generic(name, args) => {
+                Ty::Generic(name.clone(), args.iter().map(|a| self.resolve(a)).collect())
+            }
+            Ty::FnPointer { params, ret } => {
+                Ty::FnPointer {
+                    params: params.iter().map(|p| self.resolve(p)).collect(),
+                    ret: Box::new(self.resolve(ret)),
+                }
+            }
+            _ => ty.clone(),
+        }
+    }
+
+    fn substitute_type_vars(&self, ty: &Ty, map: &std::collections::HashMap<String, Ty>) -> Ty {
+        match ty {
+            Ty::Generic(name, args) => {
+                if let Some(replacement) = map.get(name) {
+                    if args.is_empty() {
+                        return replacement.clone();
+                    }
+                }
+                Ty::Generic(name.clone(), args.iter().map(|a| self.substitute_type_vars(a, map)).collect())
+            }
+            Ty::Reference(inner, is_mut) => {
+                Ty::Reference(Box::new(self.substitute_type_vars(inner, map)), *is_mut)
+            }
+            Ty::RawPointer(inner, is_mut) => {
+                Ty::RawPointer(Box::new(self.substitute_type_vars(inner, map)), *is_mut)
+            }
+            Ty::Array(inner) => Ty::Array(Box::new(self.substitute_type_vars(inner, map))),
+            Ty::Slice(inner) => Ty::Slice(Box::new(self.substitute_type_vars(inner, map))),
+            Ty::Tuple(types) => {
+                Ty::Tuple(types.iter().map(|t| self.substitute_type_vars(t, map)).collect())
+            }
+            Ty::FnPointer { params, ret } => {
+                Ty::FnPointer {
+                    params: params.iter().map(|p| self.substitute_type_vars(p, map)).collect(),
+                    ret: Box::new(self.substitute_type_vars(ret, map)),
+                }
+            }
+            _ => ty.clone(),
+        }
     }
 
     fn ty_is_inferred(&self, ty: &Ty) -> bool {
@@ -1298,10 +1475,16 @@ impl TypeChecker {
         self.scopes.pop();
     }
 
-    fn define_var(&mut self, name: String, ty: Ty, _line: usize) {
+    fn define_var(&mut self, name: String, ty: Ty, is_mut: bool, _line: usize) {
         if let Some(scope) = self.scopes.last_mut() {
-            scope.bindings.insert(name, (ty, false));
+            scope.bindings.insert(name, (ty, false, is_mut));
         }
+    }
+
+    fn is_mutable(&self, name: &str) -> bool {
+        self.scopes.iter().rev()
+            .find_map(|s| s.bindings.get(name).map(|(_, _, m)| *m))
+            .unwrap_or(false)
     }
 
     fn is_defined(&self, name: &str) -> bool {
@@ -1314,7 +1497,7 @@ impl TypeChecker {
 
     fn mark_used(&mut self, name: &str) {
         for scope in self.scopes.iter_mut().rev() {
-            if let Some((_, used)) = scope.bindings.get_mut(name) {
+            if let Some((_, used, _)) = scope.bindings.get_mut(name) {
                 *used = true;
                 return;
             }
@@ -1323,24 +1506,16 @@ impl TypeChecker {
 
     fn lookup_var_type(&self, name: &str) -> Ty {
         self.scopes.iter().rev()
-            .find_map(|s| s.bindings.get(name).map(|(ty, _)| ty.clone()))
+            .find_map(|s| s.bindings.get(name).map(|(ty, _, _)| ty.clone()))
             .unwrap_or(Ty::Inferred)
     }
-
-    fn is_known_type(&self, name: &str) -> bool {
-        let normalized = if name == "string" { "String" } else { name };
-        (normalized == "String" || PRIMITIVE_TYPES.contains(&normalized)
-            || matches!(normalized, "Self" | "Option" | "Result" | "Vec" | "HashMap" | "str"))
-        || self.scopes.iter().any(|s| s.bindings.contains_key(name))
-    }
-
-
 
     fn report_unused(&mut self) {
         let unused: Vec<String> = self.scopes.first()
             .map(|scope| {
+
                 scope.bindings.iter()
-                    .filter(|(name, &(_, used))| !used && name.as_str() != "main" && !name.starts_with('_'))
+                    .filter(|(name, &(_, used, _))| !used && name.as_str() != "main" && !name.starts_with('_'))
                     .map(|(name, _)| name.clone())
                     .collect()
             })
@@ -1554,7 +1729,7 @@ mod tests {
 
     #[test]
     fn test_type_inference_literals() {
-        let checker = TypeChecker::new();
+        let mut checker = TypeChecker::new();
         assert_eq!(checker.infer_type(&Expr::Int(42)), Ty::Primitive("i64".into()));
         assert_eq!(checker.infer_type(&Expr::Float(3.14)), Ty::Primitive("f64".into()));
         assert_eq!(checker.infer_type(&Expr::Str("hello".into())), Ty::Primitive("string".into()));
@@ -1631,6 +1806,197 @@ mod tests {
             }
         "#);
         assert!(has_warning(&diagnostics, "Condition should be bool"));
+    }
+
+    #[test]
+    fn test_immutable_let_rejects_assignment() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let x = 10
+                x = 20
+            }
+        "#);
+        assert!(has_error(&diagnostics, "Cannot assign to immutable variable 'x'"));
+    }
+
+    #[test]
+    fn test_mutable_let_allows_assignment() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let mut x = 10
+                x = 20
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_immutable_let_rejects_compound_assignment() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let x = 10
+                x += 5
+            }
+        "#);
+        assert!(has_error(&diagnostics, "Cannot assign to immutable variable 'x'"));
+    }
+
+    #[test]
+    fn test_mutable_let_allows_compound_assignment() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let mut x = 10
+                x += 5
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_mutable_let_allows_minus_equals() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let mut x = 10
+                x -= 3
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_function_param_is_immutable() {
+        let diagnostics = check_source(r#"
+            fn add_to(x: i32) -> i32 {
+                x = x + 1
+                return x
+            }
+        "#);
+        assert!(has_error(&diagnostics, "Cannot assign to immutable variable 'x'"));
+    }
+
+    #[test]
+    fn test_shadowed_binding_preserves_mutability() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                let x = 10
+                let mut x = 20
+                x = 30
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_for_loop_binding_is_immutable() {
+        let diagnostics = check_source(r#"
+            fn main() {
+                for k in [1, 2, 3] {
+                    k = 99
+                }
+            }
+        "#);
+        assert!(has_error(&diagnostics, "Cannot assign to immutable variable 'k'"));
+    }
+
+    // ─── Generic type variable resolution tests ─────────────────────────────
+
+    #[test]
+    fn test_generic_identity_resolves_to_i64() {
+        // fn identity<T>(x: T) -> T { return x }
+        // identity(42) should resolve T = i64, no errors
+        let diagnostics = check_source(r#"
+            fn identity<T>(x: T) -> T {
+                return x
+            }
+            fn main() {
+                let result = identity(42)
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_generic_identity_resolves_to_string() {
+        // identity("hello") should resolve T = string, no errors
+        let diagnostics = check_source(r#"
+            fn identity<T>(x: T) -> T {
+                return x
+            }
+            fn main() {
+                let result = identity("hello")
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_generic_wrong_arg_type_reports_error() {
+        // fn first<T, U>(a: T, b: U) -> T { return a }
+        // first(42, "hello") is fine, but type mismatch on wrong type should be caught
+        let diagnostics = check_source(r#"
+            fn identity<T>(x: T) -> T {
+                return x
+            }
+            fn main() {
+                let result: i32 = identity("hello")
+            }
+        "#);
+        // The declaration type mismatch should be caught
+        assert!(has_error(&diagnostics, "Type mismatch"));
+    }
+
+    #[test]
+    fn test_generic_two_params_resolves_independently() {
+        // fn swap<A, B>(a: A, b: B) -> A { return a }
+        // swap(42, "hello") — A = i64, B = string
+        let diagnostics = check_source(r#"
+            fn pick_first<A, B>(a: A, b: B) -> A {
+                return a
+            }
+            fn main() {
+                let result = pick_first(42, "hello")
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_generic_call_site_independence() {
+        // Each call site should get its own type variable bindings
+        // identity(42) resolves T = i64, identity("hi") resolves T = string
+        let diagnostics = check_source(r#"
+            fn identity<T>(x: T) -> T {
+                return x
+            }
+            fn main() {
+                let a = identity(42)
+                let b = identity("hello")
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_non_generic_function_still_works() {
+        // Non-generic functions should continue to work as before
+        let diagnostics = check_source(r#"
+            fn add(a: i32, b: i32) -> i32 {
+                return a + b
+            }
+            fn main() {
+                let result = add(1, 2)
+            }
+        "#);
+        let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
     }
 }
 

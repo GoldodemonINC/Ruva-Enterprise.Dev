@@ -93,21 +93,12 @@ impl JsonParser {
     fn advance(&mut self) -> Option<char> {
         let c = self.chars.get(self.pos).copied();
         if c.is_some() {
-            self.pos += 1;
-        }
+            self.pos += 1;        }
         c
     }
 
-    #[allow(dead_code)]
-    fn expect_char(&mut self, expected: char) -> bool {
-        self.skip_whitespace();
-        if self.peek() == Some(expected) {
-            self.advance();
-            true
-        } else {
-            false
-        }
-    }
+
+
 
     pub fn parse_value(&mut self) -> Option<JsonValue> {
         self.skip_whitespace();

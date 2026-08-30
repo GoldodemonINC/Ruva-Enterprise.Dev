@@ -311,7 +311,87 @@ fn rgu_drives_the_vm_directly() {
     );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// NEW TESTS — under-tested areas
+// ═══════════════════════════════════════════════════════════════════════════
 
+// ── 1. Closures: upvalues from outer scopes ──────────────────────────────
+
+#[test]
+fn closure_captures_multiple_outer_variables() {
+    assert_output(
+        "fn make_pair_sum(a: i64, b: i64) -> fn() -> i64 {{
+    return || -> i64 {{ a + b }}
+}}
+
+fn main() {{
+    let f = make_pair_sum(3, 7)
+    println!(\"sum=\", f())
+}}",
+        "sum=10",
+    );
+}
+
+#[test]
+fn closure_captures_from_two_different_scope_depths() {
+    assert_output(
+        "fn make_outer(x: i64) -> fn(i64) -> i64 {{
+    let y = x * 10
+    return |z: i64| -> i64 {{ y + z }}
+}}
+
+fn main() {{
+    let f = make_outer(2)
+    println!(\"r=\", f(5))
+}}",
+        "r=25",
+    );
+}
+
+
+// ── 2. Nested closures ───────────────────────────────────────────────────
+
+#[test]
+fn nested_closure_with_condition() {
+    // Nested closure with conditional logic works correctly
+    assert_output(
+        "fn make_checker(threshold: i64) -> fn(i64) -> bool {{
+    return |val: i64| -> bool {{
+        if val > threshold {{
+            return true
+        }}
+        return false
+    }}
+}}
+
+fn main() {{
+    let is_above_10 = make_checker(10)
+    println!(\"5>10=\", is_above_10(5), \" 15>10=\", is_above_10(15))
+}}",
+        "5>10=false 15>10=true",
+    );
+}
+
+#[test]
+fn nested_closure_reads_outer_local_not_own() {
+    assert_output(
+        "fn make_adder(base: i64) -> fn(i64) -> i64 {{
+    let offset = 100
+    return |x: i64| -> i64 {{
+        let inner = || -> i64 {{ offset }}
+        return x + inner() + base
+    }}
+}}
+
+fn main() {{
+    let f = make_adder(5)
+    println!(\"r=\", f(3))
+}}",
+        "r=108",
+    );
+}
+
+// ── 3. Checked arithmetic — overflow returns clean error ─────────────────
 
 fn assert_vm_error(source: &str, msg: &str) {
     let (stdout, stderr) = run_vm(source);
@@ -329,6 +409,72 @@ fn assert_vm_error(source: &str, msg: &str) {
         stderr
     );
 }
+
+#[test]
+fn integer_sub_overflow_errors_not_panics() {
+    assert_vm_error(
+        "fn main() {{
+    let x = 9223372036854775807
+    let y = 0 - x
+    let z = y - 2
+    println!(z)
+}}",
+        "Integer overflow",
+    );
+}
+
+#[test]
+fn integer_negate_min_overflow_errors_not_panics() {
+    // MIN = -(MAX+1). Negating MIN overflows because MAX+1 > MAX.
+    assert_vm_error(
+        "fn main() {{
+    let x = 9223372036854775807
+    let y = 0 - x - 1
+    let z = 0 - y
+    println!(z)
+}}",
+        "Integer overflow",
+    );
+}
+
+
+// ── 4. Call frame stack bounds — deep recursion ──────────────────────────
+
+#[test]
+fn deep_recursion_hits_frame_limit() {
+    assert_vm_error(
+        "fn recurse(n: i64) -> i64 {{
+    return recurse(n + 1)
+}}
+
+fn main() {{
+    recurse(0)
+}}",
+        "Stack overflow",
+    );
+}
+
+
+// ── 5. For-in loops over arrays — element access ─────────────────────────
+
+
+#[test]
+fn nested_for_in_loops() {
+    assert_output(
+        "fn main() {{
+    let mut total = 0
+    for i in [1, 2, 3] {{
+        for j in [10, 20] {{
+            total = total + i * j
+        }}
+    }}
+    println!(\"total=\", total)
+}}",
+        "total=180",
+    );
+}
+
+
 
 #[test]
 fn integer_add_overflow_errors_not_panics() {
