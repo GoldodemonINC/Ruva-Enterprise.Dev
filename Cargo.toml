@@ -9,6 +9,10 @@ authors = ["Ruva Contributors"]
 name = "ruva"
 path = "src/main.rs"
 
+[[bin]]
+name = "rgu"
+path = "src/bin/rgu.rs"
+
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 anyhow = "1"

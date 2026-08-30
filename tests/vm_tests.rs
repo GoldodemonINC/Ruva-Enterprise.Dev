@@ -281,6 +281,36 @@ fn rve_extension_is_accepted() {
     );
 }
 
+#[test]
+fn rgu_drives_the_vm_directly() {
+    // RGu is Ruva's own compiler driver: it must run a `.rve` file via the
+    // bytecode VM with no external build tool. `CARGO_BIN_EXE_rgu` is injected
+    // by Cargo, but at runtime RGu never shells out to cargo itself.
+    let id = COUNTER.fetch_add(1, Ordering::SeqCst);
+    let path = std::env::temp_dir().join(format!("rgu_vm_{}_{}.rve", std::process::id(), id));
+    std::fs::write(
+        &path,
+        "fn main() { let x = 6 let y = 7 println!(\"rgu-result:\", x * y) }",
+    )
+    .expect("write temp .rve");
+    let out = Command::new(env!("CARGO_BIN_EXE_rgu"))
+        .arg("run")
+        .arg(&path)
+        .output()
+        .expect("run rgu on .rve");
+    let _ = std::fs::remove_file(&path);
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("rgu-result:"),
+        "expected RGu to run the file through the VM, got stdout: {:?}",
+        stdout
+    );
+    assert!(
+        !String::from_utf8_lossy(&out.stderr).contains("cargo"),
+        "RGu must not invoke cargo at runtime"
+    );
+}
+
 /// Helper: assert the VM reports a clean error (in stderr) rather than panicking
 /// or exiting successfully. `msg` is a substring expected in the error text.
 fn assert_vm_error(source: &str, msg: &str) {
