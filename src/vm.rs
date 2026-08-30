@@ -108,7 +108,57 @@ impl Value {
     }
 }
 
-
+fn format_vm_string(fmt: &str, args: &[String]) -> String {
+    let mut result = String::with_capacity(fmt.len());
+    let mut chars = fmt.chars().peekable();
+    let mut next_index: usize = 0;
+    while let Some(c) = chars.next() {
+        match c {
+            '{' => {
+                if chars.peek() == Some(&'{') {
+                    result.push('{');
+                    chars.next();
+                } else {
+                    let mut num_str = String::new();
+                    while let Some(&ch) = chars.peek() {
+                        if ch.is_ascii_digit() {
+                            num_str.push(ch);
+                            chars.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    if chars.peek() == Some(&'}') {
+                        chars.next();
+                        let value = if num_str.is_empty() {
+                            let idx = next_index;
+                            next_index += 1;
+                            args.get(idx).map(|s| s.as_str())
+                        } else {
+                            num_str.parse::<usize>().ok().and_then(|i| args.get(i).map(|s| s.as_str()))
+                        };
+                        if let Some(v) = value {
+                            result.push_str(v);
+                        }
+                    } else {
+                        result.push('{');
+                        result.push_str(&num_str);
+                    }
+                }
+            }
+            '}' => {
+                if chars.peek() == Some(&'}') {
+                    result.push('}');
+                    chars.next();
+                } else {
+                    result.push('}');
+                }
+            }
+            _ => result.push(c),
+        }
+    }
+    result
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
@@ -1373,13 +1423,26 @@ impl Vm {
                 }
                 Opcode::PrintN => {
                     let argc = code[ip] as usize; ip += 1;
-                    let mut parts: Vec<String> = Vec::with_capacity(argc);
+                    let mut values: Vec<Value> = Vec::with_capacity(argc);
                     for _ in 0..argc {
-                        let v = self.stack.pop().unwrap_or(Value::Nil);
-                        parts.push(format!("{}", v));
+                        values.push(self.stack.pop().unwrap_or(Value::Nil));
                     }
-                    parts.reverse();
-                    println!("{}", parts.join(""));
+                    values.reverse();
+                    let output = if argc == 0 {
+                        String::new()
+                    } else if argc == 1 {
+                        format!("{}", values[0])
+                    } else if let Value::Str(ref fmt) = values[0] {
+                        if fmt.contains('{') {
+                            let args: Vec<String> = values[1..].iter().map(|v| format!("{}", v)).collect();
+                            format_vm_string(fmt, &args)
+                        } else {
+                            values.iter().map(|v| format!("{}", v)).collect::<Vec<_>>().join("")
+                        }
+                    } else {
+                        values.iter().map(|v| format!("{}", v)).collect::<Vec<_>>().join("")
+                    };
+                    println!("{}", output);
                     self.stack.push(Value::Nil);
                 }
                 Opcode::Halt => { return Ok(self.stack.pop().unwrap_or(Value::Nil)); }

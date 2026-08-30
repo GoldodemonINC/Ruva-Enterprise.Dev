@@ -675,3 +675,34 @@ fn nested_closure_captures_local_and_upvalue_from_enclosing_closure() {
         "v10=27 v1=18",
     );
 }
+
+
+#[test]
+fn println_format_string_interpolation() {
+    assert_output(
+        "fn main() {
+    println!(\"hello {} world {}\", 1, 2)
+}",
+        "hello 1 world 2",
+    );
+}
+
+#[test]
+fn println_format_with_explicit_indices() {
+    assert_output(
+        "fn main() {
+    println!(\"{1} {0}\", 10, 20)
+}",
+        "20 10",
+    );
+}
+
+#[test]
+fn println_format_escaped_braces() {
+    assert_output(
+        "fn main() {
+    println!(\"literal {{braces}} {}\", 42)
+}",
+        "literal {braces} 42",
+    );
+}
