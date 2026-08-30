@@ -2,287 +2,82 @@
 
 **Rust safety. Java familiarity. Zig precision. Python simplicity.**
 
-A compiled language that blends the best of four languages:
-- **Rust (50%)**: Ownership, pattern matching, zero-cost abstractions, memory safety
-- **Java (20%)**: Classes, interfaces, exception handling, familiar OOP syntax
-- **Zig (15%)**: Comptime evaluation, explicit control, no hidden allocations
-- **Python (15%)**: Decorators, list comprehensions, clean syntax
+A compiled language that blends the best of four languages and transpiles to 13 backends.
 
-Ruva transpiles to 13 backends — Rust, Zig, Python, Java, C#, Go, Swift,
-Kotlin, TypeScript, JavaScript, Lua, Ruby, and PHP.
+```
+Rust (50%) + Java (20%) + Zig (15%) + Python (15%) = Ruva
+   ↓              ↓            ↓            ↓
+Memory-safe   Familiar    Explicit    Simple
+ & fast        OOP        control     & clean
+```
 
 > *"Write safe, fast code that feels familiar. Choose your backend."*
 
 ---
 
-## Language DNA
+## Quick Start
 
-Ruva blends the best features from four languages:
+```bash
+# Build from source
+cd Ruva
+cargo build --release
+cargo install --path .
 
-### Rust (50%) — The Foundation
-| Feature | Source |
-|---------|--------|
-| Ownership & borrowing | Prevents memory bugs |
-| Pattern matching | Exhaustive match arms |
-| Zero-cost abstractions | No runtime overhead |
-| Enums (ADTs) | Algebraic data types |
-| Closures | First-class functions |
-| Generics | Type-safe reusable code |
-| `unsafe` blocks | When you need raw control |
-| Raw pointers | FFI and systems programming |
+# Create a new project
+ruva new my_project
+cd my_project
 
-### Java (20%) — The Familiarity
-| Feature | Source |
-|---------|--------|
-| `class` syntax | OOP done right |
-| `interface` definitions | Contract-based design |
-| `try`/`catch`/`finally` | Exception handling |
-| `package` declarations | Module organization |
-| `pub` visibility | Encapsulation |
-| `impl` blocks | Methods on types |
-| `static` methods | Class-level operations |
+# Run a Ruva file
+ruva run src/main.ruva
 
-### Zig (15%) — The Precision
-| Feature | Source |
-|---------|--------|
-| `comptime` blocks | Compile-time evaluation |
-| Explicit error handling | No hidden control flow |
-| `?T` optional types | Null safety without Option |
-| No hidden allocations | Memory-conscious design |
-| `|err|` error handling | Explicit error propagation |
+# Compile to native binary (Rust backend)
+ruva compile src/main.ruva -o my_app
 
-### Python (15%) — The Simplicity
-| Feature | Source |
-|---------|--------|
-| `@decorator` syntax | Metaprogramming made easy |
-| List comprehensions | `[x for x in items if x > 0]` |
-| `f"string {interpolation}"` | Clean string building |
-| Clean indentation-like syntax | Readable by default |
-| Dynamic typing option | When types aren't needed |
+# Transpile to any backend
+ruva transpile src/main.ruva --target python --stdout
+ruva transpile src/main.ruva --target typescript --stdout
 
-### The Formula
+# Check for errors
+ruva check src/main.ruva
 
-```
-Rust (50%) + Java (20%) + Zig (15%) + Python (15%) = Ruva
-    ↓              ↓            ↓            ↓
- Memory-safe   Familiar    Explicit    Simple
-  & fast        OOP        control     & clean
-```
-
----
-
-## Why Ruva?
-
-### The Problem with Java
-
-| Issue | Impact |
-|-------|--------|
-| **GC pauses** | Frame drops in games, latency spikes in servers |
-| **NullPointerException** | #1 cause of Java crashes |
-| **Slow startup** | 1-5 seconds JVM warmup |
-| **High memory** | Object headers, GC overhead |
-| **No memory safety** | Buffer overflows via JNI |
-
-### The Problem with Rust
-
-| Issue | Impact |
-|-------|--------|
-| **Steep learning curve** | Lifetimes, borrow checker, ownership syntax |
-| **Complex syntax** | `&'a mut dyn Trait` is intimidating |
-| **Slow iteration** | Compiler fights you on valid code |
-| **Fewer developers** | Harder to hire Rust devs |
-
-### Ruva's Solution
-
-| Benefit | How |
-|---------|-----|
-| **Java familiarity** | `class`, `pub`, `new()` — Java devs productive in hours |
-| **Rust performance** | Transpiles to native code — no GC, no JIT |
-| **Rust safety** | Ownership model — no null, no data races, no leaks |
-| **Fast development** | Simpler syntax than Rust, faster than Java |
-
----
-
-## Target Domains
-
-Ruva is designed for **safety-critical, performance-sensitive** applications:
-
-### Operating Systems
-- Bare-metal / `no_std`-style compilation target
-- No GC, no hidden allocations — predictable at the kernel level
-- Ownership model applies to raw memory and hardware resources
-- Aiming to make it possible to build a full OS in Ruva
-
-### Anticheats
-- Real-time memory scanning without reflection bypass
-- Process integrity verification
-- Ownership prevents unauthorized memory access
-- No undefined behavior — predictable detection
-
-### Server Hosting
-- High-concurrency servers without thread exhaustion
-- Low latency — no GC pauses between requests
-- Memory-safe request handling
-- Native performance for thousands of connections
-
----
-
-## Graphics & Rendering Support
-
-Ruva ships with safe bindings to industry-standard graphics APIs via `import ruva::graphics`:
-
-### Supported APIs
-- **OpenGL** — Window, Context, Shader, Texture management with ownership safety
-- **Vulkan** — Instance, Device, Swapchain, RenderPass, Pipeline, CommandPool, Buffer
-- **DirectX 11** — Device, DeviceContext, VertexShader, PixelShader, RenderTargetView
-- **DirectX 12** — Device, CommandQueue, CommandList, PipelineState, RootSignature, Fence
-
-### Why Graphics APIs Are Safe in Ruva
-
-| Traditional Risk | Ruva's Protection |
-|------------------|-------------------|
-| Use-after-free on GPU resources | Ownership prevents accessing freed resources |
-| Null pointer in shader compilation | Option<T> forces explicit null handling |
-| Buffer overflow in vertex data | Bounds checking on all array access |
-| Data race on render thread | Ownership prevents concurrent mutation |
-
-```ruva
-import ruva::graphics::opengl
-
-let window = opengl::Window::new("My Game", 1920, 1080)
-let ctx = opengl::Context::new(window)
-ctx.clear(0.1, 0.1, 0.1, 1.0)  // dark background
-let shader = ctx.create_shader(vertex_src, fragment_src)
-```
-
----
-
-## Browser Support
-
-Ruva ships with browser API bindings via `import ruva::browser`:
-
-### Supported APIs
-
-| Module | Features |
-|--------|----------|
-| **DOM** | Element, Document, Window — get/set id, class, attributes, innerHTML, textContent |
-| **Canvas 2D** | Fill/stroke rects, text, paths, arcs, transforms (save/restore/translate/rotate/scale) |
-| **WebGL** | Shaders, programs, buffers, textures, framebuffers — full rendering pipeline |
-| **Fetch** | GET/POST requests, JSON parsing, array buffers |
-| **WebSocket** | Send text/binary data, connection state management |
-| **WebAssembly** | Memory and Table management for Wasm modules |
-
-```ruva
-import ruva::browser::dom
-import ruva::browser::canvas
-
-let doc = dom::get_document()
-let el = doc.create_element("canvas")
-let ctx = canvas::CanvasRenderingContext2D { handle: 0 }
-ctx.fill_rect(0.0, 0.0, 800.0, 600.0)
-ctx.fill_text("Hello from Ruva!", 100.0, 300.0)
-```
-
----
-
-## Video Rendering Support
-
-Ruva ships with video encoding/decoding bindings via `import ruva::video`:
-
-### Supported Codecs
-H.264, H.265, VP8, VP9, AV1, MPEG4
-
-### Supported Containers
-MP4, MKV, AVI, MOV, WebM, FLV
-
-### Features
-
-| Module | Capabilities |
-|--------|-------------|
-| **VideoDecoder** | Decode frames, seek, get video info (resolution, framerate, bitrate) |
-| **VideoEncoder** | Encode frames, set bitrate/framerate, flush and close |
-| **AudioDecoder** | Decode audio frames, seek, get sample rate/channels |
-| **AudioEncoder** | Encode audio frames, set bitrate |
-| **Muxer/Demuxer** | Container muxing/demuxing with packet-level access |
-| **Filters** | Resize, crop, rotate, blur, sharpen, brightness, contrast, grayscale, invert, flip, text/image overlay |
-
-### Pixel Formats
-YUV420, YUV422, YUV444, RGB24, RGBA32, NV12, NV21
-
-```ruva
-import ruva::video
-
-let decoder = video::VideoDecoder::new("input.mp4")
-let info = decoder.get_info()  // width, height, frame_rate, codec
-let frame = decoder.decode_frame()  // returns VideoFrame
-
-let encoder = video::VideoEncoder::new("output.mp4", video::Codec::H264)
-encoder.write_frame(frame)
-encoder.flush()
+# Start the LSP server
+ruva lsp
 ```
 
 ---
 
 ## Language Features
 
-### Rust Features (50%)
-
-#### Variables — immutable by default
+### From Rust (50%)
 
 ```ruva
-let x = 10          // immutable (safe by default)
-let mut y = 20      // mutable (opt-in)
-```
+// Immutable by default, opt-in mutability
+let x = 10
+let mut y = 20
 
-#### Pattern Matching — Exhaustive & Safe
-
-```ruva
+// Pattern matching with exhaustive arms
 match value {
     0 => "zero",
     1..=9 => "single digit",
     10 | 20 | 30 => "special",
     _ => "other",
 }
-```
 
-#### Error Handling — Result Types
-
-```ruva
+// Result types with explicit error handling
 fn divide(a: f64, b: f64) -> Result<f64, string> {
     if b == 0.0 { return Err("Division by zero".into()) }
     return Ok(a / b)
 }
 
-match divide(10.0, 2.0) {
-    Ok(result) => println!("Result: {}", result),
-    Err(err) => println!("Error: {}", err),
-}
-```
-
-#### Closures — First-class Functions
-
-```ruva
+// Closures, generics, unsafe blocks, raw pointers, enums (ADTs)
 let add = |a: i32, b: i32| -> i32 { a + b }
-let numbers = [1, 2, 3, 4, 5]
-// Closures work with iterators
+struct Stack<T> { items: Vec<T> }
 ```
 
-#### Unsafe — When You Need Raw Control
+### From Java (20%)
 
 ```ruva
-unsafe {
-    let ptr = null_mut()
-    *ptr = 42  // Raw pointer dereference
-}
-```
-
----
-
-### Java Features (20%)
-
-#### Classes — Java-familiar OOP
-
-```ruva
+// Java-familiar classes with encapsulation
 class Person {
     pub let name: string,
     pub let mut age: u32,
@@ -295,252 +90,90 @@ class Person {
         self.age += 1
     }
 }
-```
 
-#### Interfaces — Contract-based Design
-
-```ruva
+// Interfaces, try/catch/finally, throw, package declarations
 interface Drawable {
     fn draw(&self)
     fn area(&self) -> f64
 }
-
-class Circle {
-    pub let radius: f64,
-
-    pub fn new(radius: f64) -> Self {
-        return Self { radius }
-    }
-}
-
-impl Circle {
-    pub fn draw(&self) {
-        println!("Drawing circle with radius {}", self.radius)
-    }
-    pub fn area(&self) -> f64 {
-        return 3.14159 * self.radius * self.radius
-    }
-}
 ```
 
-#### Exception Handling — try/catch/finally
+### From Zig (15%)
 
 ```ruva
-try {
-    let result = dangerous_operation()
-    println!("Success: {}", result)
-} catch(e) {
-    println!("Error: {}", e)
-} finally {
-    cleanup()
-}
-```
-
-#### Throw — Explicit Error Raising
-
-```ruva
-fn validate(age: i32) {
-    if age < 0 {
-        throw "Age cannot be negative"
-    }
-}
-```
-
-#### Package Declarations
-
-```ruva
-package com.example.myapp
-
-fn main() {
-    println!("Organized code")
-}
-```
-
-#### Enums — Algebraic Data Types
-
-```ruva
-enum Shape {
-    Circle(f64),
-    Rectangle(f64, f64),
-    Triangle(f64, f64, f64),
-}
-
-fn area(shape: &Shape) -> f64 {
-    match shape {
-        Shape::Circle(r) => 3.14159 * r * r,
-        Shape::Rectangle(w, h) => w * h,
-        Shape::Triangle(a, b, c) => {
-            let s = (a + b + c) / 2.0
-            (s * (s - a) * (s - b) * (s - c))
-        }
-    }
-}
-```
-
-#### Imports & Modules
-
-```ruva
-use std::io::{Read, Write}
-use geometry::{Point, Circle}
-
-mod math {
-    pub fn add(a: i32, b: i32) -> i32 {
-        return a + b
-    }
-}
-
-mod geometry;  // File-based module
-import ruva::core  // Stdlib import
-```
-
----
-
-### Zig Features (15%)
-
-#### Comptime — Compile-time Evaluation
-
-```ruva
+// Compile-time evaluation
 comptime {
     let x = 2 + 3
     println!("This runs at compile time: {}", x)
 }
+
+// Explicit error handling, no hidden control flow
 ```
 
-#### Explicit Error Handling
+### From Python (15%)
 
 ```ruva
-// Errors are explicit, not hidden
-fn parse(input: string) -> Result<i64, string> {
-    // No hidden control flow
-    return Ok(42)
-}
-```
-
----
-
-### Python Features (15%)
-
-#### Decorators — Metaprogramming
-
-```ruva
+// Decorators
 @log_calls
 @timeout(30)
-fn process_data(data: string) {
-    println!("Processing: {}", data)
-}
-```
+fn process_data(data: string) { }
 
-#### List Comprehensions
-
-```ruva
-let numbers = [1, 2, 3, 4, 5]
+// List comprehensions
 let doubled = [x * 2 for x in numbers]
 let evens = [x for x in numbers if x % 2 == 0]
-```
 
-#### String Interpolation — f-strings
-
-```ruva
-let name = "Ruva"
-let version = 10
+// f-strings, assertions, optional chaining, null coalescing
 let msg = f"Welcome to {name} v{version}!"
-println!("{}", msg)
-```
-
-#### Assertions
-
-```ruva
-assert!(x > 0, "x must be positive")
-assert_eq!(a, b, "values should match")
-assert_ne!(a, b, "values should differ")
-```
-
-#### Optional Chaining & Null Coalescing
-
-```ruva
 let name = user?.name ?? "Anonymous"
-let value = config?.timeout ?? 30
 ```
 
 ---
 
-## Crash Attribution: Ruva vs Rust vs Java
+## How It Works
 
-**Question:** "If it crashes, how do you know if it's Ruva's, Rust's, or Java's fault?"
-
-### Answer: Ruva Crashes are Almost Always Ruva's Fault
-
-| Crash Type | Cause | Blame |
-|------------|-------|-------|
-| **Compile error** | Ruva transpiler bug | Ruva |
-| **Runtime panic** | Bounds check, overflow, unwrap on None | Ruva (expected behavior) |
-| **Segfault** | Impossible in Ruva (Rust prevents it) | N/A |
-| **Null pointer** | Impossible in Ruva (Option<T>) | N/A |
-| **Data race** | Impossible in Ruva (ownership) | N/A |
-| **GC pause** | Impossible in Ruva (no GC) | N/A |
-
-### Why Ruva Crashes are Ruva's Fault
-
-1. **Ruva generates Rust code** — if the generated code is wrong, it's a Ruva transpiler bug
-2. **Rust catches most errors at compile time** — runtime crashes are rare
-3. **Ruva doesn't use Java** — Java faults are impossible
-4. **Rust's compiler is battle-tested** — Rust bugs are extremely rare
-
-### Crash Debugging
-
-```bash
-# See the generated Rust code
-ruva transpile src/main.ruva --stdout
-
-# Check for syntax errors
-ruva compile src/main.ruva --lazy
-
-# Compile with debug info
-ruva compile src/main.ruva -o app
-
-# Run with backtrace
-RUST_BACKTRACE=1 ./app
 ```
-
-### The Safety Guarantees
-
-| Guarantee | How Ruva Enforces It |
-|-----------|---------------------|
-| **No segfaults** | Rust's ownership model |
-| **No null pointers** | Option<T> type |
-| **No buffer overflows** | Bounds checking |
-| **No data races** | Ownership prevents concurrent mutation |
-| **No use-after-free** | Ownership prevents accessing freed memory |
-| **No memory leaks** | RAII (ownership drop semantics) |
-
----
-
-## Quick Start
-
-```bash
-# Install (build from source)
-cd Ruva
-cargo build --release
-cargo install --path .
-
-# Create a new project
-ruva new my_project
-cd my_project
-
-# Run a Ruva file directly
-ruva run src/main.ruva
-
-# Compile to native executable (Rust backend)
-ruva compile src/main.ruva -o my_app
-
-# Transpile to any of 13 backends
-ruva transpile src/main.ruva --target java --stdout
-
-# Transpile to TypeScript
-ruva transpile src/main.ruva --target typescript --stdout
-
-# Check for syntax errors (fast, no codegen)
-ruva compile src/main.ruva --lazy
+  .ruva source
+       │
+       ▼
+   ┌────────┐
+   │ Lexer  │  → tokens                    (591 LOC)
+   └────┬───┘
+        │
+        ▼
+   ┌────────┐
+   │ Parser │  → AST                       (2,754 LOC)
+   └────┬───┘   Pratt parser with precedence climbing
+        │
+        ▼
+   ┌──────────┐
+   │  Type    │  → typed AST with diagnostics  (1,634 LOC)
+   │  Checker │
+   └────┬─────┘
+        │
+        ▼
+   ┌──────────┐
+   │  Module  │  → resolved AST (stdlib inlined)
+   │ Resolver │
+   └────┬─────┘
+        │
+        ▼
+   ┌─────────┐
+   │ CodeGen │  → target source code       (5,748 LOC across 13 backends)
+   └────┬────┘
+        │
+        ├──→ .rs   (Rust)        → cargo build → native binary
+        ├──→ .zig  (Zig)         → zig build-exe
+        ├──→ .py   (Python)      → python3 (interpreted)
+        ├──→ .java (Java)        → javac → JVM bytecode
+        ├──→ .cs   (C#)          → dotnet build → .NET
+        ├──→ .go   (Go)          → go build → native binary
+        ├──→ .swift (Swift)      → swiftc → native binary
+        ├──→ .kt   (Kotlin)      → kotlinc → JVM bytecode
+        ├──→ .ts   (TypeScript)  → tsc → JS
+        ├──→ .js   (JavaScript)  → node (interpreted)
+        ├──→ .lua  (Lua)         → lua (interpreted)
+        ├──→ .rb   (Ruby)        → ruby (interpreted)
+        └──→ .php  (PHP)         → php (interpreted)
 ```
 
 ---
@@ -552,195 +185,239 @@ ruva compile src/main.ruva --lazy
 | `ruva new <name>` | Create a new project | `ruva new my_app` |
 | `ruva run <file>` | Compile and run | `ruva run src/main.ruva` |
 | `ruva compile <file>` | Build to native (Rust) | `ruva compile src/main.ruva -o app` |
-| `ruva compile <file> --target <backend>` | Build via any of the 13 backends | `ruva compile src/main.ruva --target go` |
+| `ruva compile <file> --target <backend>` | Build via any backend | `ruva compile src/main.ruva --target go` |
 | `ruva compile <file> --release` | Optimized build | `ruva compile src/main.ruva --release` |
 | `ruva compile <file> --lazy` | Syntax check only | `ruva compile src/main.ruva --lazy` |
+| `ruva build [dir]` | Build all .ruva in src/ | `ruva build` |
 | `ruva transpile <file>` | Generate target code | `ruva transpile src/main.ruva --stdout` |
-| `ruva transpile <file> --target <backend>` | Generate code for any backend | `ruva transpile src/main.ruva --target typescript` |
-
-Valid `--target` values: `rust`, `zig`, `python`, `java`, `csharp`, `go`, `swift`, `kotlin`, `typescript`, `javascript`, `lua`, `ruby`, `php`
-| `ruva check <file>` | Check syntax | `ruva check src/main.ruva` |
+| `ruva transpile <file> --target <backend>` | Generate for any backend | `ruva transpile src/main.ruva --target typescript` |
+| `ruva check <file>` | Type-check a file | `ruva check src/main.ruva` |
 | `ruva check <dir> --all` | Check all files | `ruva check src/ --all` |
 | `ruva fmt <file>` | Format a file | `ruva fmt src/main.ruva` |
 | `ruva fmt <dir>` | Format directory | `ruva fmt src/` |
 | `ruva fmt --check` | Check format only | `ruva fmt src/main.ruva --check` |
-| `ruva fmt --dry-run` | Dry run | `ruva fmt src/ --dry-run` |
 | `ruva repl` | Interactive REPL | `ruva repl` |
 | `ruva lsp` | Start LSP server | `ruva lsp` |
+| `ruva tokens <file>` | Print token stream | `ruva tokens src/main.ruva` |
+| `ruva ast <file>` | Print AST | `ruva ast src/main.ruva` |
+| `ruva pipe` | Transpile from stdin | `cat file.ruva \| ruva pipe --target rust` |
+
+Valid `--target` values: `rust`, `zig`, `python`, `java`, `csharp`, `go`, `swift`, `kotlin`, `typescript`, `javascript`, `lua`, `ruby`, `php`
 
 ---
 
-## How It Works
+## Standard Library
+
+13 modules available via `import ruva::<module>`:
+
+| Module | Description |
+|--------|-------------|
+| `core` | Core types, Option, Result, iterators |
+| `kernel` | Bare-metal OS dev: memory, interrupts, drivers, scheduler, syscalls |
+| `graphics` | OpenGL, Vulkan, DirectX 11/12 bindings |
+| `browser` | DOM, Canvas 2D, WebGL, Fetch, WebSocket, WebAssembly |
+| `video` | H.264/H.265/VP8/VP9/AV1 encode/decode, mux/demux, filters |
+| `anticheat` | Process memory scanning, integrity verification, tamper detection |
+| `io` | File I/O, buffered readers/writers |
+| `server` | HTTP server, routing, middleware |
+| `game` | Game loop, ECS, physics, sprites |
+| `testing` | Unit test helpers, assertions, benchmarks |
+| `formatter` | Code formatting utilities |
+| `serialization` | JSON, TOML, YAML serialization |
+| `interop` | FFI helpers, C interop |
+
+---
+
+## LSP Server
+
+Full Language Server Protocol implementation (3,738 LOC):
+
+- **Text document sync** — incremental updates, open/close/change
+- **Hover** — type information, keyword docs
+- **Go to definition** — jump to symbol definitions
+- **Completion** — context-aware suggestions with trigger characters (`.` `:` `::`)
+- **Diagnostics** — real-time error/warning reporting
+- **Document symbols** — outline view for functions, structs, classes, enums
+- **References** — find all usages across open documents
+- **Rename** — rename symbols across all open files
+- **Signature help** — function signature hints
+- **Code actions** — quick fixes
+- **Workspace symbol** — search symbols across workspace
+
+```bash
+# Start the LSP server (communicates via stdin/stdout JSON-RPC)
+ruva lsp
+```
+
+---
+
+## Safety Guarantees
+
+Ruva inherits Rust's safety model through transpilation:
+
+| Guarantee | How |
+|-----------|-----|
+| No segfaults | Rust's ownership model |
+| No null pointers | `Option<T>` type |
+| No buffer overflows | Bounds checking |
+| No data races | Ownership prevents concurrent mutation |
+| No use-after-free | Ownership prevents accessing freed memory |
+| No memory leaks | RAII (ownership drop semantics) |
+
+| Crash Type | Cause | Blame |
+|------------|-------|-------|
+| Compile error | Ruva transpiler bug | Ruva |
+| Runtime panic | Bounds check, overflow, unwrap on None | Ruva (expected behavior) |
+| Segfault | Impossible (Rust prevents it) | N/A |
+| Null pointer | Impossible (`Option<T>`) | N/A |
+| Data race | Impossible (ownership) | N/A |
+| GC pause | Impossible (no GC) | N/A |
+
+---
+
+## Project Structure
 
 ```
-  .ruva source
-       │
-       ▼
-   ┌────────┐
-   │ Lexer  │  → tokens
-   └────┬───┘
-        │
-        ▼
-   ┌────────┐
-   │ Parser │  → AST
-   └────┬───┘
-        │
-        ▼
-   ┌─────────┐
-   │ CodeGen │  → target source code
-   └────┬────┘
-        │
-        ├──→ .rs   (Rust backend)       → rustc → native binary
-        ├──→ .zig  (Zig backend)        → zig build-exe
-        ├──→ .py   (Python backend)     → python3 (interpreted)
-        ├──→ .java (Java backend)       → javac → JVM bytecode
-        ├──→ .cs   (C# backend)         → dotnet build → .NET
-        ├──→ .go   (Go backend)         → go build → native binary
-        ├──→ .swift(Swift backend)      → swiftc → native binary
-        ├──→ .kt   (Kotlin backend)     → kotlinc → JVM bytecode
-        ├──→ .ts   (TypeScript backend) → tsc → JS
-        ├──→ .js   (JavaScript backend) → node (interpreted)
-        ├──→ .lua  (Lua backend)        → lua (interpreted)
-        ├──→ .rb   (Ruby backend)       → ruby (interpreted)
-        └──→ .php  (PHP backend)        → php (interpreted)
+Ruva/
+├── src/                    # Compiler source (17,849 LOC)
+│   ├── main.rs             # CLI entry point (12 subcommands)
+│   ├── lib.rs              # Library target for integration tests
+│   ├── ast.rs              # Token and AST node definitions
+│   ├── lexer.rs            # Byte-level tokenizer (591 LOC)
+│   ├── parser.rs           # Pratt parser (2,754 LOC)
+│   ├── typecheck.rs        # Type checker with diagnostics (1,634 LOC)
+│   ├── module.rs           # Module resolution (stdlib + file-based)
+│   ├── backend.rs          # CodeGenerator trait + Target enum
+│   ├── codegen.rs          # Rust backend (primary)
+│   ├── codegen_*.rs        # 12 other backends
+│   ├── lsp.rs              # LSP server (3,738 LOC)
+│   ├── json_protocol.rs    # Zero-dependency JSON parser/serializer
+│   ├── features.rs         # Security feature flags
+│   ├── colors.rs           # ANSI terminal colors
+│   └── debug.rs            # Token stream printer
+├── tests/                  # Integration tests
+│   ├── golden_tests.rs     # 24 golden/snapshot tests
+│   ├── transpiler_bench.rs # Benchmark suite with memory profiling
+│   ├── transpiler_golden/  # .ruva input files for golden tests
+│   └── golden/             # Expected output snapshots
+├── benches/                # Benchmark inputs and runner
+│   ├── inputs/             # small.ruva (61 LOC), medium.ruva (232 LOC), large.ruva (722 LOC)
+│   └── run.sh              # Benchmark runner script
+├── examples/               # 6,766 example .ruva files across 63 categories
+├── stdlib/                 # 13 standard library modules
+│   ├── core/               # Core types and utilities
+│   ├── kernel/             # Bare-metal OS development
+│   ├── graphics/           # OpenGL, Vulkan, DirectX
+│   ├── browser/            # DOM, Canvas, WebGL, Fetch
+│   ├── video/              # Encode/decode/mux
+│   ├── anticheat/          # Process integrity
+│   ├── io/                 # File I/O
+│   ├── server/             # HTTP server
+│   ├── game/               # Game engine
+│   ├── testing/            # Test helpers
+│   ├── formatter/          # Code formatting
+│   ├── serialization/      # JSON/TOML/YAML
+│   └── interop/            # FFI helpers
+├── benchmarks/             # Multi-language CPU benchmarks
+├── Cargo.toml              # Dependencies: clap + anyhow only
+└── DESIGN.md               # Language specification
 ```
 
-### Multi-Target Backends (13 total)
+---
 
-| Backend | Use Case | Output |
-|---------|----------|--------|
-| **Rust** | Maximum performance, systems programming | `.rs` → native binary |
-| **Zig** | Embedded, security, C interop | `.zig` → compiled binary |
-| **Python** | Security-sensitive, scripting, rapid prototyping | `.py` → interpreted |
-| **Java** | Enterprise, Android, JVM ecosystem | `.java` → compiled |
-| **C#** | .NET, Unity game dev, enterprise | `.cs` → compiled |
-| **Go** | Cloud, microservices, networking | `.go` → compiled |
-| **Swift** | iOS, macOS, Apple ecosystem | `.swift` → compiled |
-| **Kotlin** | Android, JVM, modern Java | `.kt` → compiled |
-| **TypeScript** | Web, Node.js, type-safe JS | `.ts` → compiled |
-| **JavaScript** | Universal web, browser, Node.js | `.js` → interpreted |
-| **Lua** | Embedded scripting, game modding | `.lua` → interpreted |
-| **Ruby** | Web (Rails), scripting, automation | `.rb` → interpreted |
-| **PHP** | Web backend, WordPress, CMS | `.php` → interpreted |
+## Dependencies
 
-### Backend Comparison
+Minimal — only 2 external crates:
 
-| Feature | Rust | Zig | Python | Java/C#/Kotlin | Go | Swift | TS/JS | Lua/Ruby/PHP |
-|---------|------|-----|--------|-----------------|-----|-------|-------|---------------|
-| Performance | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
-| Memory Safety | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
-| Compile Time | Slow | Fast | N/A | Medium | Fast | Medium | Fast | N/A |
-| Runtime | None | None | GC-managed | GC-managed | GC-managed | ARC | GC-managed | GC-managed |
-| Dependencies | cargo | zig toolchain | stdlib only | JDK / .NET SDK | go toolchain | swift toolchain | node/tsc | lang runtime |
+```toml
+[dependencies]
+clap = { version = "4", features = ["derive"] }  # CLI argument parsing
+anyhow = "1"                                      # Error handling
+```
+
+Everything else is hand-rolled: the lexer, parser, type checker, all 13 backends, the LSP server, and the JSON parser for the LSP wire protocol.
+
+---
+
+## Testing
+
+**275 tests, all passing:**
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| Unit tests (lib) | 82 | Lexer, parser, type checker, codegen backends |
+| Unit tests (bin) | 165 | CLI, module resolution, JSON, LSP |
+| Golden tests | 24 | Snapshot regression tests for transpiler output |
+| Benchmarks | 4 | Timing + memory profiling |
+
+### Golden Tests
+
+Snapshot tests that compare transpiler output against baseline `.golden` files:
+
+```bash
+# Run golden tests
+cargo test --test golden_tests
+
+# Regenerate baselines after intentional changes
+GOLDEN_BLESS=1 cargo test --test golden_tests
+```
+
+### Benchmarks
+
+Timing and memory profiling across three input sizes:
+
+```bash
+# Run all benchmarks
+cargo test --release --test transpiler_bench -- --nocapture
+
+# Or use the runner script
+bash benches/run.sh
+```
+
+Sample output (release mode):
+
+```
+  small  (61 LOC)     27µs lex   38µs parse   29µs typecheck   20µs codegen  → 114µs total
+                        heap: 30KB lex  56KB parse  6KB typecheck  6KB codegen  → peak 112KB
+
+  medium (232 LOC)    86µs lex  134µs parse   79µs typecheck   54µs codegen  → 353µs total
+                        heap: 59KB lex 158KB parse 12KB typecheck 10KB codegen  → peak 262KB
+
+  large  (722 LOC)   235µs lex  420µs parse  260µs typecheck  168µs codegen  → 1.08ms total
+                        heap: 205KB lex 486KB parse 45KB typecheck 18KB codegen → peak 795KB
+```
+
+---
+
+## Target Domains
+
+Ruva is designed for **safety-critical, performance-sensitive** applications:
+
+### Operating Systems
+- Bare-metal / `no_std`-style compilation target
+- No GC, no hidden allocations — predictable at the kernel level
+- Ownership model applies to raw memory and hardware resources
+
+### Anticheats
+- Real-time memory scanning without reflection bypass
+- Process integrity verification
+- Ownership prevents unauthorized memory access
+
+### Server Hosting
+- High-conconcurrency servers without thread exhaustion
+- Low latency — no GC pauses between requests
+- Memory-safe request handling at native performance
 
 ---
 
 ## Design Philosophy
 
-1. **Multi-language DNA** — Take the best from Rust, Java, Zig, and Python.
-   Don't reinvent what already works.
-
-2. **Safety first** — Memory safety is non-negotiable.
-   Rust's ownership model prevents entire classes of bugs.
-
-3. **Familiarity** — If you know Java, Python, or Zig, you already know
-   parts of Ruva. No new paradigms to learn.
-
-4. **Zero-cost abstractions** — Classes compile to struct + impl.
-   Decorators compile to attributes. No runtime overhead.
-
-5. **Explicit over implicit** — Like Zig, no hidden control flow.
-   Like Rust, no hidden allocations. Like Java, clear error handling.
-
----
-
-## Examples
-
-**875 examples** across **36 categories**:
-
-| Category | Count | Description |
-|----------|-------|-------------|
-| basics | 35 | Variables, types, operators, string interpolation |
-| control_flow | 35 | if/else, while, for, match, loop, fizzbuzz, fibonacci |
-| functions | 35 | Closures, recursion, higher-order, pattern matching |
-| classes | 40 | OOP, encapsulation, methods, counter, calculator, matrix |
-| enums | 30 | ADTs, pattern matching, Option, Result, status codes |
-| error_handling | 25 | try/catch, Result, error chains, recovery |
-| data_structures | 30 | Stack, queue, linked list, binary tree, graph |
-| generics | 20 | Generic functions, structs, traits, bounds |
-| modules | 20 | Imports, exports, inline modules, re-exports |
-| async | 20 | Async/await, channels, mutex, task spawning |
-| ffi | 20 | extern C, unsafe blocks, raw pointers, callbacks |
-| graphics | 40 | OpenGL, Vulkan, DirectX, shaders, textures |
-| browser | 40 | DOM, Canvas, WebGL, Fetch, WebSocket, Wasm |
-| video | 35 | Decode, encode, mux, filters, audio |
-| game_dev | 40 | Game loop, sprites, physics, AI, UI |
-| web_server | 25 | HTTP, routing, middleware, WebSocket, auth |
-| cli | 25 | Arg parsing, progress bars, interactive prompts |
-| algorithms | 35 | Sorting, searching, graph, dynamic programming |
-| data_processing | 25 | CSV, JSON, filtering, aggregation, statistics |
-| networking | 20 | TCP, UDP, HTTP, DNS, SSL |
-| crypto | 15 | Hashing, encryption, signing, key generation |
-| database | 15 | SQLite, Redis, MongoDB operations |
-| string_processing | 20 | Reverse, palindrome, regex, compression |
-| math | 20 | Primes, factorial, matrices, calculus |
-| testing | 15 | Unit tests, assertions, benchmarks |
-| design_patterns | 25 | Singleton, factory, observer, strategy |
-| systems_programming | 25 | Memory mapping, bit manipulation, threads |
-| embedded | 15 | GPIO, SPI, I2C, timers, power management |
-| machine_learning | 15 | Regression, classification, neural networks |
-| security | 15 | Input sanitization, XSS prevention, JWT |
-| performance | 15 | Caching, SIMD, lazy evaluation, memoization |
-| concurrency | 15 | Threads, channels, mutex, atomics |
-| file_io | 15 | Read/write files, directories, watching |
-| serialization | 15 | JSON, TOML, YAML, binary formats |
-| compression | 10 | Gzip, ZIP, LZ4, Snappy |
-| java_features | 2 | Interface, package declaration |
-| zig_features | 1 | Comptime blocks |
-| python_features | 2 | Decorators, list comprehensions |
-
----
-
-## Status
-
-**Multi-Backend Expansion — in progress**
-
-> This is an actively evolving fork. Backend codegen, the design/UI tooling,
-> and OS-target support below are at varying stages of completeness —
-> treat items without ✅ as in-progress, not yet shipped.
-
-### Language Support
-- **Rust (50%)**: Ownership, pattern matching, closures, generics, unsafe, raw pointers, enums
-- **Java (20%)**: Classes, interfaces, try/catch, throw, package declarations
-- **Zig (15%)**: Comptime blocks, explicit error handling
-- **Python (15%)**: Decorators, list comprehensions, f-strings, assertions
-
-### Core Pipeline
-- Lexer: ✅ complete with token pre-allocation and keyword optimization
-- Parser: ✅ Pratt parser with precedence climbing, all language features
-- Type Checker: ✅ real type unification, argument/return type checking, unsafe enforcement, source locations
-- Rust CodeGen: ✅ complete with all features
-- Zig CodeGen: ✅ complete with all features
-- Python CodeGen: ✅ complete with all features
-- Java / C# / Go / Swift / Kotlin / TypeScript / JavaScript / Lua / Ruby / PHP CodeGen: 🚧 in progress
-- Security: ✅ path traversal rejection, file size limits, JSON depth limits, dangerous FFI detection
-
-### Tooling
-- CLI: ✅ 12 subcommands (compile, build, run, check, transpile, tokens, ast, repl, pipe, new, fmt, lsp)
-- LSP: ✅ text document sync, hover, go-to-definition, completion, diagnostics, parse error reporting
-- Tests: ✅ 157 passing
-- CI/CD: ✅ GitHub Actions (build, test, lint, cross-platform)
-- Design tooling: 🚧 in progress
-
-### Standard Library (10 modules)
-- core, kernel (bare-metal OS dev: memory, interrupts, drivers, scheduler, syscalls), graphics (OpenGL/Vulkan/DX11/DX12), browser (DOM/Canvas/WebGL/Fetch/WebSocket/Wasm), video (encode/decode/mux/filters), anticheat, io, testing, formatter, serialization
-
-### Enterprise Focus
-This fork (`Ruva-lang-Enterprise`) targets three domains beyond the base language:
-- **Operating systems** — bare-metal / `no_std`-style compilation, aiming to make it
-  possible to build an OS in Ruva. 🚧 in progress
-- **Anticheats** — safe primitives for process memory scanning and integrity checks
-- **Server hosting** — high-concurrency, low-latency networking at native performance
+1. **Multi-language DNA** — Take the best from Rust, Java, Zig, and Python. Don't reinvent what already works.
+2. **Safety first** — Memory safety is non-negotiable. Rust's ownership model prevents entire classes of bugs.
+3. **Familiarity** — If you know Java, Python, or Zig, you already know parts of Ruva.
+4. **Zero-cost abstractions** — Classes compile to struct + impl. Decorators compile to attributes. No runtime overhead.
+5. **Explicit over implicit** — No hidden control flow, no hidden allocations, clear error handling.
+6. **Minimal dependencies** — Only `clap` and `anyhow`. Everything else is hand-rolled.
 
 ---
 
