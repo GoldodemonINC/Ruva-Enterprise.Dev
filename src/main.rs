@@ -1,18 +1,6 @@
 mod ast;
 mod backend;
 mod codegen;
-mod codegen_python;
-mod codegen_zig;
-mod codegen_java;
-mod codegen_csharp;
-mod codegen_go;
-mod codegen_swift;
-mod codegen_kotlin;
-mod codegen_typescript;
-mod codegen_javascript;
-mod codegen_lua;
-mod codegen_ruby;
-mod codegen_php;
 mod colors;
 mod debug;
 mod json_protocol;
@@ -25,9 +13,9 @@ mod vm;
 
 use anyhow::{bail, Result};
 use backend::Target;
-use clap::{Parser as ClapParser, Subcommand, ValueEnum};
+use clap::{Parser as ClapParser, Subcommand};
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -42,43 +30,6 @@ struct Cli {
     command: Commands,
 }
 
-#[derive(ValueEnum, Clone)]
-enum CliTarget {
-    Rust,
-    Zig,
-    Python,
-    Java,
-    Csharp,
-    Go,
-    Swift,
-    Kotlin,
-    Typescript,
-    Javascript,
-    Lua,
-    Ruby,
-    Php,
-}
-
-impl From<CliTarget> for Target {
-    fn from(t: CliTarget) -> Self {
-        match t {
-            CliTarget::Rust => Target::Rust,
-            CliTarget::Zig => Target::Zig,
-            CliTarget::Python => Target::Python,
-            CliTarget::Java => Target::Java,
-            CliTarget::Csharp => Target::CSharp,
-            CliTarget::Go => Target::Go,
-            CliTarget::Swift => Target::Swift,
-            CliTarget::Kotlin => Target::Kotlin,
-            CliTarget::Typescript => Target::TypeScript,
-            CliTarget::Javascript => Target::JavaScript,
-            CliTarget::Lua => Target::Lua,
-            CliTarget::Ruby => Target::Ruby,
-            CliTarget::Php => Target::Php,
-        }
-    }
-}
-
 #[derive(Subcommand)]
 enum Commands {
     /// Compile a .ruva file to a native executable
@@ -89,10 +40,6 @@ enum Commands {
         /// Output executable path (defaults to input name without extension)
         #[arg(short, long)]
         output: Option<PathBuf>,
-
-        /// Target language (rust, zig, python)
-        #[arg(long, value_enum, default_value_t = CliTarget::Rust)]
-        target: CliTarget,
 
         /// Build in release mode (optimized)
         #[arg(long)]
@@ -138,24 +85,6 @@ enum Commands {
         all: bool,
     },
 
-    /// Transpile .ruva files to target language source code
-    Transpile {
-        /// Input .ruva file
-        input: PathBuf,
-
-        /// Output file (defaults to input with target extension)
-        #[arg(short, long)]
-        output: Option<PathBuf>,
-
-        /// Target language (rust, zig, python)
-        #[arg(long, value_enum, default_value_t = CliTarget::Rust)]
-        target: CliTarget,
-
-        /// Print generated code to stdout instead of writing a file
-        #[arg(short, long)]
-        stdout: bool,
-    },
-
     /// Print the token stream for debugging
     Tokens {
         /// Input .ruva file
@@ -170,17 +99,6 @@ enum Commands {
 
     /// Start an interactive REPL
     Repl,
-
-    /// Transpile from stdin (pipe mode)
-    Pipe {
-        /// Output file
-        #[arg(short, long)]
-        output: Option<PathBuf>,
-
-        /// Target language (rust, zig, python)
-        #[arg(long, value_enum, default_value_t = CliTarget::Rust)]
-        target: CliTarget,
-    },
 
     /// Create a new Ruva project
     New {
@@ -224,8 +142,8 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Compile { input, output, target, release, lazy, verbose } => {
-            cmd_compile(&input, output.as_deref(), target.into(), release, lazy, verbose)?;
+        Commands::Compile { input, output, release, lazy, verbose } => {
+            cmd_compile(&input, output.as_deref(), release, lazy, verbose)?;
         }
         Commands::Build { project, release } => {
             cmd_build(&project, release)?;
@@ -236,9 +154,6 @@ fn main() -> Result<()> {
         Commands::Check { input, all } => {
             cmd_check(&input, all)?;
         }
-        Commands::Transpile { input, output, target, stdout } => {
-            cmd_transpile(&input, output.as_deref(), target.into(), stdout)?;
-        }
         Commands::Tokens { input } => {
             let source = read_source(&input)?;
             debug::print_tokens(&source);
@@ -248,9 +163,6 @@ fn main() -> Result<()> {
         }
         Commands::Ast { input } => {
             cmd_ast(&input)?;
-        }
-        Commands::Pipe { output, target } => {
-            cmd_pipe(output.as_deref(), target.into())?;
         }
         Commands::New { name } => {
             cmd_new(&name)?;
@@ -295,7 +207,7 @@ fn transpile(source: &str, target: Target, source_path: &Path) -> Result<String>
 
 // Commands
 
-fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: bool, lazy: bool, verbose: bool) -> Result<()> {
+fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, verbose: bool) -> Result<()> {
     let source = read_source(input)?;
 
     if verbose {
@@ -316,115 +228,68 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
     let program = resolver.resolve_program(&program)?;
 
     if verbose {
-        eprintln!("{}", colors::info(&format!("Transpiling to {}...", target)));
+        eprintln!("⟳ Compiling to native...");
     }
 
-    // Transpile using the selected backend
-    let mut gen = backend::create_generator(target);
+    // Transpile via the Rust backend and build with cargo
+    let mut gen = backend::create_generator(Target::Rust);
     let code = gen.generate(&program);
 
-    match target {
-        Target::Rust => {
-            // Rust: compile via cargo
-            if verbose {
-                eprintln!("⟳ Compiling to native...");
-            }
+    let tmp_dir = std::env::temp_dir().join("ruva_build");
+    fs::create_dir_all(&tmp_dir)?;
 
-            let tmp_dir = std::env::temp_dir().join("ruva_build");
-            fs::create_dir_all(&tmp_dir)?;
+    let cargo_toml = tmp_dir.join("Cargo.toml");
+    let profile = if release { "release" } else { "dev" };
+    let rust_gen = codegen::CodeGen::new();
+    let mut cargo_content = rust_gen.generate_cargo_toml();
+    cargo_content.push_str(&format!("\n[profile.{}]\nopt-level = 3\n", profile));
+    fs::write(&cargo_toml, cargo_content)?;
+    fs::create_dir_all(tmp_dir.join("src"))?;
+    fs::write(tmp_dir.join("src/main.rs"), &code)?;
 
-            let cargo_toml = tmp_dir.join("Cargo.toml");
-            let profile = if release { "release" } else { "dev" };
-            let rust_gen = codegen::CodeGen::new();
-            let mut cargo_content = rust_gen.generate_cargo_toml();
-            cargo_content.push_str(&format!("\n[profile.{}]\nopt-level = 3\n", profile));
-            fs::write(&cargo_toml, cargo_content)?;
-            fs::create_dir_all(tmp_dir.join("src"))?;
-            fs::write(tmp_dir.join("src/main.rs"), &code)?;
+    let mut cmd = Command::new("cargo");
+    cmd.arg("build");
+    if release {
+        cmd.arg("--release");
+    }
+    cmd.arg("--quiet");
+    cmd.current_dir(&tmp_dir);
 
-            let mut cmd = Command::new("cargo");
-            cmd.arg("build");
-            if release {
-                cmd.arg("--release");
-            }
-            cmd.arg("--quiet");
-            cmd.current_dir(&tmp_dir);
-
-            let status = cmd.status()?;
-            if !status.success() {
-                bail!("Compilation failed");
-            }
-
-            let bin_name = if cfg!(target_os = "windows") {
-                "ruva_program.exe"
-            } else {
-                "ruva_program"
-            };
-
-            let mut bin_path = tmp_dir.join("target").join(profile).join(bin_name);
-            if !bin_path.exists() {
-                bin_path = tmp_dir.join("target/debug").join(bin_name);
-            }
-
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => {
-                    let mut p = input.to_path_buf();
-                    p.set_extension("");
-                    if cfg!(target_os = "windows") {
-                        p.set_extension("exe");
-                    }
-                    p
-                }
-            };
-
-            fs::copy(&bin_path, &out_path)?;
-            eprintln!("{}", colors::success(&format!("Compiled {} → {} (Rust)", input.display(), out_path.display())));
-        }
-        Target::Zig => {
-            // Zig: write .zig file and compile with zig build-exe
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => {
-                    let mut p = input.to_path_buf();
-                    p.set_extension("zig");
-                    p
-                }
-            };
-            fs::write(&out_path, &code)?;
-
-            if verbose {
-                eprintln!("⟳ Compiling with zig...");
-            }
-
-            let mut cmd = Command::new("zig");
-            cmd.arg("build-exe");
-            cmd.arg(out_path.to_str().unwrap());
-
-            let status = cmd.status()?;
-            if !status.success() {
-                bail!("Zig compilation failed");
-            }
-
-            eprintln!("{}", colors::success(&format!("Compiled {} → {} (Zig)", input.display(), out_path.display())));
-        }
-        _ => {
-            // All other backends: transpile-only (write file with target extension)
-            let out_path = match output {
-                Some(p) => p.to_path_buf(),
-                None => {
-                    let mut p = input.to_path_buf();
-                    p.set_extension(target.file_extension().trim_start_matches('.'));
-                    p
-                }
-            };
-            fs::write(&out_path, &code)?;
-            eprintln!("{}", colors::success(&format!("Transpiled {} → {} ({})", input.display(), out_path.display(), target)));
-        }
+    let status = cmd.status()?;
+    if !status.success() {
+        bail!("Compilation failed");
     }
 
+    let bin_name = if cfg!(target_os = "windows") {
+        "ruva_program.exe"
+    } else {
+        "ruva_program"
+    };
+
+    let mut bin_path = tmp_dir.join("target").join(profile).join(bin_name);
+    if !bin_path.exists() {
+        bin_path = tmp_dir.join("target/debug").join(bin_name);
+    }
+
+    let out_path = match output {
+        Some(p) => p.to_path_buf(),
+        None => {
+            let mut p = input.to_path_buf();
+            p.set_extension("");
+            if cfg!(target_os = "windows") {
+                p.set_extension("exe");
+            }
+            p
+        }
+    };
+
+    fs::copy(&bin_path, &out_path)?;
+    eprintln!("{}", colors::success(&format!("Compiled {} → {} (Rust)", input.display(), out_path.display())));
+
     Ok(())
-}fn cmd_build(project: &Path, release: bool) -> Result<()> {
+}
+
+fn cmd_build(project: &Path, release: bool) -> Result<()> {
     let src_dir = project.join("src");
     if !src_dir.exists() {
         bail!("No src/ directory found in {}", project.display());
@@ -447,7 +312,7 @@ fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: boo
 
     for file in &files {
         eprintln!("  → {}", file.display());
-        cmd_compile(file, None, Target::Rust, release, false, false)?;
+        cmd_compile(file, None, release, false, false)?;
     }
 
     eprintln!("✓ Build complete");
@@ -579,29 +444,6 @@ fn check_file(path: &Path) -> Result<()> {
     }
 }
 
-fn cmd_transpile(input: &Path, output: Option<&Path>, target: Target, stdout: bool) -> Result<()> {
-    let source = read_source(input)?;
-    let code = transpile(&source, target, input)?;
-
-    if stdout {
-        print!("{}", code);
-        return Ok(());
-    }
-
-    let out_path = match output {
-        Some(p) => p.to_path_buf(),
-        None => {
-            let mut p = input.to_path_buf();
-            p.set_extension(target.file_extension().trim_start_matches('.'));
-            p
-        }
-    };
-
-    fs::write(&out_path, &code)?;
-    eprintln!("{}", colors::success(&format!("Transpiled {} → {} ({})", input.display(), out_path.display(), target)));
-    Ok(())
-}
-
 fn cmd_repl() -> Result<()> {
     eprintln!("Ruva REPL v0.1.0");
     eprintln!("Type expressions and statements. Ctrl+D to exit.");
@@ -683,20 +525,6 @@ fn cmd_ast(input: &Path) -> Result<()> {
     let mut parser = parser::Parser::new(&source)?;
     let program = parser.parse_program()?;
     println!("{:#?}", program);
-    Ok(())
-}
-
-fn cmd_pipe(output: Option<&Path>, target: Target) -> Result<()> {
-    let mut source = String::new();
-    io::stdin().read_to_string(&mut source)?;    let code = transpile(&source, target, Path::new("stdin"))?;
-
-    if let Some(out_path) = output {
-        fs::write(out_path, &code)?;
-        eprintln!("{}", colors::success(&format!("Wrote to {} ({})", out_path.display(), target)));
-    } else {
-        print!("{}", code);
-    }
-
     Ok(())
 }
 

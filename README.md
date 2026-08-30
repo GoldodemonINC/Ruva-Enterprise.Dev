@@ -2,7 +2,7 @@
 
 **Easy to learn. Fast. Secure.**
 
-Ruva is its own language — modern syntax, memory safety, predictable performance, and a clean mental model. It transpiles to 13 backends **and runs directly on its own bytecode VM**.
+Ruva is its own language — modern syntax, memory safety, predictable performance, and a clean mental model. It runs directly on its own bytecode VM and compiles to native via its Rust backend.
 
 ```
 Ruva = The Language
@@ -157,22 +157,11 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
         │
         ▼
    ┌─────────┐
-   │ CodeGen │  → target source code       (5,748 LOC across 13 backends)
+   │ CodeGen │  → Rust source → native binary
    └────┬────┘
         │
-        ├──→ .rs   (Rust)        → cargo build → native binary
-        ├──→ .zig  (Zig)         → zig build-exe
-        ├──→ .py   (Python)      → python3 (interpreted)
-        ├──→ .java (Java)        → javac → JVM bytecode
-        ├──→ .cs   (C#)          → dotnet build → .NET
-        ├──→ .go   (Go)          → go build → native binary
-        ├──→ .swift (Swift)      → swiftc → native binary
-        ├──→ .kt   (Kotlin)      → kotlinc → JVM bytecode
-        ├──→ .ts   (TypeScript)  → tsc → JS
-        ├──→ .js   (JavaScript)  → node (interpreted)
-        ├──→ .lua  (Lua)         → lua (interpreted)
-        ├──→ .rb   (Ruby)        → ruby (interpreted)
-        └──→ .php  (PHP)         → php (interpreted)
+        ├──→ .rs (Rust) → cargo build → native binary
+        └──→ bytecode   → rgu/ruva vm (interpreted)
 ```
 
 ---
@@ -184,12 +173,9 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
 | `ruva new <name>` | Create a new project | `ruva new my_app` |
 | `ruva run <file>` | Compile and run (Rust backend) | `ruva run src/main.rve` |
 | `ruva compile <file>` | Build to native (Rust) | `ruva compile src/main.rve -o app` |
-| `ruva compile <file> --target <backend>` | Build via any backend | `ruva compile src/main.rve --target go` |
 | `ruva compile <file> --release` | Optimized build | `ruva compile src/main.rve --release` |
 | `ruva compile <file> --lazy` | Syntax check only | `ruva compile src/main.rve --lazy` |
 | `ruva build [dir]` | Build all .rve/.ruva in src/ | `ruva build` |
-| `ruva transpile <file>` | Generate target code | `ruva transpile src/main.rve --stdout` |
-| `ruva transpile <file> --target <backend>` | Generate for any backend | `ruva transpile src/main.rve --target typescript` |
 | `ruva check <file>` | Type-check a file | `ruva check src/main.rve` |
 | `ruva check <dir> --all` | Check all files | `ruva check src/ --all` |
 | `ruva fmt <file>` | Format a file | `ruva fmt src/main.rve` |
@@ -199,12 +185,9 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
 | `ruva lsp` | Start LSP server | `ruva lsp` |
 | `ruva tokens <file>` | Print token stream | `ruva tokens src/main.rve` |
 | `ruva ast <file>` | Print AST | `ruva ast src/main.rve` |
-| `ruva pipe` | Transpile from stdin | `cat file.rve \| ruva pipe --target rust` |
 | `rgu run <file>` | Run via the VM (no cargo) | `rgu run src/main.rve` |
 | `rgu check <file>` | Parse + resolve only | `rgu check src/main.rve` |
-| `rgu build <file> --target <t>` | Transpile via driver | `rgu build src/main.rve --target python` |
-
-Valid `--target` values: `rust`, `zig`, `python`, `java`, `csharp`, `go`, `swift`, `kotlin`, `typescript`, `javascript`, `lua`, `ruby`, `php`
+| `rgu build <file> [--stdout]` | Transpile to Rust via driver | `rgu build src/main.rve --stdout` |
 
 ---
 
@@ -291,7 +274,7 @@ Ruva/
 │   ├── module.rs           # Module resolution (stdlib + file-based)
 │   ├── backend.rs          # CodeGenerator trait + Target enum
 │   ├── codegen.rs          # Rust backend (primary)
-│   ├── codegen_*.rs        # 12 other backends
+│   ├── bin/rgu.rs          # RGu compiler driver
 │   ├── lsp.rs              # LSP server (3,738 LOC)
 │   ├── vm.rs               # Bytecode VM: compiler + interpreter (~1,420 LOC)
 │   ├── json_protocol.rs    # Zero-dependency JSON parser/serializer
@@ -338,9 +321,7 @@ self_hosted/
 ├── src/
 │   ├── colors.ruva              # ANSI color codes (52 LOC)
 │   ├── colors.rs                # Transpiled → replaces src/colors.rs
-│   ├── features.ruva            # Security feature flags (44 LOC)
-│   ├── codegen_java.ruva        # Java backend codegen (220 LOC)
-│   └── codegen_java.rs          # Transpiled → replaces src/codegen_java.rs
+│   └── features.ruva            # Security feature flags (44 LOC)
 └── fixup.sh                     # Post-processing for transpiler output
 ```
 
@@ -349,14 +330,13 @@ self_hosted/
 | Module | .ruva LOC | .rs LOC | Status |
 |--------|-----------|---------|--------|
 | `colors.rs` | 52 | 66 | ✅ Replaced |
-| `codegen_java.rs` | 220 | 307 | ✅ Replaced |
 | `features.rs` | 44 | 117 | ✅ Transpiled |
-| **Total** | **316** | **490** | |
+| **Total** | **96** | **183** | |
 
 ### How it works
 
-1. Write the module in `.ruva` (e.g., `self_hosted/src/codegen_java.ruva`)
-2. Transpile: `ruva transpile self_hosted/src/codegen_java.ruva`
+1. Write the module in `.ruva` (e.g., `self_hosted/src/colors.ruva`)
+2. Transpile: `ruva transpile self_hosted/src/colors.ruva`
 3. Post-process: fix type aliases, derive attributes, enum variant syntax
 4. Copy to `src/` as a drop-in replacement
 5. All existing tests continue to pass
@@ -429,15 +409,15 @@ rgu run src/main.rve
 # Parse + resolve modules (no execution)
 rgu check src/main.rve
 
-# Transpile to a backend source file (e.g. python, zig, java)
-rgu build src/main.rve --target python
+# Transpile to Rust source (print to stdout, or write a file)
+rgu build src/main.rve --stdout
 
 rgu --version
 ```
 
 Once the `rgu` binary is built, it is self-contained: it reads source, lexes,
 parses, resolves modules, and interprets. This is the driver, distinct from the
-`ruva` CLI which also offers transpile/lsp/format tooling (and whose `run`/`compile`
+`ruva` CLI which also offers check/lsp/format tooling (and whose `run`/`compile`
 paths shell out to cargo for the Rust backend).
 
 ## Dependencies
@@ -450,7 +430,7 @@ clap = { version = "4", features = ["derive"] }  # CLI argument parsing
 anyhow = "1"                                      # Error handling
 ```
 
-Everything else is hand-rolled: the lexer, parser, type checker, all 13 backends, the LSP server, and the JSON parser for the LSP wire protocol.
+Everything else is hand-rolled: the lexer, parser, type checker, the bytecode VM, the Rust codegen backend, the LSP server, and the JSON parser for the LSP wire protocol.
 
 ---
 
@@ -460,11 +440,11 @@ Everything else is hand-rolled: the lexer, parser, type checker, all 13 backends
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| Unit tests (lib) | 82 | Lexer, parser, type checker, codegen backends |
-| Unit tests (bin) | 165 | CLI, module resolution, JSON, LSP |
+| Unit tests (lib) | 71 | Lexer, parser, type checker, Rust codegen |
+| Unit tests (bin) | 154 | CLI, module resolution, JSON, LSP |
 | Golden tests | 24 | Snapshot regression tests for transpiler output |
 | Benchmarks | 4 | Timing + memory profiling |
-| VM tests | 34 | Bytecode VM: closures, loops, break/continue, arithmetic safety |
+| VM tests | 35 | Bytecode VM: closures, loops, break/continue, arithmetic safety |
 
 ### Golden Tests
 

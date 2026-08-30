@@ -37,35 +37,17 @@ fn project_root() -> PathBuf {
 
 fn transpile_ruva_to_rust(input_path: &std::path::Path) -> String {
     let root = project_root();
-    let exe = if cfg!(target_os = "windows") {
-        root.join("target/debug/ruva.exe")
-    } else {
-        root.join("target/debug/ruva")
-    };
 
-    // Build the binary if it doesn't exist yet
-    if !exe.exists() {
-        let status = Command::new("cargo")
-            .args(["build"])
-            .current_dir(&root)
-            .status()
-            .expect("Failed to run cargo build");
-        assert!(status.success(), "cargo build failed");
-    }
-
-    let output = Command::new(&exe)
-        .args(["transpile"])
+    let output = Command::new(env!("CARGO_BIN_EXE_rgu"))
+        .args(["build", "--stdout"])
         .arg(input_path)
-        .arg("--target")
-        .arg("rust")
-        .arg("--stdout")
         .current_dir(&root)
         .output()
-        .expect("Failed to run ruva transpile");
+        .expect("Failed to run rgu build");
 
     assert!(
         output.status.success(),
-        "ruva transpile failed on {}: {}",
+        "rgu build failed on {}: {}",
         input_path.display(),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -154,21 +136,16 @@ fn filter_stderr(raw: &str) -> String {
         .join("\n")
 }
 
-/// Run `transpile` on a file and capture filtered stderr (for parser/syntax errors).
+/// Run `build --stdout` on a file and capture filtered stderr (for parser/syntax errors).
 fn run_transpile_error(input_path: &std::path::Path) -> String {
-    ensure_built();
-    let exe = ruva_exe();
     let root = project_root();
 
-    let output = Command::new(&exe)
-        .args(["transpile"])
+    let output = Command::new(env!("CARGO_BIN_EXE_rgu"))
+        .args(["build", "--stdout"])
         .arg(input_path)
-        .arg("--target")
-        .arg("rust")
-        .arg("--stdout")
         .current_dir(&root)
         .output()
-        .expect("Failed to run ruva transpile");
+        .expect("Failed to run rgu build");
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     filter_stderr(&stderr).trim().to_string()

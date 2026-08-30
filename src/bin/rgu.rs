@@ -22,7 +22,7 @@ fn print_usage() {
     eprintln!("Usage:");
     eprintln!("  rgu run <file.rve> [--debug]        Run a file directly via the bytecode VM");
     eprintln!("  rgu check <file.rve>                Parse + resolve modules (no execution)");
-    eprintln!("  rgu build <file.rve> [--target <t>] Transpile to a backend source file");
+    eprintln!("  rgu build <file.rve> [--stdout]     Transpile to Rust (--stdout prints to stdout)");
     eprintln!("  rgu --version                       Print version");
     eprintln!("  rgu --help                          Show this help");
     eprintln!();
@@ -67,10 +67,14 @@ fn cmd_check(input: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_build(input: &Path, target: Target) -> Result<()> {
+fn cmd_build(input: &Path, target: Target, to_stdout: bool) -> Result<()> {
     let program = load_program(input)?;
     let mut gen = ruva::backend::create_generator(target);
     let code = gen.generate(&program);
+    if to_stdout {
+        print!("{}", code);
+        return Ok(());
+    }
     let out_path = input.with_extension(target.file_extension().trim_start_matches('.'));
     fs::write(&out_path, &code)?;
     eprintln!("{}", colors::success(&format!("Transpiled {} -> {} ({})", input.display(), out_path.display(), target)));
@@ -103,17 +107,30 @@ fn main() -> Result<()> {
             cmd_check(&PathBuf::from(input))?;
         }
         "build" => {
-            let input = it.next().ok_or_else(|| anyhow::anyhow!("`rgu build` needs a file path"))?;
-            let mut target = Target::Rust;
-            while let Some(a) = it.next() {
-                if a == "--target" {
-                    let t = it.next().ok_or_else(|| anyhow::anyhow!("`--target` needs a value"))?;
-                    target = t.parse().map_err(|e| anyhow::anyhow!("{e}"))?;
-                } else {
-                    bail!("Unexpected argument `{a}`");
+            let args: Vec<String> = it.cloned().collect();
+            let mut input: Option<PathBuf> = None;
+            let mut output_to_stdout = false;
+            let mut i = 0;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--stdout" => output_to_stdout = true,
+                    "--target" => {
+                        // Only the Rust target exists; accept it but ensure it is rust.
+                        i += 1;
+                        let t = args.get(i).ok_or_else(|| anyhow::anyhow!("`--target` needs a value"))?;
+                        let target: Target = t.parse().map_err(|e| anyhow::anyhow!("{e}"))?;
+                        if target != Target::Rust {
+                            bail!("Only the `rust` target is supported now; got `{target}`");
+                        }
+                    }
+                    a if a.starts_with('-') => bail!("Unknown flag `{a}`"),
+                    a if input.is_none() => input = Some(PathBuf::from(a)),
+                    a => bail!("Unexpected argument `{a}`"),
                 }
+                i += 1;
             }
-            cmd_build(&PathBuf::from(input), target)?;
+            let input = input.ok_or_else(|| anyhow::anyhow!("`rgu build` needs a file path"))?;
+            cmd_build(&input, Target::Rust, output_to_stdout)?;
         }
         other => {
             bail!("Unknown command `{other}`. See `rgu --help`.");
