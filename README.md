@@ -30,9 +30,11 @@ ruva run src/main.rve
 # Compile to native binary (Rust backend)
 ruva compile src/main.rve -o my_app
 
-# Transpile to any backend
-ruva transpile src/main.rve --target python --stdout
-ruva transpile src/main.rve --target typescript --stdout
+# Transpile to Rust source
+rgu build src/main.rve --stdout
+
+# Run through the bytecode VM (no build step)
+rgu run src/main.rve
 
 # Check for errors
 ruva check src/main.rve
@@ -160,7 +162,7 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
    │ CodeGen │  → Rust source → native binary
    └────┬────┘
         │
-        ├──→ .rs (Rust) → cargo build → native binary
+        ├──→ .rs (Rust) → rustc → native binary
         └──→ bytecode   → rgu/ruva vm (interpreted)
 ```
 
@@ -171,7 +173,7 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
 | Command | Description | Example |
 |---------|-------------|---------|
 | `ruva new <name>` | Create a new project | `ruva new my_app` |
-| `ruva run <file>` | Compile and run (Rust backend) | `ruva run src/main.rve` |
+| `ruva run <file>` | Build with rustc and run | `ruva run src/main.rve` |
 | `ruva compile <file>` | Build to native (Rust) | `ruva compile src/main.rve -o app` |
 | `ruva compile <file> --release` | Optimized build | `ruva compile src/main.rve --release` |
 | `ruva compile <file> --lazy` | Syntax check only | `ruva compile src/main.rve --lazy` |
@@ -265,7 +267,7 @@ Ruva inherits Rust's safety model through transpilation:
 ```
 Ruva/
 ├── src/                    # Compiler source (17,849 LOC)
-│   ├── main.rs             # CLI entry point (12 subcommands)
+│   ├── main.rs             # CLI entry point (11 subcommands)
 │   ├── lib.rs              # Library target for integration tests
 │   ├── ast.rs              # Token and AST node definitions
 │   ├── lexer.rs            # Byte-level tokenizer (591 LOC)
@@ -283,13 +285,9 @@ Ruva/
 │   └── debug.rs            # Token stream printer
 ├── tests/                  # Integration tests
 │   ├── golden_tests.rs     # 24 golden/snapshot tests
-│   ├── transpiler_bench.rs # Benchmark suite with memory profiling
-│   ├── vm_tests.rs         # 34 bytecode-VM regression tests
+│   ├── vm_tests.rs         # 35 bytecode-VM regression tests
 │   ├── transpiler_golden/  # .ruva input files for golden tests
 │   └── golden/             # Expected output snapshots
-├── benches/                # Benchmark inputs and runner
-│   ├── inputs/             # small.ruva (61 LOC), medium.ruva (232 LOC), large.ruva (722 LOC)
-│   └── run.sh              # Benchmark runner script
 ├── examples/               # 6,766 example .ruva files across 63 categories
 ├── stdlib/                 # 13 standard library modules
 │   ├── core/               # Core types and utilities
@@ -305,7 +303,6 @@ Ruva/
 │   ├── formatter/          # Code formatting
 │   ├── serialization/      # JSON/TOML/YAML
 │   └── interop/            # FFI helpers
-├── benchmarks/             # Ruva CPU benchmarks
 ├── Cargo.toml              # Dependencies: clap + anyhow only
 └── DESIGN.md               # Language specification
 ```
@@ -318,11 +315,9 @@ The Ruva compiler is progressively being rewritten in Ruva itself. The `self_hos
 
 ```
 self_hosted/
-├── src/
-│   ├── colors.ruva              # ANSI color codes (52 LOC)
-│   ├── colors.rs                # Transpiled → replaces src/colors.rs
-│   └── features.ruva            # Security feature flags (44 LOC)
-└── fixup.sh                     # Post-processing for transpiler output
+└── src/
+    ├── colors.ruva              # ANSI color codes (52 LOC)
+    └── features.ruva            # Security feature flags (44 LOC)
 ```
 
 ### Self-hosted modules
@@ -336,7 +331,7 @@ self_hosted/
 ### How it works
 
 1. Write the module in `.ruva` (e.g., `self_hosted/src/colors.ruva`)
-2. Transpile: `ruva transpile self_hosted/src/colors.ruva`
+2. Transpile: `rgu build self_hosted/src/colors.ruva`
 3. Post-process: fix type aliases, derive attributes, enum variant syntax
 4. Copy to `src/` as a drop-in replacement
 5. All existing tests continue to pass
@@ -418,7 +413,7 @@ rgu --version
 Once the `rgu` binary is built, it is self-contained: it reads source, lexes,
 parses, resolves modules, and interprets. This is the driver, distinct from the
 `ruva` CLI which also offers check/lsp/format tooling (and whose `run`/`compile`
-paths shell out to cargo for the Rust backend).
+paths build native binaries directly with rustc).
 
 ## Dependencies
 
@@ -436,14 +431,13 @@ Everything else is hand-rolled: the lexer, parser, type checker, the bytecode VM
 
 ## Testing
 
-**310 tests, all passing:**
+**284 tests, all passing:**
 
 | Category | Count | Description |
 |----------|-------|-------------|
 | Unit tests (lib) | 71 | Lexer, parser, type checker, Rust codegen |
 | Unit tests (bin) | 154 | CLI, module resolution, JSON, LSP |
 | Golden tests | 24 | Snapshot regression tests for transpiler output |
-| Benchmarks | 4 | Timing + memory profiling |
 | VM tests | 35 | Bytecode VM: closures, loops, break/continue, arithmetic safety |
 
 ### Golden Tests
@@ -458,30 +452,6 @@ cargo test --test golden_tests
 GOLDEN_BLESS=1 cargo test --test golden_tests
 ```
 
-### Benchmarks
-
-Timing and memory profiling across three input sizes:
-
-```bash
-# Run all benchmarks
-cargo test --release --test transpiler_bench -- --nocapture
-
-# Or use the runner script
-bash benches/run.sh
-```
-
-Sample output (release mode):
-
-```
-  small  (61 LOC)     27µs lex   38µs parse   29µs typecheck   20µs codegen  → 114µs total
-                        heap: 30KB lex  56KB parse  6KB typecheck  6KB codegen  → peak 112KB
-
-  medium (232 LOC)    86µs lex  134µs parse   79µs typecheck   54µs codegen  → 353µs total
-                        heap: 59KB lex 158KB parse 12KB typecheck 10KB codegen  → peak 262KB
-
-  large  (722 LOC)   235µs lex  420µs parse  260µs typecheck  168µs codegen  → 1.08ms total
-                        heap: 205KB lex 486KB parse 45KB typecheck 18KB codegen → peak 795KB
-```
 
 ---
 
@@ -491,20 +461,14 @@ Non-defect observations from a recent codebase survey (kept out of normal bug
 lists because they are gaps or organizational notes, not broken behavior):
 
 - **Source file extensions** — `.rve` is a first-class alias for `.ruva` across
-the CLI, module resolution, and test harnesses. A helper script
-(`rename_ruva_to_rv.py`, dry-run by default) can bulk-rename `.ruva` files;
-it leaves the thousands of `.ruva` files and the self-hosted catalogs unchanged
-unless you run it with `--apply`.
+the CLI, module resolution, and test harnesses.
 - **Self-hosting is mid-flight** — the repo has both `self_hosted/` (transpiled
-drop-in modules) and a separate `self-hosting/` Cargo project. The two overlap
-in intent; neither is fully committed. Coordinate the rename script with this
-before bulk-renaming.
-- **Untracked artifacts** — `.class` files, `stderr.txt`/`stdout.txt`,
-`.bak` files, and `self-hosting/target/` have accumulated in the tree. They are
-not part of the build and should be gitignored or removed.
-- **Codegen backends** — the non-Rust backends trigger `unused variable:
-pattern` warnings in their `while let` handlers (they ignore the binding). This
-is cosmetic; none affect output.
+drop-in modules) and a separate `self-hosting/` Ruva compiler project. The two
+overlap in intent; neither is fully committed.
+- **Cargo-free native builds** — `ruva compile`/`run` build native binaries with
+`rustc` (no cargo at runtime). Programs that import external crates
+(`ruva::graphics`, `video`, `anticheat`) need the bytecode VM (`rgu run`) until
+a std-only runtime covers them.
 - **GitHub language color** — `.gitattributes` maps `.rve`/`.ruva` to the
 `Ruva` linguist language (with `linguist-detectable`). Whether the red/reddish
 swatch renders still depends on Ruva being registered in linguist upstream.
