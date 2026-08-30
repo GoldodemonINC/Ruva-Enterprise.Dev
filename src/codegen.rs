@@ -64,6 +64,10 @@ impl CodeGen {
     }
 
 
+    pub fn has_external_dependencies(&self) -> bool {
+        !self.dependencies.is_empty()
+    }
+
     pub fn generate_cargo_toml(&self) -> String {
         let mut cargo_toml = String::from(
             r#"[package]

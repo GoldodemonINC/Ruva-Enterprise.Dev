@@ -232,43 +232,10 @@ fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, v
     }
 
 
-    let mut gen = backend::create_generator(Target::Rust);
-    let code = gen.generate(&program);
-
-    let tmp_dir = std::env::temp_dir().join("ruva_build");
-    fs::create_dir_all(&tmp_dir)?;
-
-    let cargo_toml = tmp_dir.join("Cargo.toml");
-    let profile = if release { "release" } else { "dev" };
-    let rust_gen = codegen::CodeGen::new();
-    let mut cargo_content = rust_gen.generate_cargo_toml();
-    cargo_content.push_str(&format!("\n[profile.{}]\nopt-level = 3\n", profile));
-    fs::write(&cargo_toml, cargo_content)?;
-    fs::create_dir_all(tmp_dir.join("src"))?;
-    fs::write(tmp_dir.join("src/main.rs"), &code)?;
-
-    let mut cmd = Command::new("cargo");
-    cmd.arg("build");
-    if release {
-        cmd.arg("--release");
-    }
-    cmd.arg("--quiet");
-    cmd.current_dir(&tmp_dir);
-
-    let status = cmd.status()?;
-    if !status.success() {
-        bail!("Compilation failed");
-    }
-
-    let bin_name = if cfg!(target_os = "windows") {
-        "ruva_program.exe"
-    } else {
-        "ruva_program"
-    };
-
-    let mut bin_path = tmp_dir.join("target").join(profile).join(bin_name);
-    if !bin_path.exists() {
-        bin_path = tmp_dir.join("target/debug").join(bin_name);
+    let mut gen = codegen::CodeGen::new();
+    let code = gen.generate_rust(&program);
+    if gen.has_external_dependencies() {
+        bail!("This program imports external crates, which a cargo-free build cannot resolve yet. Use the bytecode VM instead: `rgu run {}", input.display());
     }
 
     let out_path = match output {
@@ -283,9 +250,32 @@ fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, v
         }
     };
 
-    fs::copy(&bin_path, &out_path)?;
+    rustc_build(&code, &out_path, release)?;
     eprintln!("{}", colors::success(&format!("Compiled {} → {} (Rust)", input.display(), out_path.display())));
 
+    Ok(())
+}
+
+fn rustc_build(code: &str, out_path: &Path, optimize: bool) -> Result<()> {
+    let src_dir = std::env::temp_dir().join("ruva_build");
+    fs::create_dir_all(&src_dir)?;
+    let src_path = src_dir.join(format!("_ruva_main_{}.rs", std::process::id()));
+    fs::write(&src_path, code)?;
+
+    let mut cmd = Command::new("rustc");
+    cmd.arg("--edition").arg("2021");
+    if optimize {
+        cmd.arg("-C").arg("opt-level=3");
+        cmd.arg("-C").arg("strip=symbols");
+    } else {
+        cmd.arg("-C").arg("opt-level=1");
+    }
+    cmd.arg(&src_path).arg("-o").arg(out_path);
+
+    let status = cmd.status().map_err(|e| anyhow::anyhow!("Failed to run rustc (is it installed?): {e}"))?;
+    if !status.success() {
+        bail!("Rust compilation failed");
+    }
     Ok(())
 }
 
@@ -344,42 +334,28 @@ fn cmd_vm(input: &Path, debug: bool) -> Result<()> {
 
 fn cmd_run(input: &Path, args: &[String]) -> Result<()> {
     let source = read_source(input)?;
-    let code = transpile(&source, Target::Rust, input)?;
+    let mut parser = parser::Parser::new(&source)?;
+    let program = parser.parse_program()?;
 
-    let tmp_dir = std::env::temp_dir().join("ruva_build");
-    fs::create_dir_all(&tmp_dir)?;
+    let mut resolver = module::ModuleResolver::new(input);
+    let program = resolver.resolve_program(&program)?;
 
-    let cargo_toml = tmp_dir.join("Cargo.toml");
-    if !cargo_toml.exists() {
-        fs::write(
-            &cargo_toml,
-            r#"[package]
-name = "ruva_program"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-"#,
-        )?;
-        fs::create_dir_all(tmp_dir.join("src"))?;
+    let mut gen = codegen::CodeGen::new();
+    let code = gen.generate_rust(&program);
+    if gen.has_external_dependencies() {
+        bail!("This program imports external crates, which a cargo-free build cannot resolve yet. Use the bytecode VM instead: `rgu run {}", input.display());
     }
 
-    let src_path = tmp_dir.join("src/main.rs");
-    fs::write(&src_path, &code)?;
+    let tmp_dir = std::env::temp_dir().join("ruva_run");
+    fs::create_dir_all(&tmp_dir)?;
+    let bin = tmp_dir.join(if cfg!(target_os = "windows") { "program.exe" } else { "program" });
 
     eprintln!("⟳ Compiling...");
-    let status = Command::new("cargo")
-        .arg("run")
-        .arg("--quiet")
-        .arg("--")
-        .args(args)
-        .current_dir(&tmp_dir)
-        .status()?;
-
+    rustc_build(&code, &bin, false)?;
+    let status = Command::new(&bin).args(args).status()?;
     if !status.success() {
-        bail!("Compilation or execution failed");
+        bail!("Execution failed (exit {})", status.code().unwrap_or(-1));
     }
-
     Ok(())
 }
 
