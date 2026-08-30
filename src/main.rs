@@ -628,35 +628,15 @@ fn cmd_new(name: &str) -> Result<()> {
 
 
     fs::write(
-        project_dir.join("Cargo.toml"),
-        format!(
-            r#"[package]
-name = "{}"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "{}"
-path = "src/main.ruva"
-"#,
-            name, name
-        ),
-    )?;
-
-
-    fs::write(
-        project_dir.join("src/main.ruva"),
-        r#"// Welcome to Ruva!
-// This is a simple hello world program.
-
-fn main() {
+        project_dir.join("src/main.rve"),
+        r#"fn main() {
     println!("Hello, {}!", "Ruva")
 }
 "#,
     )?;
 
     eprintln!("{}", colors::success(&format!("Created new Ruva project: {}", name)));
-    eprintln!("  {}", colors::dim(&format!("cd {} && ruva run src/main.ruva", name)));
+    eprintln!("  {}", colors::dim(&format!("cd {} && rgu run src/main.rve", name)));
 
     Ok(())
 }

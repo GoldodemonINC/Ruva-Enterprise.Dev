@@ -68,30 +68,6 @@ impl CodeGen {
         !self.dependencies.is_empty()
     }
 
-    pub fn generate_cargo_toml(&self) -> String {
-        let mut cargo_toml = String::from(
-            r#"[package]
-name = "ruva_program"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-"#,
-        );
-
-
-        for (name, version) in &self.dependencies {
-            cargo_toml.push_str(&format!("{} = \"{}\"\n", name, version));
-        }
-
-
-        if !self.dependencies.iter().any(|(n, _)| n == "anyhow") {
-            cargo_toml.push_str("anyhow = \"1\"\n");
-        }
-
-        cargo_toml
-    }
-
     fn write_indent(&mut self) {
         for _ in 0..self.indent {
             self.output.push_str("    ");
