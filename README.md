@@ -200,6 +200,9 @@ Ruva source files use the `.rve` (or `.ruva`) extension.
 | `ruva tokens <file>` | Print token stream | `ruva tokens src/main.rve` |
 | `ruva ast <file>` | Print AST | `ruva ast src/main.rve` |
 | `ruva pipe` | Transpile from stdin | `cat file.rve \| ruva pipe --target rust` |
+| `rgu run <file>` | Run via the VM (no cargo) | `rgu run src/main.rve` |
+| `rgu check <file>` | Parse + resolve only | `rgu check src/main.rve` |
+| `rgu build <file> --target <t>` | Transpile via driver | `rgu build src/main.rve --target python` |
 
 Valid `--target` values: `rust`, `zig`, `python`, `java`, `csharp`, `go`, `swift`, `kotlin`, `typescript`, `javascript`, `lua`, `ruby`, `php`
 
@@ -413,6 +416,30 @@ Implemented features:
  Lexer → Parser → Compiler (direct AST → bytecode) → VM interpreter
 ```
 
+## RGu — the Ruva compiler driver
+
+RGu (`rgu`) is Ruva's own compiler front-end, built as a standalone binary that
+**does not need cargo (or any build tool) at runtime**. It links the Ruva
+library and drives a `.rve`/`.ruva` file directly through the bytecode VM.
+
+```bash
+# Run a .rve file through the VM — no cargo, no build step
+rgu run src/main.rve
+
+# Parse + resolve modules (no execution)
+rgu check src/main.rve
+
+# Transpile to a backend source file (e.g. python, zig, java)
+rgu build src/main.rve --target python
+
+rgu --version
+```
+
+Once the `rgu` binary is built, it is self-contained: it reads source, lexes,
+parses, resolves modules, and interprets. This is the driver, distinct from the
+`ruva` CLI which also offers transpile/lsp/format tooling (and whose `run`/`compile`
+paths shell out to cargo for the Rust backend).
+
 ## Dependencies
 
 Minimal — only 2 external crates:
@@ -429,7 +456,7 @@ Everything else is hand-rolled: the lexer, parser, type checker, all 13 backends
 
 ## Testing
 
-**309 tests, all passing:**
+**310 tests, all passing:**
 
 | Category | Count | Description |
 |----------|-------|-------------|
