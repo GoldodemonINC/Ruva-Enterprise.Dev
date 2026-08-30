@@ -1,22 +1,22 @@
 use crate::ast::*;
 
-// Type Classification Constants
 
-/// All numeric primitive type names (signed, unsigned, float).
+
+
 const NUMERIC_TYPES: &[&str] = &[
     "i8", "i16", "i32", "i64", "i128", "isize",
     "u8", "u16", "u32", "u64", "u128", "usize",
     "f32", "f64",
 ];
 
-/// Primitive types recognized by the type checker (includes numeric + bool, char, string).
+
 const PRIMITIVE_TYPES: &[&str] = &[
     "i8", "i16", "i32", "i64", "i128", "isize",
     "u8", "u16", "u32", "u64", "u128", "usize",
     "f32", "f64", "bool", "char",
 ];
 
-// Structured Type Representation
+
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ty {
@@ -37,10 +37,10 @@ pub enum Ty {
 
 type TypeVar = usize;
 
-// Structured Type Checker
+
 
 struct Scope {
-    /// Maps variable name → (type, has been used).
+
     bindings: std::collections::HashMap<String, (Ty, bool)>,
 }
 
@@ -52,7 +52,7 @@ pub struct TypeChecker {
     current_return_type: Option<Ty>,
     in_unsafe_block: bool,
     in_unsafe_fn: bool,
-    /// Tracks the current source location for error reporting
+
     current_line: usize,
     current_col: usize,
     pub warning_count: usize,
@@ -106,32 +106,32 @@ impl TypeChecker {
             error_count: 0,
         };
 
-        // Register built-in constructors
+
         for b in &["Some", "None", "Ok", "Err", "Self"] {
             checker.define_var(b.to_string(), Ty::Named(b.to_string()), 0);
         }
         checker
     }
 
-    /// Check a program and return diagnostics.
+
     pub fn check(&mut self, program: &Program) -> Vec<Diagnostic> {
-        // First pass: collect function signatures and struct definitions
+
         for item in &program.items {
             self.register_item(item);
         }
 
-        // Second pass: check all items
+
         for item in &program.items {
             self.check_item(item);
         }
 
-        // Report unused variables
+
         self.report_unused();
 
         std::mem::take(&mut self.diagnostics)
     }
 
-    // Registration Pass
+
 
     fn register_item(&mut self, item: &Item) {
         match item {
@@ -149,7 +149,7 @@ impl TypeChecker {
                 }).collect();
                 self.struct_fields.insert(c.name.clone(), fields);
                 self.define_var(c.name.clone(), Ty::Named(c.name.clone()), c.span.line);
-                // Register methods
+
                 for m in &c.methods {
                     let params: Vec<(String, Ty)> = m.params.iter().map(|p| {
                         (p.name.clone(), self.ast_type_to_ty(&p.ty))
@@ -167,7 +167,7 @@ impl TypeChecker {
             }
             Item::Enum(e) => {
                 self.define_var(e.name.clone(), Ty::Named(e.name.clone()), e.span.line);
-                // Register enum variants as constructors
+
                 for v in &e.variants {
                     let ret = Ty::Generic(e.name.clone(), vec![]);
                     self.functions.insert(v.name.clone(), FunctionSig {
@@ -224,7 +224,7 @@ impl TypeChecker {
                 }
             }
             Item::ExternBlock(eb) => {
-                // Security: validate ABI string
+
                 let valid_abis = ["C", "system", "cdecl", "stdcall", "fastcall", "vectorcall", "thiscall", "unwind"];
                 if !valid_abis.contains(&eb.abi.as_str()) {
                     self.warn(
@@ -237,7 +237,7 @@ impl TypeChecker {
                 for ei in &eb.items {
                     match ei {
                         ExternItem::Function { name, params, return_type, .. } => {
-                            // Security: warn about dangerous FFI functions
+
                             let dangerous = ["exec", "system", "popen", "eval", "dlopen",
                                 "LoadLibrary", "CreateProcess", "ShellExecute"];
                             if dangerous.iter().any(|d| name.eq_ignore_ascii_case(d)) {
@@ -248,7 +248,7 @@ impl TypeChecker {
                                 );
                             }
 
-                            // Security: warn about functions returning raw pointers without safety annotation
+
                             if let Some(ref ret) = return_type {
                                 if matches!(ret, Type::RawPointer { .. }) {
                                     self.warn(
@@ -266,7 +266,7 @@ impl TypeChecker {
                             self.functions.insert(name.clone(), FunctionSig { params: ps, return_type: ret });
                         }
                         ExternItem::Static { name, ty, is_mut, .. } => {
-                            // Security: warn about mutable statics
+
                             if *is_mut {
                                 self.warn(
                                     format!("Mutable static '{}' in FFI — requires unsafe access and careful synchronization",
@@ -286,7 +286,7 @@ impl TypeChecker {
         }
     }
 
-    // Checking Pass
+
 
     fn check_item(&mut self, item: &Item) {
         match item {
@@ -334,8 +334,8 @@ impl TypeChecker {
                 }
             }
             Item::ExternBlock(eb) => {
-                // Extern functions reference types that may not be in scope yet;
-                // skip type-checking their parameter types.
+
+
                 let _ = eb;
             }
             _ => {}
@@ -364,7 +364,7 @@ impl TypeChecker {
 
         self.check_block(&f.body);
 
-        // Check return type presence
+
         if let Some(ref ret_ty) = self.current_return_type {
             if !self.ty_is_unit(ret_ty) && !self.block_has_return(&f.body) {
                 self.warn(
@@ -412,7 +412,7 @@ impl TypeChecker {
 
                 let names = self.pattern_names(pattern);
                 for name in names {
-                    // Determine the variable's type
+
                     let var_ty = if let Some(declared) = ty {
                         let declared_ty = self.ast_type_to_ty(declared);
                         if !self.ty_is_inferred(&val_ty) && !self.types_compatible(&declared_ty, &val_ty) {
@@ -563,7 +563,7 @@ impl TypeChecker {
     fn check_expr(&mut self, expr: &Expr) {
         match expr {
             Expr::Ident(name) => {
-                // Set span from identifier for error reporting
+
                 self.current_col = self.current_col.max(1);
                 if !self.is_defined(name) {
                     self.error(format!("Variable '{}' is not defined", name), self.current_line, self.current_col);
@@ -574,12 +574,12 @@ impl TypeChecker {
             Expr::Binary { op, left, right } => {
                 self.check_expr(left);
                 self.check_expr(right);
-                // Type check binary operations
+
                 let left_ty = self.infer_type(left);
                 let right_ty = self.infer_type(right);
                 if !self.ty_is_inferred(&left_ty) && !self.ty_is_inferred(&right_ty) {
                     match op {
-                        // Comparison operators: operands must be the same type
+
                         BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => {
                             if !self.types_compatible(&left_ty, &right_ty) {
                                 self.error(
@@ -589,7 +589,7 @@ impl TypeChecker {
                                 );
                             }
                         }
-                        // Logical operators: operands must be bool
+
                         BinOp::And | BinOp::Or => {
                             if !self.ty_is_bool(&left_ty) || !self.ty_is_bool(&right_ty) {
                                 self.error(
@@ -599,7 +599,7 @@ impl TypeChecker {
                                 );
                             }
                         }
-                        // Arithmetic operators: operands must be numeric and compatible
+
                         BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Rem => {
                             let left_numeric = self.ty_is_numeric(&left_ty);
                             let right_numeric = self.ty_is_numeric(&right_ty);
@@ -617,7 +617,7 @@ impl TypeChecker {
                                 );
                             }
                         }
-                        // Bitwise operators: operands must be numeric
+
                         BinOp::BitAnd | BinOp::BitOr | BinOp::BitXor | BinOp::Shl | BinOp::Shr => {
                             if !self.ty_is_numeric(&left_ty) && !self.ty_is_bool(&left_ty) {
                                 self.error(
@@ -644,7 +644,7 @@ impl TypeChecker {
                 for arg in args {
                     self.check_expr(arg);
                 }
-                // Check argument count and types
+
                 if let Expr::Ident(name) = function.as_ref() {
                     if let Some(sig) = self.functions.get(name).cloned() {
                         let expected = sig.params.len();
@@ -655,7 +655,7 @@ impl TypeChecker {
                                 0, 0,
                             );
                         } else {
-                            // Type-check each argument
+
                             for (i, (param_name, param_ty)) in sig.params.iter().enumerate() {
                                 if !self.ty_is_inferred(param_ty) {
                                     let arg_ty = self.infer_type(&args[i]);
@@ -677,7 +677,7 @@ impl TypeChecker {
                 for arg in args {
                     self.check_expr(arg);
                 }
-                // Check method exists and argument count
+
                 if let Some(sig) = self.functions.get(method).cloned() {
                     let expected = sig.params.iter().filter(|(name, _)| name != "self").count();
                     let actual = args.len();
@@ -687,7 +687,7 @@ impl TypeChecker {
                             0, 0,
                         );
                     } else {
-                        // Type-check arguments (skip self parameter)
+
                         let non_self_params: Vec<_> = sig.params.iter()
                             .filter(|(name, _)| name != "self")
                             .collect();
@@ -713,7 +713,7 @@ impl TypeChecker {
                     if !self.is_defined(name) {
                         self.error(format!("Cannot assign to undefined variable '{}'", name), 0, 0);
                     } else {
-                        // Type-check assignment
+
                         let target_ty = self.lookup_var_type(name);
                         let value_ty = self.infer_type(value);
                         if !self.ty_is_inferred(&target_ty) && !self.ty_is_inferred(&value_ty) {
@@ -802,7 +802,7 @@ impl TypeChecker {
             }
             Expr::Deref(expr) => {
                 self.check_expr(expr);
-                // Check if dereferencing a raw pointer outside unsafe
+
                 let expr_ty = self.infer_type(expr);
                 if !self.in_unsafe_block && !self.in_unsafe_fn {
                     if self.ty_is_raw_pointer(&expr_ty) {
@@ -925,7 +925,7 @@ impl TypeChecker {
         }
     }
 
-    // Type Inference
+
 
     fn infer_type(&self, expr: &Expr) -> Ty {
         match expr {
@@ -984,7 +984,7 @@ impl TypeChecker {
                 if let Some(sig) = self.functions.get(method) {
                     return sig.return_type.clone().unwrap_or(Ty::Unit);
                 }
-                // Built-in methods
+
                 if method == "is_some" || method == "is_none" || method == "is_ok" || method == "is_err" {
                     return Ty::Primitive("bool".into());
                 }
@@ -1000,7 +1000,7 @@ impl TypeChecker {
                         }
                     }
                 }
-                // Check generic types (e.g., Option.is_some)
+
                 if let Ty::Generic(name, _) = &obj_ty {
                     if name == "Option" && (field == "is_some" || field == "is_none") {
                         return Ty::Primitive("bool".into());
@@ -1031,7 +1031,7 @@ impl TypeChecker {
             Expr::Cast { ty, .. } => self.ast_type_to_ty(ty),
 
             Expr::If { then_body, .. } => {
-                // For now, use the then_body type if it's a trailing expression
+
                 if let Some(ref expr) = then_body.expr {
                     self.infer_type(expr)
                 } else {
@@ -1080,7 +1080,7 @@ impl TypeChecker {
 
             Expr::Try(inner) => {
                 let inner_ty = self.infer_type(inner);
-                // Try to extract the Ok type from Result<T, E>
+
                 if let Ty::Generic(_, args) = &inner_ty {
                     if args.len() >= 1 {
                         return args[0].clone();
@@ -1090,7 +1090,7 @@ impl TypeChecker {
             }
 
             Expr::Self_ => {
-                // Look up Self type from current context
+
                 Ty::Inferred
             }
 
@@ -1135,7 +1135,7 @@ impl TypeChecker {
         }
     }
 
-    // Type Utility Methods
+
 
     fn ast_type_to_ty(&self, ast_ty: &Type) -> Ty {
         match ast_ty {
@@ -1169,7 +1169,8 @@ impl TypeChecker {
             }
             Type::Unit => Ty::Unit,
             Type::Never => Ty::Never,
-            Type::SelfType => Ty::Inferred, // Resolved at check time
+            Type::SelfType => Ty::Inferred,
+
         }
     }
 
@@ -1206,21 +1207,21 @@ impl TypeChecker {
     }
 
     fn types_compatible(&self, a: &Ty, b: &Ty) -> bool {
-        // Normalize type vars
+
         let a = self.resolve(a);
         let b = self.resolve(b);
 
-        // Normalize string/String
+
         let a = if matches!(&a, Ty::Primitive(s) if s == "string") { Ty::Primitive("String".into()) } else { a };
         let b = if matches!(&b, Ty::Primitive(s) if s == "string") { Ty::Primitive("String".into()) } else { b };
 
         if a == b { return true; }
 
-        // Inferred matches anything
+
         if matches!(&a, Ty::Inferred) || matches!(&b, Ty::Inferred) { return true; }
         if matches!(&a, Ty::Var(_)) || matches!(&b, Ty::Var(_)) { return true; }
 
-        // Option variants (None, Some, Ok, Err) are compatible with their Option/Result types
+
         let a_is_option = matches!(&a, Ty::Generic(s, _) if s == "Option")
             || matches!(&a, Ty::Named(s) if s == "Option" || s.starts_with("Option::"));
         let b_is_option = matches!(&b, Ty::Generic(s, _) if s == "Option")
@@ -1233,7 +1234,7 @@ impl TypeChecker {
         if a_is_result && b_is_result { return true; }
 
         match (&a, &b) {
-            // Allow numeric coercion between primitive numeric types
+
             (Ty::Primitive(a), Ty::Primitive(b)) => {
                 NUMERIC_TYPES.contains(&a.as_str()) && NUMERIC_TYPES.contains(&b.as_str())
             }
@@ -1261,7 +1262,7 @@ impl TypeChecker {
     }
 
     fn resolve(&self, ty: &Ty) -> Ty {
-        // For now, just return the type as-is (no type variable unification yet)
+
         ty.clone()
     }
 
@@ -1285,7 +1286,7 @@ impl TypeChecker {
         matches!(ty, Ty::RawPointer(_, _))
     }
 
-    // Scope Management
+
 
     fn push_scope(&mut self) {
         self.scopes.push(Scope {
@@ -1333,7 +1334,7 @@ impl TypeChecker {
         || self.scopes.iter().any(|s| s.bindings.contains_key(name))
     }
 
-    // Unused Variable Reporting
+
 
     fn report_unused(&mut self) {
         let unused: Vec<String> = self.scopes.first()
@@ -1614,7 +1615,7 @@ mod tests {
                 return p
             }
         "#);
-        // Inside an unsafe fn, dereferencing is allowed
+
         let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == DiagnosticKind::Error).collect();
         assert!(errors.is_empty(), "Unexpected errors: {:?}", errors.iter().map(|e| &e.message).collect::<Vec<_>>());
     }
@@ -1632,3 +1633,4 @@ mod tests {
         assert!(has_warning(&diagnostics, "Condition should be bool"));
     }
 }
+

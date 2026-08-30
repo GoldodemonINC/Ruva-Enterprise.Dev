@@ -1,5 +1,5 @@
-// Self-hosted Ruva Parser
-// Pratt parser consuming Token stream from the lexer
+
+
 
 struct Parser {
     tokens: Vec<Token>,
@@ -42,7 +42,7 @@ impl Parser {
     fn at(&self, kind: TokenKind) -> bool { return self.peek() == kind }
     fn at_any(&self, a: TokenKind, b: TokenKind) -> bool { return self.peek() == a || self.peek() == b }
 
-    // ─── Program & Items ─────────────────────────────────────────
+
     pub fn parse_program(&mut self) -> Program {
         let mut items = Vec::new()
         while !self.at(TokenKind::Eof) {
@@ -61,7 +61,7 @@ impl Parser {
         if self.at(TokenKind::KwImpl) { return Item::Impl(self.parse_impl()) }
         if self.at(TokenKind::KwTrait) { return Item::Trait(self.parse_trait(is_pub)) }
         if self.at(TokenKind::KwExtern) { return Item::ExternBlock(self.parse_extern_block()) }
-        // Skip unknown items
+
         while !self.at_any(TokenKind::Eof, TokenKind::RBrace) { self.advance() }
         if self.at(TokenKind::RBrace) { self.advance() }
         return Item::Import(ImportDef { path: String::from("__skip__") })
@@ -83,7 +83,7 @@ impl Parser {
         return ImportDef { path: path }
     }
 
-    // ─── Function ──────────────────────────────────────────────────
+
     fn parse_function(&mut self, is_pub: bool) -> FunctionDef {
         self.expect_kind(TokenKind::KwFn)
         let name = self.advance().value
@@ -107,7 +107,7 @@ impl Parser {
         return params
     }
 
-    // ─── Struct ──────────────────────────────────────────────────────
+
     fn parse_struct(&mut self, is_pub: bool) -> StructDef {
         self.expect_kind(TokenKind::KwStruct)
         let name = self.advance().value
@@ -126,7 +126,7 @@ impl Parser {
         return StructDef { is_pub: is_pub, name: name, fields: fields }
     }
 
-    // ─── Enum ────────────────────────────────────────────────────────
+
     fn parse_enum(&mut self, is_pub: bool) -> EnumDef {
         self.expect_kind(TokenKind::KwEnum)
         let name = self.advance().value
@@ -151,7 +151,7 @@ impl Parser {
         return EnumDef { is_pub: is_pub, name: name, variants: variants }
     }
 
-    // ─── Impl ──────────────────────────────────────────────────────
+
     fn parse_impl(&mut self) -> ImplBlock {
         self.expect_kind(TokenKind::KwImpl)
         let trait_name = if !self.at(TokenKind::KwFor) {
@@ -170,7 +170,7 @@ impl Parser {
         return ImplBlock { self_type: self_type, trait_name: trait_name, methods: methods }
     }
 
-    // ─── Trait ───────────────────────────────────────────────────────
+
     fn parse_trait(&mut self, is_pub: bool) -> TraitDef {
         self.expect_kind(TokenKind::KwTrait)
         let name = self.advance().value
@@ -188,7 +188,7 @@ impl Parser {
         return TraitDef { is_pub: is_pub, name: name, methods: methods }
     }
 
-    // ─── Extern ──────────────────────────────────────────────────────
+
     fn parse_extern_block(&mut self) -> ExternBlock {
         self.expect_kind(TokenKind::KwExtern)
         let abi = if self.at(TokenKind::StrLit) { self.advance().value } else { String::from("C") }
@@ -215,7 +215,7 @@ impl Parser {
         return ExternBlock { abi: abi, items: items }
     }
 
-    // ─── Type Parser ────────────────────────────────────────────────
+
     fn parse_type(&mut self) -> Type {
         if self.at(TokenKind::KwSelfType) { self.advance(); return Type::Name(String::from("Self")) }
         if self.at(TokenKind::Amp) {
@@ -247,7 +247,7 @@ impl Parser {
         return Type::Name(name)
     }
 
-    // ─── Block ─────────────────────────────────────────────────────
+
     fn parse_block(&mut self) -> Block {
         self.expect_kind(TokenKind::LBrace)
         let mut stmts = Vec::new()
@@ -265,7 +265,7 @@ impl Parser {
         return Block { stmts: stmts, expr: tail_expr }
     }
 
-    // ─── Statement Parser ────────────────────────────────────────────
+
     fn parse_stmt(&mut self) -> Stmt {
         if self.at(TokenKind::KwLet) { return self.parse_let() }
         if self.at(TokenKind::KwIf) { return self.parse_if_stmt() }
@@ -324,7 +324,8 @@ impl Parser {
     fn parse_for(&mut self) -> Stmt {
         self.expect_kind(TokenKind::KwFor)
         let var = self.advance().value
-        self.advance() // skip "in"
+        self.advance()
+
         let iterable = self.parse_expr()
         let body = self.parse_block()
         return Stmt::For(var, iterable, body)
@@ -368,7 +369,7 @@ impl Parser {
         return Pattern::Ident(name)
     }
 
-    // ─── Expression Parser (Pratt) ─────────────────────────────────
+
     fn parse_expr(&mut self) -> Expr {
         return self.parse_expr_prec(0)
     }
@@ -384,7 +385,7 @@ impl Parser {
             let right = self.parse_expr_prec(prec + 1)
             left = Expr::Binary { op: binop, left: Box::new(left), right: Box::new(right) }
         }
-        // Handle assignment and compound assignment
+
         if self.at(TokenKind::Eq) {
             self.advance()
             let value = self.parse_expr()
@@ -487,7 +488,7 @@ impl Parser {
     }
 
     fn parse_primary(&mut self) -> Expr {
-        // Literals
+
         if self.at(TokenKind::IntLit) { let v = self.advance().value.parse().unwrap_or(0); return Expr::Int(v) }
         if self.at(TokenKind::FloatLit) { let v = self.advance().value.parse().unwrap_or(0.0); return Expr::Float(v) }
         if self.at(TokenKind::StrLit) { let v = self.advance().value; return Expr::Str(v) }
@@ -495,10 +496,10 @@ impl Parser {
         if self.at(TokenKind::KwFalse) { self.advance(); return Expr::Bool(false) }
         if self.at(TokenKind::KwNull) { self.advance(); return Expr::Null }
 
-        // Self
+
         if self.at(TokenKind::KwSelf) { self.advance(); return Expr::Self_ }
 
-        // Parenthesized / tuple
+
         if self.at(TokenKind::LParen) {
             self.advance()
             if self.at(TokenKind::RParen) { self.advance(); return Expr::Tuple(Vec::new()) }
@@ -517,7 +518,7 @@ impl Parser {
             return first
         }
 
-        // Array literal
+
         if self.at(TokenKind::LBracket) {
             self.advance()
             let mut elems = Vec::new()
@@ -529,28 +530,29 @@ impl Parser {
             return Expr::Array(elems)
         }
 
-        // Block expression
+
         if self.at(TokenKind::LBrace) { return Expr::Block(self.parse_block()) }
 
-        // If expression
+
         if self.at(TokenKind::KwIf) { return self.parse_if_expr() }
 
-        // Loop expression
+
         if self.at(TokenKind::KwLoop) { self.advance(); return Expr::Loop(self.parse_block()) }
 
-        // Match expression
+
         if self.at(TokenKind::KwMatch) { return self.parse_match_expr() }
 
-        // Unsafe block
+
         if self.at(TokenKind::KwUnsafe) { self.advance(); return Expr::UnsafeBlock(self.parse_block()) }
 
-        // Closure
+
         if self.at(TokenKind::Pipe) { return self.parse_closure() }
 
-        // Macro invocation: name!(...)
+
         if self.peek() == TokenKind::Ident && self.pos + 1 < self.tokens.len() && self.tokens[self.pos + 1].kind == TokenKind::Not {
             let name = self.advance().value
-            self.advance() // skip !
+            self.advance()
+
             self.expect_kind(TokenKind::LParen)
             let mut args = Vec::new()
             while !self.at(TokenKind::RParen) {
@@ -561,13 +563,13 @@ impl Parser {
             return Expr::Macro { name: name, args: args }
         }
 
-        // Path or identifier
+
         if self.at(TokenKind::Ident) {
             let name = self.advance().value
             return Expr::Ident(name)
         }
 
-        // Fallback
+
         self.advance()
         return Expr::Null
     }
@@ -623,3 +625,4 @@ impl Parser {
         return Some(self.parse_expr())
     }
 }
+

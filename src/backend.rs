@@ -1,22 +1,22 @@
 use crate::ast::Program;
 
-/// Trait that all code generation backends must implement.
-///
-/// Each backend transforms a Ruva AST into source code for a target language.
+
+
+
 pub trait CodeGenerator {
-    /// Generate source code from a Ruva AST program.
+
     fn generate(&mut self, program: &Program) -> String;
 
-    /// The name of the target language (e.g., "rust").
+
     fn target_name(&self) -> &str;
 
-    /// The file extension for generated files (e.g., ".rs").
+
     fn file_extension(&self) -> &str;
 }
 
-/// Supported compilation targets. Ruva compiles to native via the Rust backend
-/// or runs directly on its own bytecode VM; the historical multi-language
-/// transpiler backends have been removed.
+
+
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Target {
     Rust,
@@ -48,7 +48,7 @@ impl std::str::FromStr for Target {
     }
 }
 
-/// Create a code generator for the given target.
+
 pub fn create_generator(_target: Target) -> Box<dyn CodeGenerator> {
     Box::new(crate::codegen::CodeGen::new())
 }
@@ -86,4 +86,4 @@ mod tests {
         assert!("zig".parse::<Target>().is_err());
         assert!("python".parse::<Target>().is_err());
     }
-}
+}

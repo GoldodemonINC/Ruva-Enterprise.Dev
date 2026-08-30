@@ -115,7 +115,7 @@ impl<'a> Lexer<'a> {
 
         let mut is_float = false;
 
-        // hex
+
         if first == b'0' && self.peek() == Some(b'x') {
             num_str.push(self.advance().unwrap() as char);
             while let Some(b) = self.peek() {
@@ -131,7 +131,7 @@ impl<'a> Lexer<'a> {
             return Ok(Token::Int(val));
         }
 
-        // binary
+
         if first == b'0' && self.peek() == Some(b'b') {
             num_str.push(self.advance().unwrap() as char);
             while let Some(b) = self.peek() {
@@ -154,7 +154,7 @@ impl<'a> Lexer<'a> {
                 is_float = true;
                 num_str.push(self.advance().unwrap() as char);
             } else if b == b'f' || b == b'u' || b == b'i' {
-                // type suffix — consume full suffix (e.g. i64, u32, f64)
+
                 while let Some(suffix) = self.peek() {
                     if suffix.is_ascii_alphanumeric() || suffix == b'_' {
                         self.advance();
@@ -245,7 +245,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn tokenize(&mut self) -> Result<Vec<(Token, Span)>> {
-        // Pre-allocate: roughly 1 token per 8 bytes of source
+
         let estimated = (self.bytes.len() / 8).max(32);
         let mut tokens = Vec::with_capacity(estimated);
 
@@ -262,7 +262,7 @@ impl<'a> Lexer<'a> {
                 break;
             };
 
-            // Comments
+
             if ch == b'/' && self.peek_ahead(1) == Some(b'/') {
                 self.advance();
                 self.advance();
@@ -276,10 +276,12 @@ impl<'a> Lexer<'a> {
                 continue;
             }
 
-            // FString: f"Hello {name}"
+
             if ch == b'f' && self.peek_ahead(1) == Some(b'"') {
-                self.advance(); // skip 'f'
-                self.advance(); // skip opening quote
+                self.advance();
+
+                self.advance();
+
                 let mut parts = Vec::new();
                 let mut current = String::new();
                 loop {
@@ -294,7 +296,7 @@ impl<'a> Lexer<'a> {
                             if !current.is_empty() {
                                 parts.push((std::mem::take(&mut current), false));
                             }
-                            // Read until matching }
+
                             let mut depth = 1u32;
                             let mut expr = String::new();
                             while depth > 0 {
@@ -323,13 +325,13 @@ impl<'a> Lexer<'a> {
                         None => bail!("Unterminated f-string at {}:{}", self.line, self.col),
                     }
                 }
-                // Convert parts to tokens: FStringStart, text parts, expr parts, FStringEnd
-                // For simplicity, we'll generate a format! macro call
+
+
                 tokens.push((Token::FStringStart, span));
                 for (text, is_expr) in parts {
                     if is_expr {
                         tokens.push((Token::FStringExpr, span));
-                        // Tokenize the expression inside the braces
+
                         let inner_tokens = Lexer::new(&text).tokenize()?;
                         for (t, s) in inner_tokens {
                             if t != Token::Eof {
@@ -345,12 +347,12 @@ impl<'a> Lexer<'a> {
                 continue;
             }
 
-            // String literal
+
             if ch == b'"' || ch == b'\'' {
                 let quote = ch;
                 self.advance();
 
-                // Char literal
+
                 if ch == b'\'' {
                     let c = match self.advance() {
                         Some(b'\\') => match self.advance() {
@@ -373,29 +375,31 @@ impl<'a> Lexer<'a> {
                     continue;
                 }
 
-                // String literal
+
                 let s = self.read_string(quote)?;
                 tokens.push((Token::Str(s), span));
                 continue;
             }
 
-            // Number literal
+
             if ch.is_ascii_digit() {
-                self.advance(); // consume the first digit
+                self.advance();
+
                 let token = self.read_number(ch)?;
                 tokens.push((token, span));
                 continue;
             }
 
-            // Identifier or keyword
+
             if ch.is_ascii_alphabetic() || ch == b'_' {
-                self.advance(); // consume the first char
+                self.advance();
+
                 let token = self.read_identifier(ch);
                 tokens.push((token, span));
                 continue;
             }
 
-            // Operators and delimiters
+
             self.advance();
             let token = match ch {
                 b'+' => match self.peek() {
@@ -592,3 +596,4 @@ mod tests {
         );
     }
 }
+

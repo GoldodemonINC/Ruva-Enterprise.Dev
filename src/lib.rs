@@ -1,5 +1,5 @@
-// Ruva language library — exposes compiler internals for integration tests and benchmarks.
-// The binary crate (main.rs) also declares these modules; Cargo compiles both independently.
+
+
 
 pub mod ast;
 pub mod backend;

@@ -1,6 +1,6 @@
-// Ruva Self-Hosted Lexer
-// Tokenizes .ruva source into a stream of tokens.
-// Uses byte values for escape sequences to avoid char literal issues.
+
+
+
 
 enum TokenKind {
     IntLit, FloatLit, StrLit, CharLit, BoolLit, Ident,
@@ -278,3 +278,4 @@ impl Lexer {
         return tokens
     }
 }
+

@@ -1,6 +1,6 @@
-// Ruva LSP Server
-// Language Server Protocol implementation for the Ruva language.
-// Provides: text document sync, hover info, go-to-definition, completion.
+
+
+
 
 use crate::ast::*;
 use crate::json_protocol::*;
@@ -9,7 +9,7 @@ use crate::typecheck::TypeChecker;
 use std::collections::HashMap;
 use std::io::{self, BufRead, Read, Write};
 
-// LSP Types
+
 
 #[derive(Debug, Clone)]
 pub struct Position {
@@ -55,7 +55,8 @@ pub struct TextDocumentContentChangeEvent {
 #[derive(Debug, Clone)]
 pub struct CompletionItem {
     pub label: String,
-    pub kind: i64, // CompletionItemKind
+    pub kind: i64,
+
     pub detail: Option<String>,
     pub documentation: Option<String>,
     pub insert_text: Option<String>,
@@ -88,7 +89,7 @@ pub struct FunctionSig {
     pub return_type: Option<String>,
 }
 
-// Symbol Index
+
 
 #[derive(Debug, Clone)]
 pub struct SymbolLocation {
@@ -108,20 +109,20 @@ pub enum SymbolKind {
 
 #[derive(Debug, Clone, Default)]
 pub struct SymbolIndex {
-    /// symbol name -> locations where it is defined
+
     pub definitions: HashMap<String, Vec<SymbolLocation>>,
-    /// symbol name -> locations where it is used
+
     pub usages: HashMap<String, Vec<SymbolLocation>>,
 }
 
-// Document Store
+
 
 pub struct DocumentStore {
     documents: HashMap<String, String>,
     versions: HashMap<String, i64>,
     parsed: HashMap<String, Program>,
     symbol_index: HashMap<String, SymbolIndex>,
-    /// Parse/lexer errors per document, for diagnostic reporting
+
     parse_errors: HashMap<String, DiagnosticInfo>,
 }
 
@@ -136,11 +137,11 @@ impl DocumentStore {
         }
     }
 
-    /// Maximum document size to prevent DoS (1MB)
+
     const MAX_DOCUMENT_SIZE: usize = 1024 * 1024;
 
     pub fn open(&mut self, item: TextDocumentItem) {
-        // Security: reject documents that are too large
+
         if item.text.len() > Self::MAX_DOCUMENT_SIZE {
             eprintln!("Warning: Document {} too large ({} bytes), limiting to {} bytes",
                 item.uri, item.text.len(), Self::MAX_DOCUMENT_SIZE);
@@ -159,11 +160,11 @@ impl DocumentStore {
             for change in changes {
                 match change.range {
                     Some(range) => {
-                        // Incremental update: apply range-based edit
+
                         Self::apply_incremental_change(doc, &range, &change.text);
                     }
                     None => {
-                        // Full document replacement (no range = entire document)
+
                         *doc = change.text;
                     }
                 }
@@ -172,37 +173,37 @@ impl DocumentStore {
         }
     }
 
-    /// Apply an incremental text change by replacing the text at the given range.
-    /// This converts the range to byte offsets, replaces the text, and updates the document.
+
+
     fn apply_incremental_change(doc: &mut String, range: &TextRange, new_text: &str) {
         let lines: Vec<&str> = doc.lines().collect();
         let line_count = lines.len();
 
-        // Clamp range to document bounds
+
         let start_line = range.start.line.min(line_count.saturating_sub(1));
         let start_char = range.start.character;
         let end_line = range.end.line.min(line_count.saturating_sub(1));
         let end_char = range.end.character;
 
-        // Convert line/col to byte offset for start
+
         let start_byte = Self::position_to_byte_offset(&lines, start_line, start_char);
-        // Convert line/col to byte offset for end
+
         let end_byte = Self::position_to_byte_offset(&lines, end_line, end_char);
 
-        // Replace the range with new text
+
         let before: String = doc.chars().take(start_byte).collect();
         let after: String = doc.chars().skip(end_byte).collect();
         *doc = format!("{}{}{}", before, new_text, after);
     }
 
-    /// Convert a (line, character) position to a byte offset in the document.
+
     fn position_to_byte_offset(lines: &[&str], target_line: usize, target_char: usize) -> usize {
         let mut offset = 0;
         for (i, line) in lines.iter().enumerate() {
             if i == target_line {
                 let char_count = line.chars().count();
                 let clamped_char = target_char.min(char_count);
-                // Walk chars to find byte position
+
                 for (ci, ch) in line.chars().enumerate() {
                     if ci >= clamped_char {
                         break;
@@ -211,10 +212,11 @@ impl DocumentStore {
                 }
                 return offset;
             }
-            // +1 for the newline character (use 1 for \n)
+
             offset += line.len() + 1;
         }
-        offset // past end of document
+        offset
+
     }
 
     #[allow(dead_code)]
@@ -254,12 +256,12 @@ impl DocumentStore {
                         self.parse_errors.remove(uri);
                     }
                     Err(e) => {
-                        // Parse error — store it as a diagnostic so LSP reports it
+
                         let msg = e.to_string();
                         let (line, col) = parse_error_location(&msg);
                         self.parsed.remove(uri);
                         self.symbol_index.remove(uri);
-                        // Store parse error for diagnostics
+
                         self.parse_errors.insert(uri.to_string(), DiagnosticInfo {
                             range: TextRange {
                                 start: Position { line: line.saturating_sub(1), character: col.saturating_sub(1) },
@@ -272,7 +274,7 @@ impl DocumentStore {
                     }
                 },
                 Err(e) => {
-                    // Lexer error — store it as a diagnostic
+
                     let msg = e.to_string();
                     self.parsed.remove(uri);
                     self.symbol_index.remove(uri);
@@ -304,7 +306,7 @@ impl DocumentStore {
     fn collect_index_from_item(item: &Item, uri: &str, lines: &[&str], index: &mut SymbolIndex) {
         match item {
             Item::Function(f) => {
-                // Register the function name as a definition
+
                 let def = SymbolLocation {
                     uri: uri.to_string(),
                     line: f.span.line.saturating_sub(1),
@@ -314,10 +316,10 @@ impl DocumentStore {
                 };
                 index.definitions.entry(f.name.clone()).or_default().push(def);
 
-                // Scan body for usages
+
                 Self::collect_usages_from_block(&f.body, uri, lines, index);
 
-                // Also scan parameter types for usages of type names
+
                 for param in &f.params {
                     Self::collect_usages_from_type(&param.ty, uri, lines, index);
                 }
@@ -411,7 +413,7 @@ impl DocumentStore {
                 }
             }
             Item::Import(imp) => {
-                // Register import path components as usages
+
                 let parts: Vec<&str> = imp.path.split("::").collect();
                 for part in &parts {
                     if !part.is_empty() {
@@ -551,7 +553,8 @@ impl DocumentStore {
                     Self::collect_usages_from_expr(item, uri, lines, index);
                 }
             }
-            _ => {} // Literals, Self_ etc. don't reference named symbols
+            _ => {}
+
         }
     }
 
@@ -662,10 +665,11 @@ impl DocumentStore {
         }
     }
 
-    /// Scan all lines in source for occurrences of `name` as a whole word and record usages.
+
     fn scan_line_usages(name: &str, uri: &str, lines: &[&str], index: &mut SymbolIndex) {
         if name.is_empty() || name.len() < 2 {
-            return; // Skip single-char and empty names to avoid noise
+            return;
+
         }
         for (line_idx, line) in lines.iter().enumerate() {
             let mut col = 0;
@@ -680,7 +684,8 @@ impl DocumentStore {
                     };
                     index.usages.entry(name.to_string()).or_default().push(usage);
                 }
-                col += word.len() + 1; // +1 for the separator
+                col += word.len() + 1;
+
             }
         }
     }
@@ -690,13 +695,13 @@ impl DocumentStore {
         self.symbol_index.get(uri)
     }
 
-    /// Find all references to the symbol at the given position across all open documents.
+
     pub fn find_references(&self, uri: &str, word: &str) -> Vec<SymbolLocation> {
         let mut refs = Vec::new();
 
-        // Search in all open documents
+
         for (doc_uri, index) in &self.symbol_index {
-            // Add definitions
+
             if let Some(defs) = index.definitions.get(word) {
                 for def in defs {
                     if def.uri == *uri || self.documents.contains_key(doc_uri) {
@@ -704,7 +709,7 @@ impl DocumentStore {
                     }
                 }
             }
-            // Add usages
+
             if let Some(usages) = index.usages.get(word) {
                 for usage in usages {
                     if self.documents.contains_key(doc_uri) {
@@ -717,18 +722,18 @@ impl DocumentStore {
         refs
     }
 
-    /// Find all locations that need to be renamed (definition + usages) for the symbol at position.
+
     pub fn find_rename_locations(&self, uri: &str, word: &str) -> Vec<SymbolLocation> {
         self.find_references(uri, word)
     }
 
-    /// Apply a rename to all documents and return the new text for each document.
+
     #[allow(dead_code)]
     pub fn apply_rename(&mut self, uri: &str, word: &str, new_name: &str) -> HashMap<String, String> {
         let locations = self.find_rename_locations(uri, word);
         let mut edits: HashMap<String, Vec<(usize, usize, String)>> = HashMap::new();
 
-        // Group edits by URI, sort by position (descending so we apply from end to start)
+
         for loc in &locations {
             edits.entry(loc.uri.clone()).or_default().push(
                 (loc.line, loc.character, new_name.to_string())
@@ -737,7 +742,7 @@ impl DocumentStore {
 
         let mut results = HashMap::new();
         for (edit_uri, mut file_edits) in edits {
-            // Sort descending by line then character so we can apply from bottom to top
+
             file_edits.sort_by(|a, b| b.0.cmp(&a.0).then(b.1.cmp(&a.1)));
 
             if let Some(text) = self.documents.get(&edit_uri) {
@@ -763,7 +768,7 @@ impl DocumentStore {
 
     #[allow(dead_code)]
     pub fn get_all_symbols(&self, uri: &str) -> Vec<(String, String, usize, usize)> {
-        // Returns (name, kind, line, col) for all symbols in the document
+
         let mut symbols = Vec::new();
         if let Some(program) = self.parsed.get(uri) {
             for item in &program.items {
@@ -884,7 +889,7 @@ impl DocumentStore {
     }
 }
 
-// LSP Server
+
 
 pub struct LspServer {
     store: DocumentStore,
@@ -912,31 +917,32 @@ impl LspServer {
         loop {
             buffer.clear();
             match reader.read_line(&mut buffer) {
-                Ok(0) => break, // EOF
+                Ok(0) => break,
+
                 Ok(_) => {
                     let line = buffer.trim();
                     if line.is_empty() {
                         continue;
                     }
 
-                    // Handle Content-Length header
+
                     if line.starts_with("Content-Length:") {
-                        // Security: limit message size to 5MB to prevent DoS
+
                         const MAX_MESSAGE_SIZE: usize = 5 * 1024 * 1024;
                         let len: usize = line[15..].trim().parse().unwrap_or(0);
                         if len == 0 || len > MAX_MESSAGE_SIZE {
                             if len > MAX_MESSAGE_SIZE {
                                 eprintln!("Warning: LSP message too large ({} bytes), skipping", len);
                             }
-                            // Skip to next message
+
                             continue;
                         }
 
-                        // Read the blank line
+
                         let mut blank = String::new();
                         let _ = reader.read_line(&mut blank);
 
-                        // Read the JSON body
+
                         let mut body = vec![0u8; len];
                         if let Err(_) = reader.read_exact(&mut body) {
                             break;
@@ -946,7 +952,7 @@ impl LspServer {
                             Err(_) => continue,
                         };
 
-                        // Parse and handle
+
                         if let Some(msg) = json_parse(&body_str) {
                             let response = self.handle_message(&msg);
                             if let Some(resp) = response {
@@ -1013,7 +1019,8 @@ impl LspServer {
                 }
                 Some(JsonValue::Object(response))
             }
-            _ => None, // Notification — no response
+            _ => None,
+
         }
     }
 
@@ -1035,7 +1042,7 @@ impl LspServer {
         self.send_response(&notification);
     }
 
-    // Initialize
+
 
     fn handle_initialize(&mut self, params: JsonValue) -> Option<JsonValue> {
         self.root_uri = params
@@ -1046,7 +1053,8 @@ impl LspServer {
         let capabilities = JsonValue::Object(vec![
             ("textDocumentSync".to_string(), JsonValue::Object(vec![
                 ("openClose".to_string(), JsonValue::Bool(true)),
-                ("change".to_string(), JsonValue::Number(2.0)), // Incremental sync
+                ("change".to_string(), JsonValue::Number(2.0)),
+
                 ("save".to_string(), JsonValue::Object(vec![
                     ("includeText".to_string(), JsonValue::Bool(true)),
                 ])),
@@ -1084,7 +1092,7 @@ impl LspServer {
         ]))
     }
 
-    // Text Document Sync
+
 
     fn handle_did_open(&mut self, params: JsonValue) {
         let text_doc = match params.get("textDocument") {
@@ -1119,7 +1127,7 @@ impl LspServer {
             Some(s) => s.to_string(),
             None => return,
         };
-        // Track version for incremental sync
+
         let version = text_doc.get("version")
             .and_then(|v| v.as_i64())
             .unwrap_or(0);
@@ -1166,7 +1174,7 @@ impl LspServer {
         self.store.close(&uri);
     }
 
-    // Hover
+
 
     fn handle_hover(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1178,10 +1186,10 @@ impl LspServer {
         let text = self.store.get_text(uri)?;
         let program = self.store.get_parsed(uri)?;
 
-        // Get the word at the cursor position
+
         let word = self.get_word_at_position(text, line, character);
 
-        // Find the symbol and its type information
+
         let hover_text = self.find_hover_for_word(&word, program, uri);
 
         if let Some(content) = hover_text {
@@ -1207,7 +1215,7 @@ impl LspServer {
             return String::new();
         }
 
-        // Find word boundaries
+
         let mut start = character;
         while start > 0 && (chars[start - 1].is_alphanumeric() || chars[start - 1] == '_') {
             start -= 1;
@@ -1225,7 +1233,7 @@ impl LspServer {
             return None;
         }
 
-        // Check built-in keywords
+
         match word {
             "fn" => return Some("Function definition".to_string()),
             "let" => return Some("Variable binding".to_string()),
@@ -1260,7 +1268,7 @@ impl LspServer {
             _ => {}
         }
 
-        // Check program symbols
+
         for item in &program.items {
             match item {
                 Item::Function(f) if f.name == word => {
@@ -1342,7 +1350,7 @@ impl LspServer {
         }
     }
 
-    // Go to Definition
+
 
     fn handle_definition(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1359,7 +1367,7 @@ impl LspServer {
             return None;
         }
 
-        // Find the definition location
+
         let location = self.find_definition(&word, program, uri);
 
         location.map(|loc| {
@@ -1439,7 +1447,7 @@ impl LspServer {
                         },
                     })
                 }
-                // Check methods in impl blocks
+
                 Item::Impl(imp) => {
                     let mut found = None;
                     for method in &imp.methods {
@@ -1456,7 +1464,7 @@ impl LspServer {
                     }
                     found
                 }
-                // Check methods in classes
+
                 Item::Class(c) => {
                     let mut found = None;
                     for method in &c.methods {
@@ -1484,7 +1492,7 @@ impl LspServer {
         None
     }
 
-    // Completion
+
 
     fn handle_completion(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1496,12 +1504,12 @@ impl LspServer {
         let text = self.store.get_text(uri).unwrap_or("");
         let program = self.store.get_parsed(uri);
 
-        // Get the prefix (partial word) being typed
+
         let prefix = self.get_prefix_at_position(text, line, character);
 
         let mut items = Vec::new();
 
-        // Add keyword completions
+
         let keywords = vec![
             ("fn", 14), ("let", 13), ("mut", 13), ("pub", 14),
             ("struct", 23), ("class", 7), ("enum", 13), ("impl", 14),
@@ -1525,7 +1533,7 @@ impl LspServer {
             }
         }
 
-        // Add symbol completions from the parsed program
+
         if let Some(program) = program {
             for item in &program.items {
                 match item {
@@ -1537,7 +1545,8 @@ impl LspServer {
                             let ret = f.return_type.as_ref().map(|t| format!(" -> {}", self.type_to_string(t))).unwrap_or_default();
                             items.push(CompletionItem {
                                 label: f.name.clone(),
-                                kind: 12, // Function
+                                kind: 12,
+
                                 detail: Some(format!("fn({}){}", params.join(", "), ret)),
                                 documentation: Some(format!("Function `{}`", f.name)),
                                 insert_text: Some(format!("{}(", f.name)),
@@ -1548,7 +1557,8 @@ impl LspServer {
                         if prefix.is_empty() || s.name.starts_with(&prefix) {
                             items.push(CompletionItem {
                                 label: s.name.clone(),
-                                kind: 23, // Struct
+                                kind: 23,
+
                                 detail: Some(format!("struct {} ({} fields)", s.name, s.fields.len())),
                                 documentation: Some(format!("Struct `{}`", s.name)),
                                 insert_text: Some(format!("{} ", s.name)),
@@ -1559,7 +1569,8 @@ impl LspServer {
                         if prefix.is_empty() || c.name.starts_with(&prefix) {
                             items.push(CompletionItem {
                                 label: c.name.clone(),
-                                kind: 7, // Class
+                                kind: 7,
+
                                 detail: Some(format!("class {} ({} fields, {} methods)", c.name, c.fields.len(), c.methods.len())),
                                 documentation: Some(format!("Class `{}`", c.name)),
                                 insert_text: Some(format!("{} ", c.name)),
@@ -1570,18 +1581,20 @@ impl LspServer {
                         if prefix.is_empty() || e.name.starts_with(&prefix) {
                             items.push(CompletionItem {
                                 label: e.name.clone(),
-                                kind: 13, // Enum
+                                kind: 13,
+
                                 detail: Some(format!("enum {} ({} variants)", e.name, e.variants.len())),
                                 documentation: Some(format!("Enum `{}`", e.name)),
                                 insert_text: Some(format!("{} ", e.name)),
                             });
-                            // Also add variants
+
                             for variant in &e.variants {
                                 let variant_name = format!("{}::{}", e.name, variant.name);
                                 if prefix.is_empty() || variant_name.starts_with(&prefix) || variant.name.starts_with(&prefix) {
                                     items.push(CompletionItem {
                                         label: variant.name.clone(),
-                                        kind: 13, // EnumMember
+                                        kind: 13,
+
                                         detail: Some(format!("{}::{}", e.name, variant.name)),
                                         documentation: Some(format!("Variant of `{}`", e.name)),
                                         insert_text: Some(format!("{}::{}", e.name, variant.name)),
@@ -1594,7 +1607,8 @@ impl LspServer {
                         if prefix.is_empty() || t.name.starts_with(&prefix) {
                             items.push(CompletionItem {
                                 label: t.name.clone(),
-                                kind: 24, // Interface
+                                kind: 24,
+
                                 detail: Some(format!("trait {} ({} methods)", t.name, t.methods.len())),
                                 documentation: Some(format!("Trait `{}`", t.name)),
                                 insert_text: Some(format!("{} ", t.name)),
@@ -1605,7 +1619,8 @@ impl LspServer {
                         if prefix.is_empty() || m.name.starts_with(&prefix) {
                             items.push(CompletionItem {
                                 label: m.name.clone(),
-                                kind: 19, // Module
+                                kind: 19,
+
                                 detail: Some(format!("mod {}", m.name)),
                                 documentation: Some(format!("Module `{}`", m.name)),
                                 insert_text: Some(format!("{} ", m.name)),
@@ -1617,7 +1632,7 @@ impl LspServer {
             }
         }
 
-        // Convert to JSON
+
         let items_json: Vec<JsonValue> = items.iter().map(|item| {
             let mut fields = vec![
                 ("label".to_string(), JsonValue::Str(item.label.clone())),
@@ -1660,7 +1675,7 @@ impl LspServer {
         chars[start..character].iter().collect()
     }
 
-    // Document Symbols
+
 
     fn handle_document_symbol(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1704,7 +1719,7 @@ impl LspServer {
         Some(JsonValue::Array(items))
     }
 
-    // Diagnostics
+
 
     fn handle_diagnostics(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1733,7 +1748,7 @@ impl LspServer {
     fn compute_diagnostics(&self, uri: &str) -> Vec<DiagnosticInfo> {
         let mut diagnostics = Vec::new();
 
-        // Include any stored parse errors
+
         if let Some(parse_err) = self.store.parse_errors.get(uri) {
             diagnostics.push(parse_err.clone());
         }
@@ -1743,11 +1758,11 @@ impl LspServer {
             None => return diagnostics,
         };
 
-        // Try parsing
+
         match Parser::new(&text) {
             Ok(mut parser) => match parser.parse_program() {
                 Ok(program) => {
-                    // Run type checker
+
                     let mut checker = TypeChecker::new();
                     let checker_diags = checker.check(&program);
 
@@ -1771,7 +1786,7 @@ impl LspServer {
                 }
                 Err(e) => {
                     let msg = e.to_string();
-                    // Try to extract line/col from error message
+
                     let (line, col) = parse_error_location(&msg);
                     diagnostics.push(DiagnosticInfo {
                         range: TextRange {
@@ -1801,7 +1816,7 @@ impl LspServer {
         diagnostics
     }
 
-    // Find References
+
 
     fn handle_references(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1816,7 +1831,7 @@ impl LspServer {
             return Some(JsonValue::Array(Vec::new()));
         }
 
-        // Check include_declaration option (default true)
+
         let _include_decl = params.get("context")
             .and_then(|ctx| ctx.get("includeDeclaration"))
             .and_then(|v| v.as_bool())
@@ -1837,7 +1852,7 @@ impl LspServer {
         Some(JsonValue::Array(locations))
     }
 
-    // Rename
+
 
     fn handle_rename(&mut self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1853,13 +1868,13 @@ impl LspServer {
             return None;
         }
 
-        // Find all locations to rename
+
         let locations = self.store.find_rename_locations(uri, &word);
         if locations.is_empty() {
             return None;
         }
 
-        // Group edits by URI
+
         let mut edits_by_uri: HashMap<String, Vec<JsonValue>> = HashMap::new();
         for loc in &locations {
             let edit = JsonValue::Object(vec![
@@ -1872,7 +1887,7 @@ impl LspServer {
             edits_by_uri.entry(loc.uri.clone()).or_default().push(edit);
         }
 
-        // Build WorkspaceEdit
+
         let changes: Vec<JsonValue> = edits_by_uri.iter().map(|(uri, edits)| {
             JsonValue::Object(vec![
                 ("uri".to_string(), JsonValue::Str(uri.clone())),
@@ -1885,7 +1900,7 @@ impl LspServer {
         ]))
     }
 
-    // Prepare Rename (check if rename is valid at position)
+
 
     fn handle_prepare_rename(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1900,7 +1915,7 @@ impl LspServer {
             return None;
         }
 
-        // Check if the word is a keyword — those can't be renamed
+
         let keywords = ["fn", "let", "mut", "pub", "struct", "class", "enum", "impl",
             "trait", "type", "if", "else", "for", "while", "loop", "return",
             "break", "continue", "match", "self", "Self", "true", "false",
@@ -1909,7 +1924,7 @@ impl LspServer {
             return None;
         }
 
-        // Valid rename target — return the range of the word
+
         let start = Position { line, character: character.saturating_sub(word.len() / 2) };
         let end = Position { line, character: character + word.len() / 2 };
         Some(JsonValue::Object(vec![
@@ -1921,7 +1936,7 @@ impl LspServer {
         ]))
     }
 
-    // Signature Help
+
 
     fn handle_signature_help(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1938,14 +1953,14 @@ impl LspServer {
         }
         let line_text = lines[line];
 
-        // Find the function being called: scan backwards from cursor to find the function name
-        // and count which argument we're on by counting commas
+
+
         let chars: Vec<char> = line_text.chars().collect();
         let mut paren_depth: i32 = 0;
         let mut active_param: usize = 0;
         let mut func_name = String::new();
 
-        // Scan backwards from the cursor position
+
         let mut i = character.min(chars.len());
         while i > 0 {
             i -= 1;
@@ -1953,8 +1968,8 @@ impl LspServer {
                 '(' => {
                     paren_depth -= 1;
                     if paren_depth < 0 {
-                        // We found the opening paren of the call — now get the function name
-                        // Scan backwards to find the identifier before the (
+
+
                         let mut j = i;
                         while j > 0 && chars[j - 1].is_whitespace() {
                             j -= 1;
@@ -1981,7 +1996,7 @@ impl LspServer {
             return None;
         }
 
-        // Find the function definition
+
         let mut signatures = Vec::new();
         self.find_function_signatures(&func_name, program, uri, &mut signatures);
 
@@ -2064,7 +2079,7 @@ impl LspServer {
         }
     }
 
-    // Code Actions
+
 
     fn handle_code_action(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -2092,7 +2107,7 @@ impl LspServer {
             let message = &diag.message;
             let d = vec![make_diag_obj(diag)];
 
-            // Fix 1: "Variable 'X' is not defined" -> create a let binding
+
             if message.starts_with("Variable '") && message.contains("is not defined") {
                 let var_name = message.trim_start_matches("Variable '").split("'").next().unwrap_or("");
                 if !var_name.is_empty() {
@@ -2110,7 +2125,7 @@ impl LspServer {
                 }
             }
 
-            // Fix 2: "Return type mismatch" -> remove the return type
+
             if message.starts_with("Return type mismatch") {
                 let edit = make_text_edit(&diag.range, "");
                 actions.push(make_code_action(
@@ -2119,7 +2134,7 @@ impl LspServer {
                 ));
             }
 
-            // Fix 3: "Expected N arguments, got M" -> add or remove arguments
+
             if message.starts_with("Expected ") && message.contains("arguments, got ") {
                 let nums: Vec<&str> = message.split_whitespace().collect();
                 if nums.len() >= 5 {
@@ -2143,7 +2158,7 @@ impl LspServer {
                 }
             }
 
-            // Fix 4: "Duplicate binding" -> informational action
+
             if message.starts_with("Duplicate binding") {
                 actions.push(make_code_action_no_edit("Rename duplicate binding", d.clone()));
             }
@@ -2152,14 +2167,14 @@ impl LspServer {
         Some(JsonValue::Array(actions))
     }
 
-    // Workspace Symbols
+
 
     fn handle_workspace_symbol(&self, params: JsonValue) -> Option<JsonValue> {
         let query = params.get("query")?.as_str().unwrap_or("");
 
         let mut results = Vec::new();
 
-        // Search all open documents
+
         for (uri, program) in &self.store.parsed {
             self.collect_workspace_symbols(query, program, uri, &mut results);
         }
@@ -2189,7 +2204,7 @@ impl LspServer {
                         let container = format!("{} fields, {} methods", c.fields.len(), c.methods.len());
                         results.push(make_workspace_symbol(&c.name, 7, uri, c.span.line.saturating_sub(1), c.span.col.saturating_sub(1), Some(&container)));
                     }
-                    // Also search methods
+
                     for method in &c.methods {
                         if fuzzy_match(&method.name, query) {
                             let params_str: Vec<String> = method.params.iter().map(|p| {
@@ -2205,7 +2220,7 @@ impl LspServer {
                         let container = format!("{} variants", e.variants.len());
                         results.push(make_workspace_symbol(&e.name, 13, uri, e.span.line.saturating_sub(1), e.span.col.saturating_sub(1), Some(&container)));
                     }
-                    // Also search variants
+
                     for variant in &e.variants {
                         if fuzzy_match(&variant.name, query) {
                             let container = format!("{}::variant", e.name);
@@ -2257,10 +2272,10 @@ impl LspServer {
     }
 }
 
-// Helpers
 
-/// Fuzzy match: returns true if all characters in `query` appear in `name` in order.
-/// Case-insensitive. Empty query matches everything.
+
+
+
 fn fuzzy_match(name: &str, query: &str) -> bool {
     if query.is_empty() {
         return true;
@@ -2276,7 +2291,7 @@ fn fuzzy_match(name: &str, query: &str) -> bool {
     qi == query_lower.len()
 }
 
-/// Build a workspace symbol JSON object
+
 fn make_workspace_symbol(name: &str, kind: i64, uri: &str, line: usize, col: usize, container: Option<&str>) -> JsonValue {
     let mut fields = vec![
         ("name".to_string(), JsonValue::Str(name.to_string())),
@@ -2295,7 +2310,7 @@ fn make_workspace_symbol(name: &str, kind: i64, uri: &str, line: usize, col: usi
     JsonValue::Object(fields)
 }
 
-/// Build a diagnostic object for code actions
+
 fn make_diag_obj(d: &DiagnosticInfo) -> JsonValue {
     JsonValue::Object(vec![
         ("range".to_string(), range_to_json(&d.range)),
@@ -2305,7 +2320,7 @@ fn make_diag_obj(d: &DiagnosticInfo) -> JsonValue {
     ])
 }
 
-/// Build a range JSON from a TextRange
+
 fn range_to_json(r: &TextRange) -> JsonValue {
     JsonValue::Object(vec![
         ("start".to_string(), position_to_json(&r.start)),
@@ -2313,7 +2328,7 @@ fn range_to_json(r: &TextRange) -> JsonValue {
     ])
 }
 
-/// Build a workspace edit object for a single-file edit
+
 fn make_workspace_edit(uri: &str, edits: Vec<JsonValue>) -> JsonValue {
     JsonValue::Object(vec![
         ("changes".to_string(), JsonValue::Array(vec![
@@ -2325,7 +2340,7 @@ fn make_workspace_edit(uri: &str, edits: Vec<JsonValue>) -> JsonValue {
     ])
 }
 
-/// Build a text edit at a range
+
 fn make_text_edit(range: &TextRange, new_text: &str) -> JsonValue {
     JsonValue::Object(vec![
         ("range".to_string(), range_to_json(range)),
@@ -2333,7 +2348,7 @@ fn make_text_edit(range: &TextRange, new_text: &str) -> JsonValue {
     ])
 }
 
-/// Build a code action with diagnostics and a workspace edit
+
 fn make_code_action(title: &str, diags: Vec<JsonValue>, edit: JsonValue) -> JsonValue {
     JsonValue::Object(vec![
         ("title".to_string(), JsonValue::Str(title.to_string())),
@@ -2343,7 +2358,7 @@ fn make_code_action(title: &str, diags: Vec<JsonValue>, edit: JsonValue) -> Json
     ])
 }
 
-/// Build a code action with diagnostics but no edit (informational)
+
 fn make_code_action_no_edit(title: &str, diags: Vec<JsonValue>) -> JsonValue {
     JsonValue::Object(vec![
         ("title".to_string(), JsonValue::Str(title.to_string())),
@@ -2360,7 +2375,7 @@ fn position_to_json(pos: &Position) -> JsonValue {
 }
 
 fn parse_error_location(msg: &str) -> (usize, usize) {
-    // Try to parse "at line:col" or "at line,col" from error messages
+
     if let Some(idx) = msg.find(" at ") {
         let rest = &msg[idx + 4..];
         let parts: Vec<&str> = rest.split(|c| c == ':' || c == ',').collect();
@@ -2373,13 +2388,13 @@ fn parse_error_location(msg: &str) -> (usize, usize) {
     (1, 1)
 }
 
-// Tests
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // Document Store Tests
+
 
     #[test]
     fn test_document_store_open() {
@@ -2460,7 +2475,7 @@ enum Color {
         assert!(symbols.iter().any(|(name, kind, _, _)| name == "Color" && kind == "enum"));
     }
 
-    // LSP Server Tests
+
 
     #[test]
     fn test_lsp_server_initialize() {
@@ -2523,7 +2538,7 @@ enum Color {
             text: source.to_string(),
         });
 
-        // Cursor on "add" in main function (line 4, char 14)
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":4,"character":14}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -2546,7 +2561,8 @@ enum Color {
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let items = result.get("items").unwrap().as_array().unwrap();
-        assert!(items.len() > 10); // Should have many keywords
+        assert!(items.len() > 10);
+
         assert!(items.iter().any(|item| item.get("label").unwrap().as_str().unwrap() == "fn"));
         assert!(items.iter().any(|item| item.get("label").unwrap().as_str().unwrap() == "struct"));
     }
@@ -2586,9 +2602,9 @@ enum Color {
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let items = result.get("items").unwrap().as_array().unwrap();
-        // Should filter by prefix "fn" (source starts with "fn add...", char 0-1 = "fn")
+
         assert!(items.iter().any(|item| item.get("label").unwrap().as_str().unwrap() == "fn"));
-        // Ensure filtered results are relevant
+
         for item in items {
             let label = item.get("label").unwrap().as_str().unwrap();
             assert!(label.starts_with("fn"), "Label '{}' should start with prefix 'fn'", label);
@@ -2633,7 +2649,8 @@ enum Color { Red, Green }"#;
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let diagnostics = result.get("diagnostics").unwrap().as_array().unwrap();
-        assert!(!diagnostics.is_empty()); // Should have at least one diagnostic for undefined variable
+        assert!(!diagnostics.is_empty());
+
         let diag = &diagnostics[0];
         assert!(diag.get("message").unwrap().as_str().unwrap().contains("not defined"));
     }
@@ -2654,7 +2671,8 @@ enum Color { Red, Green }"#;
         let result = response.get("result").unwrap();
         let diagnostics = result.get("diagnostics").unwrap().as_array().unwrap();
         let errors: Vec<&JsonValue> = diagnostics.iter().filter(|d| d.get("severity").unwrap().as_f64().unwrap() == 1.0).collect();
-        assert!(errors.is_empty()); // No errors for valid code
+        assert!(errors.is_empty());
+
     }
 
     #[test]
@@ -2730,9 +2748,9 @@ enum Color { Red, Green }"#;
 
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":0}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
-        // Should return null result for "fn" keyword... actually fn is a keyword
+
         let result = response.get("result").unwrap();
-        // Keywords should have hover info
+
         assert!(result.get("contents").is_some());
     }
 
@@ -2747,7 +2765,7 @@ enum Color { Red, Green }"#;
             text: source.to_string(),
         });
 
-        // Position outside the text
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":10,"character":0}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -2765,13 +2783,13 @@ enum Color { Red, Green }"#;
             text: source.to_string(),
         });
 
-        // Cursor on "Point" in main function (line 5, char 12)
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":5,"character":12}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let range = result.get("range").unwrap();
         let start = range.get("start").unwrap();
-        // Should point to the struct definition location (within 0-indexed range [0, 5])
+
         let line = start.get("line").unwrap().as_f64().unwrap();
         assert!(line >= 0.0 && line <= 5.0, "Expected line 0-5, got {}", line);
     }
@@ -2787,11 +2805,11 @@ enum Color { Red, Green }"#;
             text: source.to_string(),
         });
 
-        // Cursor on "main" which is defined in the same line
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":3}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
-        // Should find the definition of "main"
+
         assert!(result.get("uri").is_some());
     }
 
@@ -2861,20 +2879,21 @@ class Calculator {
         assert_eq!(server.get_word_at_position(text, 0, 3), "add");
         assert_eq!(server.get_word_at_position(text, 0, 0), "fn");
         assert_eq!(server.get_word_at_position(text, 1, 11), "a");
-        assert_eq!(server.get_word_at_position(text, 10, 0), ""); // Out of bounds
+        assert_eq!(server.get_word_at_position(text, 10, 0), "");
+
     }
 
     #[test]
     fn test_get_prefix_at_position() {
         let server = LspServer::new();
         let text = "fn main() {\n    let x = add(1)\n}";
-        // Position is AFTER the last char of the prefix
+
         assert_eq!(server.get_prefix_at_position(text, 1, 15), "add");
         assert_eq!(server.get_prefix_at_position(text, 0, 2), "fn");
         assert_eq!(server.get_prefix_at_position(text, 1, 9), "x");
     }
 
-    // References Tests
+
 
     #[test]
     fn test_references_basic() {
@@ -2891,9 +2910,9 @@ class Calculator {
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let locations = result.as_array().unwrap();
-        // Should find the definition and usage of "add"
+
         assert!(locations.len() >= 2, "Expected at least 2 references for 'add', got {}", locations.len());
-        // All references should be in the same file
+
         for loc in locations {
             assert_eq!(loc.get("uri").unwrap().as_str().unwrap(), "file:///test.ruva");
         }
@@ -2909,7 +2928,7 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Position on a space (char 2) — should yield empty word
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/references","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":2},"context":{"includeDeclaration":true}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -2928,12 +2947,12 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Cursor on "Point" definition (line 0, char 7)
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/references","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":7},"context":{"includeDeclaration":true}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let locations = result.as_array().unwrap();
-        // Should find definition + usage in main
+
         assert!(locations.len() >= 2, "Expected at least 2 references for 'Point', got {}", locations.len());
     }
 
@@ -2948,16 +2967,16 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Cursor on "helper" definition (line 0, char 3)
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/references","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":3},"context":{"includeDeclaration":true}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let locations = result.as_array().unwrap();
-        // Should find definition + 3 usages = 4
+
         assert!(locations.len() >= 4, "Expected at least 4 references for 'helper', got {}", locations.len());
     }
 
-    // Rename Tests
+
 
     #[test]
     fn test_rename_basic() {
@@ -2970,15 +2989,16 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Rename "add" to "sum" at definition site
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":3},"newName":"sum"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let changes = result.get("changes").unwrap().as_array().unwrap();
-        assert_eq!(changes.len(), 1); // One file changed
+        assert_eq!(changes.len(), 1);
+
         let file_changes = changes[0].get("edits").unwrap().as_array().unwrap();
         assert!(file_changes.len() >= 2, "Expected at least 2 rename edits for 'add', got {}", file_changes.len());
-        // All edits should have newText "sum"
+
         for edit in file_changes {
             assert_eq!(edit.get("newText").unwrap().as_str().unwrap(), "sum");
         }
@@ -2995,7 +3015,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Rename "add" to "add" (same name) — should return null
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":3},"newName":"add"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3013,7 +3033,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Rename "Point" to "Vec2"
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":7},"newName":"Vec2"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3035,14 +3055,14 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Position on a space (char 2) — should yield empty word, null result
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":2},"newName":"foo"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         assert!(result.is_null());
     }
 
-    // Symbol Index Tests
+
 
     #[test]
     fn test_symbol_index_definitions() {
@@ -3071,7 +3091,7 @@ class Calculator {
         });
 
         let index = store.get_symbol_index("file:///test.ruva").unwrap();
-        // "helper" should have a definition and at least one usage
+
         let defs = index.definitions.get("helper").unwrap();
         assert!(!defs.is_empty());
         let usages = index.usages.get("helper").unwrap();
@@ -3095,7 +3115,7 @@ class Calculator {
         });
 
         let refs = store.find_references("file:///a.ruva", "helper");
-        // Should find the definition in a.ruva and usage in b.ruva
+
         let a_refs: Vec<&SymbolLocation> = refs.iter().filter(|r| r.uri == "file:///a.ruva").collect();
         let b_refs: Vec<&SymbolLocation> = refs.iter().filter(|r| r.uri == "file:///b.ruva").collect();
         assert!(!a_refs.is_empty(), "Expected references in a.ruva");
@@ -3119,7 +3139,7 @@ class Calculator {
         assert!(!new_text.contains("add"), "Should not contain old name 'add', got: {}", new_text);
     }
 
-    // Signature Help Tests
+
 
     #[test]
     fn test_signature_help_basic() {
@@ -3132,8 +3152,8 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // "    let x = add(1," — char 18 is right after the comma
-        // Cursor right after the comma — should show add(a: i32, b: i32) with activeParameter=1
+
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":2,"character":18}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3142,7 +3162,7 @@ class Calculator {
         let label = sigs[0].get("label").unwrap().as_str().unwrap();
         assert!(label.contains("add"), "Expected 'add' in signature label, got: {}", label);
         assert!(label.contains("i32"), "Expected 'i32' in signature label, got: {}", label);
-        // After comma, active param should be 1
+
         let active_param = result.get("activeParameter").unwrap().as_f64().unwrap();
         assert_eq!(active_param, 1.0);
     }
@@ -3158,8 +3178,8 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // "    greet(" — char 11 is right after the opening paren
-        // Cursor right after the opening paren — activeParameter should be 0
+
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":2,"character":11}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3177,7 +3197,7 @@ class Calculator {
             text: "let x = 42".to_string(),
         });
 
-        // Cursor on a number — no function call context
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":0,"character":8}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3204,7 +3224,7 @@ class Calculator {
         assert!(label.contains("bark"), "Expected 'bark' in signature, got: {}", label);
     }
 
-    // Code Action Tests
+
 
     #[test]
     fn test_code_action_undefined_var() {
@@ -3217,16 +3237,16 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Request code actions for the whole file
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///test.ruva"},"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":24}},"context":{"diagnostics":[]}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let actions = result.as_array().unwrap();
         assert!(!actions.is_empty(), "Expected at least one code action for undefined variable");
-        // Should have "Create variable" and "Initialize with null" actions
+
         assert!(actions.iter().any(|a| a.get("title").unwrap().as_str().unwrap().contains("Create variable")));
         assert!(actions.iter().any(|a| a.get("title").unwrap().as_str().unwrap().contains("Initialize")));
-        // Each action should have an edit
+
         for action in actions {
             assert!(action.get("edit").is_some(), "Expected code action to have an edit");
         }
@@ -3243,7 +3263,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Request code actions for clean code — should return empty
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///test.ruva"},"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":46}},"context":{"diagnostics":[]}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3266,7 +3286,7 @@ class Calculator {
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let actions = result.as_array().unwrap();
-        // All actions should be quickfix kind
+
         for action in actions {
             assert_eq!(action.get("kind").unwrap().as_str().unwrap(), "quickfix");
         }
@@ -3283,7 +3303,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // "    add(1, 2)" — char 10 is right after the comma
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///test.ruva"},"position":{"line":2,"character":10}}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3294,7 +3314,7 @@ class Calculator {
         assert!(params[1].get("label").unwrap().as_str().unwrap().contains("b"));
     }
 
-    // Workspace Symbol Tests
+
 
     #[test]
     fn test_workspace_symbol_empty_query() {
@@ -3347,13 +3367,13 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Fuzzy query "gun" should match "get_user_name" (g-u-n in order)
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"workspace/symbol","params":{"query":"gun"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
         let symbols = result.as_array().unwrap();
         assert!(symbols.iter().any(|s| s.get("name").unwrap().as_str().unwrap() == "get_user_name"));
-        // Should NOT match "get_config" (no 'n')
+
         assert!(!symbols.iter().any(|s| s.get("name").unwrap().as_str().unwrap() == "get_config"));
     }
 
@@ -3368,7 +3388,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Lowercase query should match uppercase symbol
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"workspace/symbol","params":{"query":"calc"}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3455,7 +3475,7 @@ class Calculator {
             text: source.to_string(),
         });
 
-        // Should find both the class and its methods
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","id":1,"method":"workspace/symbol","params":{"query":""}}"#).unwrap();
         let response = server.handle_message(&msg).unwrap();
         let result = response.get("result").unwrap();
@@ -3495,10 +3515,11 @@ class Calculator {
         assert!(!fuzzy_match("add", "xyz"));
         assert!(!fuzzy_match("ab", "abc"));
         assert!(fuzzy_match("FunctionDef", "fd"));
-        assert!(fuzzy_match("FunctionDef", "FD")); // case insensitive
+        assert!(fuzzy_match("FunctionDef", "FD"));
+
     }
 
-    // Incremental Sync Tests
+
 
     #[test]
     fn test_incremental_insert() {
@@ -3510,8 +3531,8 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Insert " hello" before ')' (line 0, char 8)
-        // "fn main() {}" — char 8 is ')', insert before it
+
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 0, character: 8 },
@@ -3533,7 +3554,7 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Delete "main" (line 0, char 3 -> char 7)
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 0, character: 3 },
@@ -3555,7 +3576,7 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Replace "main" with "run" (line 0, char 3 -> char 7)
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 0, character: 3 },
@@ -3577,7 +3598,7 @@ class Calculator {
             text: "fn main() {\n    let x = 1\n}".to_string(),
         });
 
-        // Replace "let x = 1" on line 1 with "let y = 2" (line 1, char 4 -> char 13)
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 1, character: 4 },
@@ -3599,7 +3620,7 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // No range = full document replacement
+
         let change = TextDocumentContentChangeEvent {
             range: None,
             text: "fn run() {}".to_string(),
@@ -3618,8 +3639,8 @@ class Calculator {
             text: "fn add(a: i32, b: i32) -> i32 { return a + b }".to_string(),
         });
 
-        // Apply two edits: rename "add" to "sum" and "a" to "x"
-        // "fn add(a: i32, b: i32)" — 'add' is chars 3..6, 'a' is char 7
+
+
         let edit1 = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 0, character: 3 },
@@ -3651,7 +3672,7 @@ class Calculator {
             text: original.to_string(),
         });
 
-        // Replace just the return value
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 2, character: 11 },
@@ -3693,7 +3714,7 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Insert a newline + new line after the opening brace
+
         let change = TextDocumentContentChangeEvent {
             range: Some(TextRange {
                 start: Position { line: 0, character: 11 },
@@ -3713,7 +3734,7 @@ class Calculator {
         let response = server.handle_message(&msg).unwrap();
         let caps = response.get("result").unwrap().get("capabilities").unwrap();
         let sync = caps.get("textDocumentSync").unwrap();
-        // Change should be 2 for incremental sync
+
         assert_eq!(sync.get("change").unwrap().as_f64().unwrap(), 2.0);
     }
 
@@ -3727,12 +3748,13 @@ class Calculator {
             text: "fn main() {}".to_string(),
         });
 
-        // Send incremental change via LSP: replace "main" with "run"
+
         let msg = json_parse(r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///test.ruva","version":2},"contentChanges":[{"range":{"start":{"line":0,"character":3},"end":{"line":0,"character":7}},"text":"run"}]}}"#).unwrap();
         server.handle_message(&msg);
 
-        // Verify the document was updated incrementally
+
         assert_eq!(server.store.get_text("file:///test.ruva").unwrap(), "fn run() {}");
         assert_eq!(server.store.get_version("file:///test.ruva"), Some(2));
     }
 }
+

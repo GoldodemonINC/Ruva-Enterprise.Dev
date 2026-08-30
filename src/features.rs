@@ -1,12 +1,12 @@
 use crate::ast::*;
 
-/// Security and anti-cheat feature flags for the Ruva language.
-///
-/// These features enable Ruva to be used in security-critical domains:
-/// - Game engines (anti-cheat, memory protection)
-/// - Server hosting (rate limiting, connection isolation)
-/// - Anti-cheat systems (integrity verification, tamper detection)
-/// - Multi-language interop (FFI safety, boundary checking)
+
+
+
+
+
+
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(dead_code)]
@@ -79,7 +79,7 @@ impl FeatureChecker {
     }
 }
 
-/// Codegen hints for advanced features
+
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub enum CodegenHint {
@@ -89,3 +89,4 @@ pub enum CodegenHint {
     UsePoolAllocator,
     UseLockFreeStructure,
 }
+

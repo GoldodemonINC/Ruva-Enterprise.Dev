@@ -1,5 +1,5 @@
-// Self-hosted Ruva AST definitions
-// Simplified AST covering core language features
+
+
 
 enum BinOp {
     Add, Sub, Mul, Div, Rem,
@@ -182,3 +182,4 @@ struct ClosureParam {
     is_ref: bool,
     is_mut: bool,
 }
+

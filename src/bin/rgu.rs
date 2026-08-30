@@ -1,10 +1,10 @@
-// RGu — the Ruva compiler and driver.
-//
-// This binary is Ruva's own compiler front-end, independent of cargo. It links
-// the Ruva library and drives a `.rve`/`.ruva` source file *directly through the
-// bytecode VM* (no transpilation, no external build tool). `rgu build` transpiles
-// to a chosen backend. Once the `rgu` binary is built, it needs no other
-// toolchain: it reads source, lexes, parses, resolves modules, and interprets.
+
+
+
+
+
+
+
 
 use std::env;
 use std::fs;
@@ -40,7 +40,7 @@ fn read_source(path: &Path) -> Result<String> {
     Ok(fs::read_to_string(path)?)
 }
 
-/// Parse + resolve modules into a program (shared by run/check/build).
+
 fn load_program(path: &Path) -> Result<ruva::ast::Program> {
     let source = read_source(path)?;
     let mut parser = parser::Parser::new(&source).map_err(|e| anyhow::anyhow!("{e}"))?;
@@ -115,7 +115,7 @@ fn main() -> Result<()> {
                 match args[i].as_str() {
                     "--stdout" => output_to_stdout = true,
                     "--target" => {
-                        // Only the Rust target exists; accept it but ensure it is rust.
+
                         i += 1;
                         let t = args.get(i).ok_or_else(|| anyhow::anyhow!("`--target` needs a value"))?;
                         let target: Target = t.parse().map_err(|e| anyhow::anyhow!("{e}"))?;

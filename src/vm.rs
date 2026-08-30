@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::ast::*;
 
-//  Values
+
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -18,9 +18,9 @@ pub enum Value {
     Object(Rc<RefCell<Object>>),
     Function(Rc<RefCell<VmFunction>>),
     Closure(Rc<RefCell<VmClosure>>),
-    /// A reference to a mutable cell (a captured upvalue slot). Nested closures
-    /// share the same cell so reads/writes through either closure see the same
-    /// state. Deref'd on `GetUpvalue`, wrapped by `MakeClosure`.
+
+
+
     Ref(Rc<RefCell<Value>>),
     Native(fn(&[Value]) -> Value),
 }
@@ -39,12 +39,12 @@ pub struct VmFunction {
     pub max_locals: usize,
 }
 
-/// A closure: a function body plus a heap-allocated environment holding by-value
-/// copies of the enclosing locals it references (its free / captured variables).
-/// The environment outlives the closure's creating invocation because it lives on
-/// the heap and is shared (`Rc`), so a closure stays valid after the outer function
-/// returns. Mutations a closure makes to a captured cell (`SetUpvalue`) persist
-/// across calls of the same closure instance.
+
+
+
+
+
+
 #[derive(Debug, Clone)]
 pub struct VmClosure {
     pub function: Rc<RefCell<VmFunction>>,
@@ -108,7 +108,7 @@ impl Value {
     }
 }
 
-//  Opcodes
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
@@ -153,7 +153,7 @@ impl Opcode {
     }
 }
 
-//  Chunk
+
 
 #[derive(Debug, Clone)]
 pub struct Chunk {
@@ -238,31 +238,31 @@ impl Chunk {
         }
     }
 }
-//  Bytecode Compiler — walks the AST and emits instructions
+
 
 #[derive(Debug, Clone)]
 struct Local { name: String, slot: usize, depth: usize }
 
-/// Compile-time bookkeeping for an enclosing loop, so `break`/`continue` can be
-/// resolved into proper forward (exit / for-in increment) and backward
-/// (while / `loop` re-entry) jumps after the loop is fully emitted.
+
+
+
 #[derive(Debug, Clone)]
 struct LoopCtx {
-    /// Loop start: the condition for `while`, body top for `loop`/`Expr::Loop`, and
-    /// the `i < len` check for `for-in`. `continue` in non-for loops jumps back here.
+
+
     start: usize,
-    /// True for `for-in`: `continue` must jump forward to the increment step, not back
-    /// to the condition, otherwise the same element is reprocessed forever.
+
+
     is_for: bool,
-    /// `scope_depth` when the loop was entered. Locals the loop pushes (the loop
-    /// variable, and for `for-in` the internal iterator/len/index) live in the loop's
-    /// body scope (`base_scope + 1`), so a nested block's `retain()` must not prune
-    /// them while the loop is still active.
+
+
+
+
     base_scope: usize,
-    /// Byte offsets of candidate `Jmp`s emitted by `break` (forward escapes out of the loop).
+
     breaks: Vec<usize>,
-    /// Byte offsets of candidate `Jmp`s emitted by `continue` that still need patching to
-    /// the for-in increment step (only used when `is_for`).
+
+
     continues: Vec<usize>,
 }
 
@@ -272,19 +272,19 @@ pub struct Compiler {
     scope_depth: usize,
     loop_stack: Vec<LoopCtx>,
     max_locals: usize,
-    /// Snapshot of the *enclosing* compiler's locals at a closure's creation point, so
-    /// the closure body can resolve references to outer locals as captured upvalues
-    /// (by name). Only populated while compiling a closure body.
+
+
+
     outer_locals: Vec<Local>,
-    /// Map from captured local name to upvalue index for the closure body currently
-    /// being compiled.
+
+
     upvalues: HashMap<String, usize>,
-    /// Upvalue index -> captured local name, in capture (env slot) order.
+
     upvalue_names: Vec<String>,
-    /// Names a nested closure may reference as upvalue-of-upvalue (a variable that
-    /// lives in an enclosing *closure's* environment rather than in a plain local of
-    /// this compiler's immediate scope). Passed down transitively so deep chains
-    /// resolve; the parent resolves each such capture as a cell reference.
+
+
+
+
     chain_upvalue_names: Vec<String>,
 }
 
@@ -295,26 +295,26 @@ impl Compiler {
         Self { chunk: Chunk::new(), locals: Vec::new(), scope_depth: 0, loop_stack: Vec::new(), max_locals: 0, outer_locals: Vec::new(), upvalues: HashMap::new(), upvalue_names: Vec::new(), chain_upvalue_names: Vec::new() }
     }
 
-    /// Register a local at `slot` in the current scope, keeping `max_locals` as the
-    /// high-water mark of slots used. This stays correct even when end-of-block
-    /// prunes the name before `max_locals` is read, so frames reserve enough slots for
-    /// all locals their bytecode references during execution.
+
+
+
+
     fn push_local(&mut self, name: String, slot: usize, depth: usize) {
         self.locals.push(Local { name, slot, depth });
         self.max_locals = self.max_locals.max(slot + 1);
     }
 
-    /// Lower bound (as a `depth`) that nested blocks must retain down to while an
-    /// enclosing loop is active: the loop body scope is `base_scope + 1`, so locals
-    /// there (the loop variable and, for `for-in`, the iterator setup) survive a nested
-    /// block ending. Returns 0 when no loop is active, so scoping is unaffected.
+
+
+
+
     fn loop_body_floor(&self) -> usize {
         self.loop_stack.last().map(|l| l.base_scope + 1).unwrap_or(0)
     }
 
-    /// Prune locals from scopes that have exited, but never prune locals belonging to
-    /// an active enclosing loop body (see [`Self::loop_body_floor`]). The depth of the
-    /// scope being left is `leaving_scope`.
+
+
+
     fn retain_locals(&mut self, leaving_scope: usize) {
         let threshold = leaving_scope.max(self.loop_body_floor());
         self.locals.retain(|l| l.depth <= threshold);
@@ -330,7 +330,7 @@ impl Compiler {
     pub fn compile(&mut self, program: &Program) -> Result<(), CompileError> {
         let line = Self::current_line(program);
         for item in &program.items { self.compile_item(item, line)?; }
-        // Auto-invoke main() if defined
+
         let main_idx = self.chunk.add_string("main".to_string());
         self.chunk.emit_u16(Opcode::GetGlobal, main_idx, line);
         self.chunk.emit_bytes(Opcode::Call, 0, line);
@@ -449,8 +449,8 @@ impl Compiler {
             Stmt::Break(val) => {
                 if let Some(e) = val {
                     self.compile_expr(e, line)?;
-                    // Statement loops (while/for/loop) discard a carried break value to keep
-                    // the stack balanced; only the jump escapes the loop.
+
+
                     self.chunk.emit_byte(Opcode::Pop, line);
                 }
                 let jmp = self.chunk.code.len();
@@ -462,7 +462,7 @@ impl Compiler {
             }
             Stmt::Continue => {
                 if self.loop_stack.last().map_or(false, |c| c.is_for) {
-                    // for-in: jump forward to the increment step (patched once known).
+
                     let jmp = self.chunk.code.len();
                     self.chunk.emit_i16(Opcode::Jmp, 0, line);
                     match self.loop_stack.last_mut() {
@@ -470,7 +470,7 @@ impl Compiler {
                         None => return Err(CompileError("continue outside loop".into())),
                     }
                 } else {
-                    // while / loop: jump back to the condition or body top.
+
                     let start = self.loop_stack.last()
                         .ok_or_else(|| CompileError("continue outside loop".into()))?;
                     let start = start.start;
@@ -536,7 +536,7 @@ impl Compiler {
         if let Some(tail) = &body.expr { self.compile_expr(tail, line)?; }
         self.chunk.emit_byte(Opcode::Pop, line);
 
-        // `continue` inside the for body jumps forward to this increment step.
+
         let continue_target = self.chunk.code.len();
         if let Some(ctx) = self.loop_stack.last() {
             for &c in &ctx.continues { let off = (continue_target - c - 3) as i16; self.chunk.code[c+1] = (off >> 8) as u8; self.chunk.code[c+2] = off as u8; }
@@ -554,9 +554,9 @@ impl Compiler {
         if let Some(ctx) = self.loop_stack.last() {
             for &b in &ctx.breaks { let off = (exit - b - 3) as i16; self.chunk.code[b+1] = (off >> 8) as u8; self.chunk.code[b+2] = off as u8; }
         }        self.loop_stack.pop();
-        // Prune the loop variable (declared in the loop body scope) from name
-        // resolution, but *keep* the loop's internal locals (_iter/_len/_i) so that
-        // `max_locals` still reserves the slots they occupy during execution.
+
+
+
         self.locals.retain(|l| l.depth <= self.scope_depth);
         Ok(())
     }
@@ -694,27 +694,27 @@ impl Compiler {
                 self.compile_expr(condition, line)?;
                 let tj = self.chunk.code.len();
                 self.chunk.emit_i16(Opcode::JmpIfFalse, 0, line);
-                // True branch: pop condition, evaluate then body
+
                 self.chunk.emit_byte(Opcode::Pop, line);
                 for s in &then_body.stmts { self.compile_stmt(s, line)?; }
                 if let Some(tail) = &then_body.expr { self.compile_expr(tail, line)?; }
                 if let Some(else_e) = else_body {
                     let ej = self.chunk.code.len();
                     self.chunk.emit_i16(Opcode::Jmp, 0, line);
-                    // Patch JmpIfFalse to jump to false branch
+
                     let to = (self.chunk.code.len() - tj - 3) as i16;
                     self.chunk.code[tj+1] = (to >> 8) as u8; self.chunk.code[tj+2] = to as u8;
-                    // False branch: pop condition, evaluate else
+
                     self.chunk.emit_byte(Opcode::Pop, line);
                     self.compile_expr(else_e, line)?;
-                    // Patch Jmp to end
+
                     let eo = (self.chunk.code.len() - ej - 3) as i16;
                     self.chunk.code[ej+1] = (eo >> 8) as u8; self.chunk.code[ej+2] = eo as u8;
                 } else {
-                    // Patch JmpIfFalse to jump to false branch
+
                     let to = (self.chunk.code.len() - tj - 3) as i16;
                     self.chunk.code[tj+1] = (to >> 8) as u8; self.chunk.code[tj+2] = to as u8;
-                    // False branch: pop condition, push nil
+
                     self.chunk.emit_byte(Opcode::Pop, line);
                     self.chunk.emit_byte(Opcode::LoadNil, line);
                 }
@@ -805,18 +805,19 @@ impl Compiler {
                 self.chunk.code[end+1] = (off >> 8) as u8; self.chunk.code[end+2] = off as u8;
             }
             BinOp::Or => {
-                // Short-circuit OR: if left is truthy, return left; otherwise evaluate right
+
                 self.compile_expr(left, line)?;
                 let right_label = self.chunk.code.len();
                 self.chunk.emit_i16(Opcode::JmpIfFalse, 0, line);
                 let end_label = self.chunk.code.len();
                 self.chunk.emit_i16(Opcode::Jmp, 0, line);
-                // Patch JmpIfFalse to jump here (evaluate right side)
+
                 let right_off = (self.chunk.code.len() - right_label - 3) as i16;
                 self.chunk.code[right_label+1] = (right_off >> 8) as u8; self.chunk.code[right_label+2] = right_off as u8;
-                self.chunk.emit_byte(Opcode::Pop, line); // remove false left value
+                self.chunk.emit_byte(Opcode::Pop, line);
+
                 self.compile_expr(right, line)?;
-                // Patch Jmp to jump here (end, left was truthy)
+
                 let end_off = (self.chunk.code.len() - end_label - 3) as i16;
                 self.chunk.code[end_label+1] = (end_off >> 8) as u8; self.chunk.code[end_label+2] = end_off as u8;
             }
@@ -834,9 +835,9 @@ impl Compiler {
         Ok(())
     }
 
-    /// Resolve a name to a mutable-cell upvalue slot if it is capturable as an
-    /// upvalue here (either from an immediate outer local or from a chain upvalue of an
-    /// enclosing closure). Returns the upvalue index, allocating it on first use.
+
+
+
     fn resolve_upvalue(&mut self, name: &str) -> Option<usize> {
         if self.outer_locals.iter().rev().any(|l| l.name == name)
             || self.chain_upvalue_names.iter().any(|n| n == name)
@@ -847,7 +848,7 @@ impl Compiler {
         }
     }
 
-    /// Emit a read of a named variable: local slot, captured upvalue, or global.
+
     fn emit_read_name(&mut self, name: &str, line: u32) -> Result<(), CompileError> {
         if let Some(local) = self.locals.iter().rev().find(|l| l.name == name) {
             self.chunk.emit_bytes(Opcode::GetLocal, local.slot as u8, line);
@@ -863,7 +864,7 @@ impl Compiler {
         Ok(())
     }
 
-    /// Emit a write of a named variable (leaving its value on the stack).
+
     fn emit_write_name(&mut self, name: &str, line: u32) -> Result<(), CompileError> {
         if let Some(local) = self.locals.iter().rev().find(|l| l.name == name) {
             self.chunk.emit_bytes(Opcode::SetLocal, local.slot as u8, line);
@@ -879,9 +880,9 @@ impl Compiler {
         Ok(())
     }
 
-    /// Get or allocate the upvalue index for a captured outer local name. Captures are
-    /// recorded in first-reference order, which is the order they land in the heap
-    /// environment built at closure creation.
+
+
+
     fn upvalue_index(&mut self, name: &str) -> usize {
         if let Some(&i) = self.upvalues.get(name) {
             i
@@ -893,20 +894,20 @@ impl Compiler {
         }
     }
 
-    /// Compile a closure literal, capturing (by value) the enclosing variables it
-    /// references. Produces: LoadConst(<fn>), then one capture arg per upvalue, then
-    /// MakeClosure <count>.
-    ///
-    /// A capture arg is either a `GetLocal` (the variable is a plain local of the
-    /// parent) or a `GetUpvalueRef` / `GetUpvalue` (the variable is already a captured
-    /// upvalue of an enclosing *closure*, so the nested closure receives the same heap
-    /// cell and mutations propagate through the chain).
+
+
+
+
+
+
+
+
     fn compile_closure(&mut self, params: &[ClosureParam], body: &Expr, line: u32) -> Result<(), CompileError> {
         let mut sub = Compiler::new();
         sub.outer_locals = self.locals.clone();
-        // Everything this compiler could capture (its immediate outer locals, its own
-        // captures, and the transitive chain above it) is visible to the nested closure
-        // as a possible upvalue-of-upvalue.
+
+
+
         let mut chain: Vec<String> = Vec::new();
         for l in &self.locals { chain.push(l.name.clone()); }
         chain.extend(self.upvalue_names.iter().cloned());
@@ -917,7 +918,7 @@ impl Compiler {
             sub.push_local(p.name.clone(), sub.locals.len(), 1);
         }
         sub.compile_expr(body, line)?;
-        // Force an implicit return of the body value.
+
         sub.chunk.emit_byte(Opcode::Return, line);
         let func_obj = Rc::new(RefCell::new(VmFunction {
             name: "<closure>".into(), arity: params.len(), chunk: sub.chunk, max_locals: sub.max_locals,
@@ -931,9 +932,9 @@ impl Compiler {
         Ok(())
     }
 
-    /// Emit a single capture argument for the nested closure currently being built:
-    /// its current value if the name is a plain local here, or its shared cell if the
-    /// name is (or can become) one of this closure's own captured upvalues.
+
+
+
     fn emit_closure_capture_arg(&mut self, name: &str, line: u32) -> Result<(), CompileError> {
         if let Some(local) = self.locals.iter().rev().find(|l| &l.name == name) {
             self.chunk.emit_bytes(Opcode::GetLocal, local.slot as u8, line);
@@ -941,8 +942,8 @@ impl Compiler {
             let idx = self.upvalues[name];
             self.chunk.emit_bytes(Opcode::GetUpvalueRef, idx as u8, line);
         } else if self.resolve_upvalue(name).is_some() {
-            // The name is an enclosing-closure upvalue this closure has not referenced
-            // itself yet; capture it so we can pass the cell down.
+
+
             let idx = self.upvalue_index(name);
             self.chunk.emit_bytes(Opcode::GetUpvalueRef, idx as u8, line);
         } else {
@@ -974,20 +975,20 @@ impl Compiler {
                 self.emit_write_name(name, line)?;
             }
             Expr::Index { object, index } => {
-                // arr[i] += val  →  load arr[i], apply op, store back
+
                 self.compile_expr(object, line)?;
                 self.compile_expr(index, line)?;
                 self.chunk.emit_byte(Opcode::GetIndex, line);
                 self.compile_expr(value, line)?;
                 self.compile_binary_op(op, line);
-                // store: value is on top, need arr and index below
-                // re-load arr and index, then SetIndex
+
+
                 self.compile_expr(object, line)?;
                 self.compile_expr(index, line)?;
                 self.chunk.emit_byte(Opcode::SetIndex, line);
             }
             _ => {
-                // Fallback: treat as regular assign with binary op
+
                 self.compile_expr(target, line)?;
                 self.compile_expr(value, line)?;
                 self.compile_binary_op(op, line);
@@ -1041,20 +1042,21 @@ impl Compiler {
     pub fn into_chunk(self) -> Chunk { self.chunk }
 }
 
-//  Virtual Machine — stack-based bytecode interpreter
 
-/// Upper bound on a single string-repeat allocation to avoid capacity-overflow
-/// panics and absurd allocations from hostile programs (e.g. `"ab" * 10^18`).
-const MAX_STRING_ALLOC: usize = 1 << 30; // 1 GiB
+
+
+
+const MAX_STRING_ALLOC: usize = 1 << 30;
+
 
 struct Frame { ip: usize, slot: usize }
 
 pub struct Vm {
     stack: Vec<Value>,
     frames: Vec<Frame>,
-    /// Stack of closure environments, aligned with active `run_loop` invocations.
-    /// Each time a closure is called its environment is pushed; `GetUpvalue` /
-    /// `SetUpvalue` in the closure body operate on `env_stack.last()`.
+
+
+
     env_stack: Vec<Rc<RefCell<Vec<Value>>>>,
     globals: HashMap<String, Value>,
     debug: bool,
@@ -1222,14 +1224,14 @@ impl Vm {
                 Opcode::Call => {
                     let argc = code[ip] as usize; ip += 1;
                     let fv = self.stack.pop().unwrap_or(Value::Nil);
-                    // Native functions are Rust callbacks stored in `globals`.
+
                     if let Value::Native(nf) = &fv {
                         let mut args: Vec<Value> = (0..argc).map(|_| self.stack.pop().unwrap_or(Value::Nil)).collect();
                         args.reverse();
                         self.stack.push(nf(&args));
                     } else {
-                    // Resolve the callable to its function object plus (for closures) a
-                    // heap environment holding captured variables.
+
+
                     let (f, env): (Rc<RefCell<VmFunction>>, Option<Rc<RefCell<Vec<Value>>>>) =
                         match &fv {
                             Value::Function(f) => (f.clone(), None),
@@ -1243,7 +1245,7 @@ impl Vm {
                     let fc = fref.chunk.clone();
                     let ml = fref.max_locals;
                     drop(fref);
-                    // Pre-fill local slots with nil
+
                     for _ in argc..ml { self.stack.push(Value::Nil); }
                     if let Some(env) = &env { self.env_stack.push(env.clone()); }
                     self.frames.push(Frame { ip: 0, slot: new_base });
@@ -1257,14 +1259,15 @@ impl Vm {
                 Opcode::MakeClosure => {
                     let n = chunk.read_u16(ip) as usize; ip += 2;
                     let mut captured: Vec<Value> = (0..n).map(|_| self.stack.pop().unwrap_or(Value::Nil)).collect();
-                    captured.reverse(); // capture order: index 0 was pushed first
+                    captured.reverse();
+
                     let f = self.stack.pop().unwrap_or(Value::Nil);
                     match f {
                         Value::Function(func) => {
-                            // Every captured slot becomes a shared cell. If the value is
-                            // already a `Ref` (a `GetUpvalueRef` from an enclosing
-                            // closure), reuse the same cell so the chain aliases it;
-                            // otherwise wrap the plain value in a fresh cell.
+
+
+
+
                             let cells: Vec<Value> = captured.into_iter().map(|c| match c {
                                 Value::Ref(_) => c,
                                 other => Value::Ref(Rc::new(RefCell::new(other))),
@@ -1301,9 +1304,9 @@ impl Vm {
                     let idx = code[ip] as usize; ip += 1;
                     let env = self.env_stack.last().ok_or_else(|| "GetUpvalueRef with no closure environment".to_string())?;
                     let item = env.borrow().get(idx).cloned().unwrap_or(Value::Nil);
-                    // The shared cell (a `Ref`) is what gets captured by MakeClosure so
-                    // a nested closure aliases this same slot. If it is somehow a plain
-                    // value, wrap it so sharing still works.
+
+
+
                     match item {
                         Value::Ref(cell) => self.stack.push(Value::Ref(cell)),
                         other => self.stack.push(Value::Ref(Rc::new(RefCell::new(other)))),
@@ -1386,7 +1389,7 @@ impl Vm {
     }
 }
 
-//  Public API
+
 
 pub fn compile_and_run(program: &Program, debug: bool) -> Result<Value, String> {
     let mut compiler = Compiler::new();
@@ -1407,3 +1410,4 @@ pub fn run_chunk(chunk: &Chunk, debug: bool) -> Result<Value, String> {
     let mut vm = Vm::new(debug);
     vm.run(chunk)
 }
+

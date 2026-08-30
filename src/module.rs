@@ -4,26 +4,26 @@ use anyhow::{bail, Result};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-/// Resolves and loads .ruva module files from the filesystem.
-///
-/// Handles:
-/// - `import ruva::core` → loads from stdlib/core/mod.ruva
-/// - `import ruva::graphics` → loads from stdlib/graphics/mod.ruva
-/// - `mod name;` → loads from name.ruva or name/mod.ruva relative to the source file
+
+
+
+
+
+
 pub struct ModuleResolver {
-    /// Base path to the Ruva stdlib directory
+
     stdlib_path: PathBuf,
-    /// Base path to the current source file's directory
+
     source_dir: PathBuf,
-    /// Modules already loaded (cycle detection)
+
     loaded: HashSet<String>,
 }
 
 impl ModuleResolver {
-    /// Create a new module resolver.
-    /// `source_path` is the path to the .ruva file being compiled.
+
+
     pub fn new(source_path: &Path) -> Self {
-        // Find stdlib directory: look for stdlib/ relative to the Ruva project root
+
         let stdlib_path = Self::find_stdlib_path(source_path);
         let source_dir = source_path
             .parent()
@@ -37,7 +37,7 @@ impl ModuleResolver {
         }
     }
 
-    /// Create a resolver with an explicit stdlib path.
+
     #[allow(dead_code)]
     pub fn with_stdlib(stdlib_path: PathBuf, source_path: &Path) -> Self {
         let source_dir = source_path
@@ -52,20 +52,20 @@ impl ModuleResolver {
         }
     }
 
-    /// Find the stdlib directory by searching upward from the source file.
+
     fn find_stdlib_path(source_path: &Path) -> PathBuf {
         let mut current = source_path
             .parent()
             .unwrap_or_else(|| Path::new("."))
             .to_path_buf();
 
-        // Search up to 10 parent directories
+
         for _ in 0..10 {
             let candidate = current.join("stdlib");
             if candidate.exists() && candidate.is_dir() {
                 return candidate;
             }
-            // Also check if we're in the Ruva project itself
+
             let candidate2 = current.join("Ruva/stdlib");
             if candidate2.exists() && candidate2.is_dir() {
                 return candidate2;
@@ -75,14 +75,14 @@ impl ModuleResolver {
             }
         }
 
-        // Fallback: assume stdlib is next to the source file
+
         PathBuf::from("stdlib")
     }
 
-    /// Resolve and load a `ruva::` import path.
-    /// Returns the parsed AST items for the module.
+
+
     pub fn resolve_ruva_import(&mut self, path: &str) -> Result<Vec<Item>> {
-        // Security: reject paths with traversal components
+
         if path.contains("..") {
             bail!("Path traversal not allowed in module path: '{}'", path);
         }
@@ -90,19 +90,20 @@ impl ModuleResolver {
             bail!("Absolute paths not allowed in module imports: '{}'", path);
         }
 
-        // Check for cycles
+
         if self.loaded.contains(path) {
-            return Ok(vec![]); // Already loaded, skip
+            return Ok(vec![]);
+
         }
         self.loaded.insert(path.to_string());
 
-        // Strip the `ruva::` prefix
+
         let module_path = path
             .strip_prefix("ruva::")
             .unwrap_or(path)
             .replace("::", "/");
 
-        // Try to find the module file (`.rve` is accepted alongside `.ruva`)
+
         let candidates = vec![
             self.stdlib_path.join(format!("{}/mod.ruva", module_path)),
             self.stdlib_path.join(format!("{}/mod.rve", module_path)),
@@ -131,9 +132,9 @@ impl ModuleResolver {
         )
     }
 
-    /// Resolve a file-based module (`mod name;`).
+
     pub fn resolve_file_module(&mut self, name: &str) -> Result<Vec<Item>> {
-        // Security: reject names with traversal components
+
         if name.contains("..") || name.contains('/') || name.contains('\\') {
             bail!("Invalid module name: '{}' (no path separators or traversal allowed)", name);
         }
@@ -144,7 +145,7 @@ impl ModuleResolver {
         }
         self.loaded.insert(key);
 
-        // Try name.ruva / .rve and name/mod.ruva / .rve
+
         let candidates = vec![
             self.source_dir.join(format!("{}.ruva", name)),
             self.source_dir.join(format!("{}.rve", name)),
@@ -169,9 +170,9 @@ impl ModuleResolver {
         )
     }
 
-    /// Load and parse a .ruva file, returning its items.
+
     fn load_file(&mut self, path: &Path) -> Result<Vec<Item>> {
-        // Security: verify path is within expected directories
+
         if let Ok(canon) = path.canonicalize() {
             let in_stdlib = self.stdlib_path.canonicalize().map_or(false, |sp| canon.starts_with(&sp));
             let in_source = self.source_dir.canonicalize().map_or(false, |sd| canon.starts_with(&sd));
@@ -183,9 +184,10 @@ impl ModuleResolver {
             }
         }
 
-        // Security: limit file size to 1MB to prevent DoS
+
         let metadata = std::fs::metadata(path)?;
-        const MAX_FILE_SIZE: u64 = 1024 * 1024; // 1MB
+        const MAX_FILE_SIZE: u64 = 1024 * 1024;
+
         if metadata.len() > MAX_FILE_SIZE {
             bail!(
                 "Module file too large: {} bytes (max {} bytes)",
@@ -198,17 +200,17 @@ impl ModuleResolver {
         let mut parser = Parser::new(&source)?;
         let program = parser.parse_program()?;
 
-        // Recursively resolve any imports in the loaded file
+
         let mut items = Vec::new();
         for item in program.items {
             match item {
                 Item::Import(ref imp) if imp.path.starts_with("ruva::") => {
-                    // Resolve nested ruva imports
+
                     let nested = self.resolve_ruva_import(&imp.path)?;
                     items.extend(nested);
                 }
                 Item::Use(ref u) => {
-                    // Check if the use path starts with ruva::
+
                     let full_path = u.path.join("::");
                     if full_path.starts_with("ruva::") {
                         let nested = self.resolve_ruva_import(&full_path)?;
@@ -218,10 +220,10 @@ impl ModuleResolver {
                     }
                 }
                 Item::Module(ref m) if m.body.is_none() => {
-                    // File-based module — resolve it
+
                     match self.resolve_file_module(&m.name) {
                         Ok(nested) => {
-                            // Wrap in a module
+
                             items.push(Item::Module(crate::ast::ModDef {
                                 is_pub: m.is_pub,
                                 name: m.name.clone(),
@@ -229,7 +231,7 @@ impl ModuleResolver {
                             }));
                         }
                         Err(e) => {
-                            // Keep the original module declaration
+
                             eprintln!("Warning: {}", e);
                             items.push(item);
                         }
@@ -242,7 +244,7 @@ impl ModuleResolver {
         Ok(items)
     }
 
-    /// Resolve all imports in a program, returning a new program with modules inlined.
+
     pub fn resolve_program(&mut self, program: &Program) -> Result<Program> {
         let mut items = Vec::new();
         let mut resolved_modules: Vec<(String, Vec<Item>)> = Vec::new();
@@ -250,10 +252,10 @@ impl ModuleResolver {
         for item in &program.items {
             match item {
                 Item::Import(imp) if imp.path.starts_with("ruva::") => {
-                    // Load the stdlib module
+
                     match self.resolve_ruva_import(&imp.path) {
                         Ok(module_items) => {
-                            // Generate a module wrapper
+
                             let module_name = imp
                                 .path
                                 .split("::")
@@ -261,7 +263,7 @@ impl ModuleResolver {
                                 .unwrap_or("module")
                                 .to_string();
 
-                            // Check if there's an alias
+
                             let name = imp
                                 .alias
                                 .clone()
@@ -271,7 +273,7 @@ impl ModuleResolver {
                         }
                         Err(e) => {
                             eprintln!("Warning: Failed to load module '{}': {}", imp.path, e);
-                            // Keep the original import as a comment
+
                             items.push(item.clone());
                         }
                     }
@@ -287,17 +289,17 @@ impl ModuleResolver {
                                     .map(|s| s.as_str())
                                     .unwrap_or("module");
 
-                                // For selective imports, we want to expose specific items
-                                // For simple use, we wrap in a module
+
+
                                 if u.selective.is_empty() && !u.wildcard {
-                                    // `use ruva::core` — load whole module
+
                                     resolved_modules.push((module_name.to_string(), module_items));
                                 } else if u.wildcard {
-                                    // `use ruva::core::*` — load whole module
+
                                     resolved_modules.push((module_name.to_string(), module_items));
                                 } else {
-                                    // `use ruva::core::{Option, Result}` — load module but mark selective
-                                    // For now, load the whole module (selective filtering is a future enhancement)
+
+
                                     resolved_modules.push((module_name.to_string(), module_items));
                                 }
                             }
@@ -311,7 +313,7 @@ impl ModuleResolver {
                     }
                 }
                 Item::Module(m) if m.body.is_none() => {
-                    // File-based module: `mod name;`
+
                     match self.resolve_file_module(&m.name) {
                         Ok(module_items) => {
                             items.push(Item::Module(crate::ast::ModDef {
@@ -330,7 +332,7 @@ impl ModuleResolver {
             }
         }
 
-        // Insert resolved modules at the beginning of the program
+
         for (name, module_items) in resolved_modules {
             items.insert(
                 0,
@@ -353,7 +355,7 @@ mod tests {
 
     #[test]
     fn test_find_stdlib_path() {
-        // Test that we can find the stdlib directory
+
         let source = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/hello.ruva");
         let path = ModuleResolver::find_stdlib_path(&source);
         assert!(
@@ -401,9 +403,9 @@ fn main() { let x = 1 }"#;
         let mut resolver = ModuleResolver::new(&source_path);
         let resolved = resolver.resolve_program(&program).unwrap();
 
-        // Should have at least the core module + the original main function
+
         assert!(resolved.items.len() >= 2);
-        // First item should be the core module
+
         match &resolved.items[0] {
             Item::Module(m) => {
                 assert_eq!(m.name, "core");
@@ -417,9 +419,9 @@ fn main() { let x = 1 }"#;
     fn test_resolve_cycle_detection() {
         let source = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/hello.ruva");
         let mut resolver = ModuleResolver::new(&source);
-        // First load should succeed (or fail if module doesn't exist)
+
         let _ = resolver.resolve_ruva_import("ruva::core");
-        // Second load of same module should return empty (cycle detected)
+
         let result = resolver.resolve_ruva_import("ruva::core");
         assert!(result.is_ok());
         assert!(result.unwrap().is_empty(), "Cycle detection should return empty");
@@ -433,7 +435,7 @@ fn main() { let x = 1 }"#;
         assert!(result.is_ok(), "Failed to resolve ruva::io");
         let items = result.unwrap();
         assert!(!items.is_empty(), "IO module should have items");
-        // Check that we got structs and functions
+
         let has_struct = items.iter().any(|i| matches!(i, Item::Struct(_)));
         let has_fn = items.iter().any(|i| matches!(i, Item::Function(_)));
         assert!(has_struct, "IO module should have structs");
@@ -453,7 +455,7 @@ fn main() { let f = File::open("test.txt") }"#;
         let mut resolver = ModuleResolver::new(&source_path);
         let resolved = resolver.resolve_program(&program).unwrap();
 
-        // Should have the io module + original main function
+
         assert!(resolved.items.len() >= 2);
         match &resolved.items[0] {
             Item::Module(m) => {
@@ -470,7 +472,7 @@ fn main() { let f = File::open("test.txt") }"#;
         let mut resolver = ModuleResolver::new(&source);
         let items = resolver.resolve_ruva_import("ruva::io").unwrap();
 
-        // Find the File struct
+
         let has_file = items.iter().any(|i| {
             if let Item::Struct(s) = i {
                 s.name == "File"
@@ -513,7 +515,7 @@ fn main() { let f = File::open("test.txt") }"#;
         assert!(result.is_ok(), "Failed to resolve ruva::testing");
         let items = result.unwrap();
         assert!(!items.is_empty(), "Testing module should have items");
-        // Check that we got structs and functions
+
         let has_struct = items.iter().any(|i| matches!(i, Item::Struct(_)));
         let has_fn = items.iter().any(|i| matches!(i, Item::Function(_)));
         assert!(has_struct, "Testing module should have structs");
@@ -629,7 +631,7 @@ fn main() { let r = TestResult::pass("test".into()) }"#;
         let mut resolver = ModuleResolver::new(&source_path);
         let resolved = resolver.resolve_program(&program).unwrap();
 
-        // Should have the testing module + original main function
+
         assert!(resolved.items.len() >= 2);
         match &resolved.items[0] {
             Item::Module(m) => {
@@ -834,3 +836,4 @@ fn main() { let cfg = SerializerConfig::default_json() }"#;
         }
     }
 }
+

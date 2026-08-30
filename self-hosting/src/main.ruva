@@ -4,3 +4,4 @@ fn main() {
     let program = parser.parse_program()
     println!("Parsed {} items", program.items.len())
 }
+

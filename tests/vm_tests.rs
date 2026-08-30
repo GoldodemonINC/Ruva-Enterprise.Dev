@@ -1,9 +1,9 @@
-//! End-to-end tests for the bytecode VM.
-//!
-//! These spawn the real `ruva` binary as a child process, run `ruva vm <file>`
-//! on a generated `.ruva` source file, capture stdout, and assert the exact
-//! expected program output. This exercises the full real surface:
-//! lexer -> parser -> AST -> VM compiler -> bytecode executor -> stdout print.
+
+
+
+
+
+
 
 use std::process::Command;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -33,7 +33,7 @@ fn run_vm(source: &str) -> (String, String) {
     )
 }
 
-/// Helper: assert a program produces exactly the given stdout and no VM error.
+
 fn assert_output(source: &str, expected_stdout: &str) {
     let (stdout, stderr) = run_vm(source);
     assert_eq!(
@@ -65,7 +65,7 @@ fn arithmetic_precedence_and_multi_arg_print() {
 
 #[test]
 fn while_loop_terminates_and_accumulates() {
-    // Backward Loop (+3 fix) + tail expression in loop body.
+
     assert_output(
         "fn main() {
     let mut i = 0
@@ -82,7 +82,7 @@ fn while_loop_terminates_and_accumulates() {
 
 #[test]
 fn loop_body_mutation_persists() {
-    // Tail-expr fix: `acc = acc * n` inside the loop must actually run each iter.
+
     assert_output(
         "fn main() {
     let mut n = 5
@@ -115,7 +115,7 @@ fn if_else_false_branch() {
 
 #[test]
 fn if_else_true_branch() {
-    // True branch also exercises the forward `Jmp` that skips the else block.
+
     assert_output(
         "fn main() {
     let x = 8
@@ -244,7 +244,7 @@ fn string_concat_and_multiple_args() {
 
 #[test]
 fn function_taking_param_uses_local_correctly() {
-    // Verifies max_locals pre-fill doesn't mix up arg and subsequent locals.
+
     assert_output(
         "fn add(a: i64, b: i64) -> i64 {
     return a + b
@@ -259,7 +259,7 @@ fn main() {
 
 #[test]
 fn rve_extension_is_accepted() {
-    // A `.rve` source file must be accepted by the VM just like `.ruva`.
+
     let id = COUNTER.fetch_add(1, Ordering::SeqCst);
     let path = std::env::temp_dir().join(format!("vm_rv_{}_{}.rve", std::process::id(), id));
     std::fs::write(&path, "fn main() { let g = 7 println!(\"rve-alias:\", g) }").expect("write temp .rve");
@@ -283,9 +283,9 @@ fn rve_extension_is_accepted() {
 
 #[test]
 fn rgu_drives_the_vm_directly() {
-    // RGu is Ruva's own compiler driver: it must run a `.rve` file via the
-    // bytecode VM with no external build tool. `CARGO_BIN_EXE_rgu` is injected
-    // by Cargo, but at runtime RGu never shells out to cargo itself.
+
+
+
     let id = COUNTER.fetch_add(1, Ordering::SeqCst);
     let path = std::env::temp_dir().join(format!("rgu_vm_{}_{}.rve", std::process::id(), id));
     std::fs::write(
@@ -311,8 +311,8 @@ fn rgu_drives_the_vm_directly() {
     );
 }
 
-/// Helper: assert the VM reports a clean error (in stderr) rather than panicking
-/// or exiting successfully. `msg` is a substring expected in the error text.
+
+
 fn assert_vm_error(source: &str, msg: &str) {
     let (stdout, stderr) = run_vm(source);
     assert!(stdout.is_empty(), "expected no stdout, got: {}", stdout);
@@ -379,8 +379,8 @@ fn huge_string_repeat_errors_not_panics() {
 
 #[test]
 fn while_break_exits_loop_and_skips_remaining_body() {
-    // break at i == 3 must leave the loop immediately; `hits` increments are skipped
-    // for i == 3 onward.
+
+
     assert_output(
         "fn main() {
     let mut i = 0
@@ -400,8 +400,8 @@ fn while_break_exits_loop_and_skips_remaining_body() {
 
 #[test]
 fn while_continue_skips_to_condition_which_is_reevaluated() {
-    // continue must skip the rest of the body (so `evens` only sees even j) while
-    // the `j < 6` condition is re-checked each iteration.
+
+
     assert_output(
         "fn main() {
     let mut j = 0
@@ -421,8 +421,8 @@ fn while_continue_skips_to_condition_which_is_reevaluated() {
 
 #[test]
 fn for_in_break_and_continue() {
-    // break at k == 4 exits early; continue at k == 2 skips the accumulation for
-    // that element but moves on to the next.
+
+
     assert_output(
         "fn main() {
     let mut total = 0
@@ -445,8 +445,8 @@ fn for_in_break_and_continue() {
 
 #[test]
 fn for_in_loop_variable_survives_nested_block() {
-    // The loop variable must still resolve as a local *after* a nested `if`/block
-    // inside the body prunes its own scope, otherwise `k` becomes a stale global.
+
+
     assert_output(
         "fn main() {
     let mut total = 0
@@ -464,7 +464,7 @@ fn for_in_loop_variable_survives_nested_block() {
 
 #[test]
 fn loop_expression_break_returns_and_terminates() {
-    // A `loop { ... if b { break } }` expression should terminate via break.
+
     assert_output(
         "fn main() {
     let mut i = 0
@@ -484,8 +484,8 @@ fn loop_expression_break_returns_and_terminates() {
 
 #[test]
 fn for_in_continue_in_nested_if_keeps_increment() {
-    // A continue that lives inside an `if` inside the loop body must still jump to
-    // the increment step (not re-run the same element forever).
+
+
     assert_output(
         "fn main() {
     let mut out = 0
@@ -503,8 +503,8 @@ fn for_in_continue_in_nested_if_keeps_increment() {
 
 #[test]
 fn closure_captures_local_and_survives_outer_return() {
-    // The closure is created inside `make_adder` and returned; it must still hold
-    // `offset` after `make_adder`'s frame is gone (capture-by-value heap env).
+
+
     assert_output(
         "fn make_adder(base: i64) -> fn(i64) -> i64 {
     let offset = base * 2
@@ -521,7 +521,7 @@ fn main() {
 
 #[test]
 fn closure_passed_as_argument_and_called() {
-    // A closure value is first-class: built in main, passed to `apply`, invoked there.
+
     assert_output(
         "fn apply(f: fn(i64) -> i64, v: i64) -> i64 {
     return f(v)
@@ -538,8 +538,8 @@ fn main() {
 
 #[test]
 fn closure_mutates_captured_local_across_calls() {
-    // Mutable capture: the same closure instance increments `n` in its heap env, so
-    // the value carries from one call to the next (stateful closure).
+
+
     assert_output(
         "fn make_counter() -> fn(i64) -> i64 {
     let mut n = 0
@@ -559,9 +559,9 @@ fn main() {
 
 #[test]
 fn zero_arg_closure_captures_and_is_called() {
-    // `||` at the start of a primary expression must parse as a zero-parameter
-    // closure (previously it collided with the logical-OR token and users had to add
-    // a dummy parameter).
+
+
+
     assert_output(
         "fn main() {
     let name = \"Ruva\"
@@ -576,8 +576,8 @@ fn zero_arg_closure_captures_and_is_called() {
 
 #[test]
 fn zero_arg_closure_returned_from_function() {
-    // A zero-arg `||` closure built inside a function and returned captures an
-    // enclosing local; the bare `return` must not detach `||` into a tail expression.
+
+
     assert_output(
         "fn mk() -> fn() -> i64 {
     let base = 3
@@ -595,7 +595,7 @@ fn zero_arg_closure_returned_from_function() {
 
 #[test]
 fn zero_arg_stateful_closure_counter() {
-    // The `||`-free zero-arg closure can also be stateful (mutation across calls).
+
     assert_output(
         "fn make_counter() -> fn() -> i64 {
     let mut n = 0
@@ -614,8 +614,8 @@ fn zero_arg_stateful_closure_counter() {
 
 #[test]
 fn logical_or_and_zero_arg_closure_coexist() {
-    // `&&`/`||` in operand position are logical operators; `||` at operand start is a
-    // zero-arg closure. Both must be unambiguous in one program.
+
+
     assert_output(
         "fn main() {
     let a = true
@@ -631,9 +631,9 @@ fn logical_or_and_zero_arg_closure_coexist() {
 
 #[test]
 fn nested_closure_mutates_outer_captured_state_across_calls() {
-    // The innermost closure `||` captures `n` and `step` through an enclosing
-    // closure's environment (upvalue-of-upvalue). Mutating `n` via the shared cell must
-    // persist across calls of the returned closure: 3, 6, 9.
+
+
+
     assert_output(
         "fn make_accumulator(step: i64) -> fn() -> fn() -> i64 {
     let mut n = 0
@@ -655,9 +655,9 @@ fn nested_closure_mutates_outer_captured_state_across_calls() {
 
 #[test]
 fn nested_closure_captures_local_and_upvalue_from_enclosing_closure() {
-    // The inner `|b|` closure captures both `local` (a variable declared *inside* the
-    // enclosing closure) and `seed` (an upvalue of that enclosing closure). Both must
-    // resolve through the closure chain rather than falling back to a global/Nil.
+
+
+
     assert_output(
         "fn make_pair(seed: i64) -> fn(i64) -> fn(i64) -> i64 {
     return |a: i64| -> fn(i64) -> i64 {

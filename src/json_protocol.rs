@@ -1,5 +1,5 @@
-// Simple JSON Implementation
-// Zero-dependency JSON parser and serializer for the LSP wire protocol.
+
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum JsonValue {
@@ -57,18 +57,18 @@ impl JsonValue {
     }
 }
 
-// JSON Parser
+
 
 pub struct JsonParser {
     chars: Vec<char>,
     pos: usize,
-    /// Maximum nesting depth to prevent stack overflow from malicious input
+
     depth: u32,
     max_depth: u32,
 }
 
 impl JsonParser {
-    /// Maximum allowed JSON nesting depth (prevents stack overflow)
+
     const DEFAULT_MAX_DEPTH: u32 = 64;
 
     pub fn new(input: &str) -> Self {
@@ -131,7 +131,8 @@ impl JsonParser {
         self.depth += 1;
         if self.depth > self.max_depth {
             self.depth -= 1;
-            return None; // Reject overly nested JSON
+            return None;
+
         }
         let result = self.parse_object_inner();
         self.depth -= 1;
@@ -139,7 +140,8 @@ impl JsonParser {
     }
 
     fn parse_object_inner(&mut self) -> Option<JsonValue> {
-        self.advance(); // {
+        self.advance();
+
         let mut pairs = Vec::new();
         self.skip_whitespace();
         if self.peek() == Some('}') {
@@ -150,7 +152,8 @@ impl JsonParser {
             self.skip_whitespace();
             let key = self.parse_string()?;
             self.skip_whitespace();
-            self.advance(); // :
+            self.advance();
+
             let value = self.parse_value()?;
             pairs.push((key, value));
             self.skip_whitespace();
@@ -167,7 +170,8 @@ impl JsonParser {
         self.depth += 1;
         if self.depth > self.max_depth {
             self.depth -= 1;
-            return None; // Reject overly nested JSON
+            return None;
+
         }
         let result = self.parse_array_inner();
         self.depth -= 1;
@@ -175,7 +179,8 @@ impl JsonParser {
     }
 
     fn parse_array_inner(&mut self) -> Option<JsonValue> {
-        self.advance(); // [
+        self.advance();
+
         let mut items = Vec::new();
         self.skip_whitespace();
         if self.peek() == Some(']') {
@@ -200,7 +205,8 @@ impl JsonParser {
         if self.peek() != Some('"') {
             return None;
         }
-        self.advance(); // opening "
+        self.advance();
+
         let mut s = String::new();
         loop {
             match self.advance()? {
@@ -270,7 +276,7 @@ pub fn json_parse(input: &str) -> Option<JsonValue> {
     JsonParser::new(input).parse_value()
 }
 
-// JSON Serializer
+
 
 pub fn json_stringify(value: &JsonValue) -> String {
     match value {
@@ -434,3 +440,4 @@ mod tests {
         assert!(s.contains('.'));
     }
 }
+

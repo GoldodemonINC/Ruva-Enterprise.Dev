@@ -11,4 +11,5 @@ Ruva.zip
 stderr.txt
 stdout.txt
 .freebuff/
-/self-hosting/target
+/self-hosting/target
+__pycache__/

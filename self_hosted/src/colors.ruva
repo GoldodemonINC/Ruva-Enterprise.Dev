@@ -1,5 +1,5 @@
-// ANSI color codes for terminal output
-// Self-hosted: written in Ruva, transpiled to Rust
+
+
 
 pub struct ColorCodes {}
 
@@ -50,3 +50,4 @@ impl ColorCodes {
         return format!("{}{}{}{}", d, msg, r, "")
     }
 }
+

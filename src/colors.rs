@@ -1,6 +1,6 @@
-// Self-hosted: Written in Ruva (self_hosted/src/colors.ruva), transpiled to Rust
-// Original: src/colors.rs (66 LOC)
-// This module provides ANSI color codes for terminal output.
+
+
+
 
 #[allow(dead_code)]
 pub const RED: &str = "\x1b[31m";
@@ -44,3 +44,4 @@ pub fn header(msg: &str) -> String {
 pub fn dim(msg: &str) -> String {
     format!("{}{}{}{}", DIM, msg, RESET, "")
 }
+

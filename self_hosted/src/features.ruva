@@ -1,5 +1,5 @@
-// Security and anti-cheat feature flags
-// Self-hosted: written in Ruva, transpiled to Rust
+
+
 
 enum SecurityLevel {
     Safe, Trusted, Unsafe,
@@ -42,3 +42,4 @@ impl FeatureChecker {
 enum CodegenHint {
     UseAtomic, UseSafeMemory, InsertBoundsCheck, UsePoolAllocator, UseLockFreeStructure,
 }
+

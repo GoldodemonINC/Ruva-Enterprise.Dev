@@ -32,107 +32,107 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Compile a .ruva file to a native executable
+
     Compile {
-        /// Input .ruva file
+
         input: PathBuf,
 
-        /// Output executable path (defaults to input name without extension)
+
         #[arg(short, long)]
         output: Option<PathBuf>,
 
-        /// Build in release mode (optimized)
+
         #[arg(long)]
         release: bool,
 
-        /// Lazy compilation: only check for errors, don't generate code
+
         #[arg(long)]
         lazy: bool,
 
-        /// Verbose output
+
         #[arg(short, long)]
         verbose: bool,
     },
 
-    /// Build a .ruva project (compiles all .ruva files in src/)
+
     Build {
-        /// Project directory (defaults to current directory)
+
         #[arg(default_value = ".")]
         project: PathBuf,
 
-        /// Build in release mode
+
         #[arg(long)]
         release: bool,
     },
 
-    /// Run a .ruva file directly
+
     Run {
-        /// Input .ruva file
+
         input: PathBuf,
 
-        /// Arguments to pass to the program
+
         #[arg(trailing_var_arg = true)]
         args: Vec<String>,
     },
 
-    /// Check .ruva files for syntax and type errors
+
     Check {
-        /// Input .ruva file
+
         input: PathBuf,
 
-        /// Check all .ruva files in a directory
+
         #[arg(long)]
         all: bool,
     },
 
-    /// Print the token stream for debugging
+
     Tokens {
-        /// Input .ruva file
+
         input: PathBuf,
     },
 
-    /// Print the AST for a .ruva file (for debugging)
+
     Ast {
-        /// Input .ruva file
+
         input: PathBuf,
     },
 
-    /// Start an interactive REPL
+
     Repl,
 
-    /// Create a new Ruva project
+
     New {
-        /// Project name
+
         name: String,
     },
 
-    /// Format .ruva source files
+
     Fmt {
-        /// Input file or directory
+
         input: PathBuf,
 
-        /// Check only, don't modify files
+
         #[arg(long)]
         check: bool,
 
-        /// Dry run, show what would change
+
         #[arg(long)]
         dry_run: bool,
 
-        /// Verbose output
+
         #[arg(short, long)]
         verbose: bool,
     },
 
-    /// Start the Ruva Language Server (LSP)
+
     Lsp,
 
-    /// Run a .ruva file using the bytecode VM (real compilation, no transpilation)
+
     Vm {
-        /// Input .ruva file
+
         input: PathBuf,
 
-        /// Print bytecode disassembly for debugging
+
         #[arg(long)]
         debug: bool,
     },
@@ -181,7 +181,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// True if `path` is a Ruva source file (`.ruva` or the `.rve` extension).
+
 fn is_ruva_source(path: &Path) -> bool {
     matches!(path.extension().and_then(|e| e.to_str()), Some("ruva") | Some("rve"))
 }
@@ -197,7 +197,7 @@ fn transpile(source: &str, target: Target, source_path: &Path) -> Result<String>
     let mut parser = parser::Parser::new(source)?;
     let program = parser.parse_program()?;
 
-    // Resolve modules (inline stdlib, file-based modules)
+
     let mut resolver = module::ModuleResolver::new(source_path);
     let program = resolver.resolve_program(&program)?;
 
@@ -205,7 +205,7 @@ fn transpile(source: &str, target: Target, source_path: &Path) -> Result<String>
     Ok(gen.generate(&program))
 }
 
-// Commands
+
 
 fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, verbose: bool) -> Result<()> {
     let source = read_source(input)?;
@@ -214,7 +214,7 @@ fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, v
         eprintln!("{}", colors::info(&format!("Parsing {}...", input.display())));
     }
 
-    // Parse
+
     let mut parser = parser::Parser::new(&source)?;
     let program = parser.parse_program()?;
 
@@ -223,7 +223,7 @@ fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, v
         return Ok(());
     }
 
-    // Resolve modules (inline stdlib, file-based modules)
+
     let mut resolver = module::ModuleResolver::new(input);
     let program = resolver.resolve_program(&program)?;
 
@@ -231,7 +231,7 @@ fn cmd_compile(input: &Path, output: Option<&Path>, release: bool, lazy: bool, v
         eprintln!("⟳ Compiling to native...");
     }
 
-    // Transpile via the Rust backend and build with cargo
+
     let mut gen = backend::create_generator(Target::Rust);
     let code = gen.generate(&program);
 
@@ -324,7 +324,7 @@ fn cmd_vm(input: &Path, debug: bool) -> Result<()> {
     let mut parser = parser::Parser::new(&source)?;
     let program = parser.parse_program()?;
 
-    // Resolve modules (inline stdlib, file-based modules)
+
     let mut resolver = module::ModuleResolver::new(input);
     let program = resolver.resolve_program(&program)?;
 
@@ -333,7 +333,7 @@ fn cmd_vm(input: &Path, debug: bool) -> Result<()> {
     let result = vm::compile_and_run(&program, debug)
         .map_err(|e| anyhow::anyhow!("VM error: {}", e))?;
 
-    // Don't print nil results from scripts
+
     match &result {
         vm::Value::Nil => {}
         _ => eprintln!("{}", colors::success(&format!("Result: {}", result))),
@@ -385,7 +385,7 @@ edition = "2021"
 
 fn cmd_check(input: &Path, all: bool) -> Result<()> {
     if all {
-        // Check all .ruva files in the directory
+
         let dir = input.parent().unwrap_or(input);
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -405,7 +405,7 @@ fn check_file(path: &Path) -> Result<()> {
     match parser::Parser::new(&source) {
         Ok(mut parser) => match parser.parse_program() {
             Ok(program) => {
-                // Resolve modules before type-checking
+
                 let mut resolver = module::ModuleResolver::new(path);
                 let program = match resolver.resolve_program(&program) {
                     Ok(p) => p,
@@ -414,7 +414,7 @@ fn check_file(path: &Path) -> Result<()> {
                         program
                     }
                 };
-                // Run type checker
+
                 let mut checker = typecheck::TypeChecker::new();
                 let diagnostics = checker.check(&program);
                 let errors: Vec<_> = diagnostics.iter().filter(|d| d.kind == typecheck::DiagnosticKind::Error).collect();
@@ -472,7 +472,7 @@ fn cmd_repl() -> Result<()> {
             continue;
         }
 
-        // Handle special commands
+
         if line == ":quit" || line == ":q" {
             break;
         }
@@ -497,11 +497,11 @@ fn cmd_repl() -> Result<()> {
             continue;
         }
 
-        // Add to buffer
+
         buffer.push_str(line);
         buffer.push('\n');
 
-        // Try to transpile
+
         match transpile(&buffer, Target::Rust, Path::new("repl")) {
             Ok(code) => {
                 eprintln!("-- Generated Rust --");
@@ -510,7 +510,7 @@ fn cmd_repl() -> Result<()> {
             }
             Err(e) => {
                 eprintln!("Error: {}", e);
-                // Remove the last line so user can retry
+
                 buffer = buffer.lines().collect::<Vec<_>>().join("\n");
                 buffer.push('\n');
             }
@@ -529,11 +529,12 @@ fn cmd_ast(input: &Path) -> Result<()> {
 }
 
 fn cmd_fmt(input: &Path, check: bool, dry_run: bool, verbose: bool) -> Result<()> {
-    // Simple Ruva formatter: normalize indentation, trailing whitespace, and blank lines
-    let mut stats = (0i64, 0i64, 0i64); // checked, changed, errors
+
+    let mut stats = (0i64, 0i64, 0i64);
+
 
     if input.is_dir() {
-        // Format all .ruva files in directory
+
         for entry in fs::read_dir(input)? {
             let entry = entry?;
             let path = entry.path();
@@ -551,7 +552,7 @@ fn cmd_fmt(input: &Path, check: bool, dry_run: bool, verbose: bool) -> Result<()
             }
         }
     } else {
-        // Format single file
+
         match format_single_file(input, check, dry_run, verbose) {
             Ok(changed) => {
                 stats.0 += 1;
@@ -596,8 +597,8 @@ fn format_single_file(path: &Path, check: bool, dry_run: bool, verbose: bool) ->
     Ok(changed)
 }
 
-/// Minimal Ruva formatter: strips trailing whitespace, normalizes blank lines,
-/// ensures file ends with newline.
+
+
 fn ruva_format(source: &str) -> String {
     let mut output = String::with_capacity(source.len());
     let mut prev_blank = false;
@@ -606,7 +607,7 @@ fn ruva_format(source: &str) -> String {
     for line in source.lines() {
         let trimmed = line.trim_end();
 
-        // Track block comments
+
         if in_block_comment {
             output.push_str(trimmed);
             output.push('\n');
@@ -621,7 +622,7 @@ fn ruva_format(source: &str) -> String {
 
         let is_blank = trimmed.is_empty();
 
-        // Collapse multiple blank lines into one
+
         if is_blank {
             if !prev_blank {
                 output.push('\n');
@@ -635,7 +636,7 @@ fn ruva_format(source: &str) -> String {
         output.push('\n');
     }
 
-    // Ensure file ends with exactly one newline
+
     let result = output.trim_end_matches('\n');
     format!("{}\n", result)
 }
@@ -649,7 +650,7 @@ fn cmd_new(name: &str) -> Result<()> {
     fs::create_dir_all(&project_dir)?;
     fs::create_dir_all(project_dir.join("src"))?;
 
-    // Create Cargo.toml
+
     fs::write(
         project_dir.join("Cargo.toml"),
         format!(
@@ -666,7 +667,7 @@ path = "src/main.ruva"
         ),
     )?;
 
-    // Create main.ruva
+
     fs::write(
         project_dir.join("src/main.ruva"),
         r#"// Welcome to Ruva!
@@ -693,3 +694,4 @@ fn cmd_lsp() -> Result<()> {
 
     Ok(())
 }
+
