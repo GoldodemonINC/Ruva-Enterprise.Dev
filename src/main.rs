@@ -293,7 +293,7 @@ fn transpile(source: &str, target: Target, source_path: &Path) -> Result<String>
     Ok(gen.generate(&program))
 }
 
-// ─── Commands ────────────────────────────────────────────────────────────────
+// Commands
 
 fn cmd_compile(input: &Path, output: Option<&Path>, target: Target, release: bool, lazy: bool, verbose: bool) -> Result<()> {
     let source = read_source(input)?;
@@ -644,9 +644,9 @@ fn cmd_repl() -> Result<()> {
         if line == ":transpile" {
             match transpile(&buffer, Target::Rust, Path::new("repl")) {
                 Ok(code) => {
-                    eprintln!("── Generated Rust ──");
+                    eprintln!("-- Generated Rust --");
                     eprintln!("{}", code);
-                    eprintln!("───────────────────");
+                    eprintln!("-------------------");
                 }
                 Err(e) => {
                     eprintln!("Error: {}", e);
@@ -662,9 +662,9 @@ fn cmd_repl() -> Result<()> {
         // Try to transpile
         match transpile(&buffer, Target::Rust, Path::new("repl")) {
             Ok(code) => {
-                eprintln!("── Generated Rust ──");
+                eprintln!("-- Generated Rust --");
                 eprintln!("{}", code);
-                eprintln!("───────────────────");
+                eprintln!("-------------------");
             }
             Err(e) => {
                 eprintln!("Error: {}", e);

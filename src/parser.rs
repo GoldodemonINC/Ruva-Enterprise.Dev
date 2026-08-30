@@ -94,7 +94,7 @@ impl Parser {
         self.peek() == token
     }
 
-    // ─── Program ─────────────────────────────────────────────────────────
+    // Program
 
     pub fn parse_program(&mut self) -> Result<Program> {
         let mut items = Vec::new();
@@ -196,7 +196,7 @@ impl Parser {
         }
     }
 
-    // ─── Imports ─────────────────────────────────────────────────────────
+    // Imports
 
     fn parse_import(&mut self) -> Result<ImportDef> {
         self.expect(&Token::Import)?;
@@ -232,7 +232,7 @@ impl Parser {
         Ok(ImportDef { path, alias, items: None })
     }
 
-    // ─── Attributes ──────────────────────────────────────────────────────
+    // Attributes
 
     fn parse_attribute(&mut self) -> Result<Item> {
         self.expect(&Token::Hash)?;
@@ -262,7 +262,7 @@ impl Parser {
         Ok(Item::Attribute(Attribute { name, args, item }))
     }
 
-    // ─── Functions ───────────────────────────────────────────────────────
+    // Functions
 
     fn parse_function(&mut self, is_pub: bool) -> Result<FunctionDef> {
         self.expect(&Token::Fn)?;
@@ -371,7 +371,7 @@ impl Parser {
         })
     }
 
-    // ─── Struct ──────────────────────────────────────────────────────────
+    // Struct
 
     fn parse_struct(&mut self, is_pub: bool) -> Result<StructDef> {
         self.expect(&Token::Struct)?;
@@ -438,7 +438,7 @@ impl Parser {
         })
     }
 
-    // ─── Enum ────────────────────────────────────────────────────────────
+    // Enum
 
     fn parse_enum(&mut self, is_pub: bool) -> Result<EnumDef> {
         self.expect(&Token::Enum)?;
@@ -492,7 +492,7 @@ impl Parser {
         })
     }
 
-    // ─── Class ───────────────────────────────────────────────────────────
+    // Class
 
     fn parse_class(&mut self, is_pub: bool) -> Result<ClassDef> {
         self.expect(&Token::Class)?;
@@ -581,7 +581,7 @@ impl Parser {
         })
     }
 
-    // ─── Impl Block ──────────────────────────────────────────────────────
+    // Impl Block
 
     fn parse_impl_block(&mut self) -> Result<ImplBlock> {
         self.expect(&Token::Impl)?;
@@ -629,7 +629,7 @@ impl Parser {
         })
     }
 
-    // ─── Trait ───────────────────────────────────────────────────────────
+    // Trait
 
     fn parse_trait(&mut self, is_pub: bool) -> Result<TraitDef> {
         self.expect(&Token::Trait)?;
@@ -695,7 +695,7 @@ impl Parser {
         })
     }
 
-    // ─── Type Alias ──────────────────────────────────────────────────────
+    // Type Alias
 
     fn parse_type_alias(&mut self, is_pub: bool) -> Result<TypeAliasDef> {
         self.expect(&Token::Type)?;
@@ -722,7 +722,7 @@ impl Parser {
         })
     }
 
-    // ─── Module ──────────────────────────────────────────────────────────
+    // Module
 
     fn parse_mod(&mut self, is_pub: bool) -> Result<ModDef> {
         self.expect(&Token::Mod)?;
@@ -746,7 +746,7 @@ impl Parser {
         Ok(ModDef { is_pub, name, body: None })
     }
 
-    // ─── Extern Blocks ──────────────────────────────────────────────────────
+    // Extern Blocks
 
     fn parse_extern_block(&mut self) -> Result<ExternBlock> {
         self.expect(&Token::Extern)?;
@@ -832,7 +832,7 @@ impl Parser {
         bail!("Expected function or static in extern block at {}:{}", self.peek_span().line, self.peek_span().col)
     }
 
-    // ─── Use Declarations ──────────────────────────────────────────────────
+    // Use Declarations
 
     fn parse_use(&mut self) -> Result<UseDef> {
         self.expect(&Token::Use)?;
@@ -902,7 +902,7 @@ impl Parser {
         })
     }
 
-    // ─── Generic Parameters ──────────────────────────────────────────────
+    // Generic Parameters
 
     fn parse_generic_params(&mut self) -> Result<Vec<GenericParam>> {
         self.expect(&Token::Lt)?;
@@ -960,7 +960,7 @@ impl Parser {
         Ok(())
     }
 
-    // ─── Types ───────────────────────────────────────────────────────────
+    // Types
 
     fn parse_type(&mut self) -> Result<Type> {
         let base = match self.peek() {
@@ -1111,7 +1111,7 @@ impl Parser {
         Ok(base)
     }
 
-    // ─── Blocks ──────────────────────────────────────────────────────────
+    // Blocks
 
     fn parse_block(&mut self) -> Result<Block> {
         self.expect(&Token::LBrace)?;
@@ -1150,7 +1150,7 @@ impl Parser {
         )
     }
 
-    // ─── Statements ──────────────────────────────────────────────────────
+    // Statements
 
     fn parse_stmt(&mut self) -> Result<Stmt> {
         match self.peek() {
@@ -1423,7 +1423,7 @@ impl Parser {
         Ok(Stmt::TryCatch { try_body, catch_param, catch_body })
     }
 
-    // ─── Patterns ────────────────────────────────────────────────────────
+    // Patterns
 
     fn parse_pattern(&mut self) -> Result<Pattern> {
         match self.peek() {
@@ -1522,7 +1522,7 @@ impl Parser {
         }
     }
 
-    // ─── Expressions ─────────────────────────────────────────────────────
+    // Expressions
 
     pub fn parse_expr(&mut self) -> Result<Expr> {
         self.parse_expr_bp(0)
@@ -2142,7 +2142,7 @@ impl Parser {
         }
     }
 
-    // ─── Java Features ────────────────────────────────────────────────
+    // Java Features
 
     fn parse_interface_def(&mut self, is_pub: bool) -> Result<InterfaceDef> {
         self.expect(&Token::Interface)?;
@@ -2244,7 +2244,7 @@ impl Parser {
         Ok(PackageDef { path })
     }
 
-    // ─── Zig Features ─────────────────────────────────────────────────
+    // Zig Features
 
     fn parse_comptime(&mut self) -> Result<ComptimeBlock> {
         self.expect(&Token::Comptime)?;
@@ -2252,7 +2252,7 @@ impl Parser {
         Ok(ComptimeBlock { body })
     }
 
-    // ─── Python Features ──────────────────────────────────────────────
+    // Python Features
 
     fn parse_decorators(&mut self) -> Result<Vec<Expr>> {
         let mut decorators = Vec::new();
@@ -2472,7 +2472,7 @@ mod tests {
         assert_eq!(program.items.len(), 1);
     }
 
-    // ─── Use / Module Tests ────────────────────────────────────────────
+    // Use / Module Tests
 
     #[test]
     fn test_parse_use_simple() {

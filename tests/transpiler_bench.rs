@@ -29,7 +29,7 @@ fn input_path(name: &str) -> PathBuf {
     dir.join(format!("{}.ruva", name))
 }
 
-// ─── Timing Infrastructure ─────────────────────────────────────────
+// Timing Infrastructure
 
 struct BenchResult {
     name: String,
@@ -73,7 +73,7 @@ fn format_duration(us: f64) -> String {
     }
 }
 
-// ─── Memory Measurement ───────────────────────────────────────────
+// Memory Measurement
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -151,7 +151,7 @@ fn format_bytes(bytes: usize) -> String {
     }
 }
 
-// ─── Single-iteration benchmark ────────────────────────────────────
+// Single-iteration benchmark
 
 fn bench_one_iteration(source: &str) -> (u64, u64, u64, u64, usize, usize, usize, usize, usize) {
     // Lex
@@ -196,7 +196,7 @@ fn bench_one_iteration(source: &str) -> (u64, u64, u64, u64, usize, usize, usize
      lex_mem, parse_mem, typecheck_mem, codegen_mem, peak)
 }
 
-// ─── Run full benchmark for one input ──────────────────────────────
+// Run full benchmark for one input
 
 fn run_bench(name: &str, iterations: usize) -> BenchResult {
     let source = fs::read_to_string(input_path(name))
@@ -247,7 +247,7 @@ fn run_bench(name: &str, iterations: usize) -> BenchResult {
     }
 }
 
-// ─── Report Printing ───────────────────────────────────────────────
+// Report Printing
 
 fn median_bytes(values: &[usize]) -> usize {
     let mut sorted = values.to_vec();
@@ -337,7 +337,7 @@ fn print_report(results: &[BenchResult]) {
     println!();
 }
 
-// ─── Tests ─────────────────────────────────────────────────────────
+// Tests
 
 #[test]
 fn bench_small() {

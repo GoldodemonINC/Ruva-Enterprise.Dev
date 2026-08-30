@@ -5,9 +5,7 @@ use std::rc::Rc;
 
 use crate::ast::*;
 
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Values
-// ═══════════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -110,9 +108,7 @@ impl Value {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Opcodes
-// ═══════════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
@@ -157,9 +153,7 @@ impl Opcode {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Chunk
-// ═══════════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone)]
 pub struct Chunk {
@@ -244,9 +238,7 @@ impl Chunk {
         }
     }
 }
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Bytecode Compiler — walks the AST and emits instructions
-// ═══════════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone)]
 struct Local { name: String, slot: usize, depth: usize }
@@ -1049,9 +1041,7 @@ impl Compiler {
     pub fn into_chunk(self) -> Chunk { self.chunk }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Virtual Machine — stack-based bytecode interpreter
-// ═══════════════════════════════════════════════════════════════════════════════
 
 /// Upper bound on a single string-repeat allocation to avoid capacity-overflow
 /// panics and absurd allocations from hostile programs (e.g. `"ab" * 10^18`).
@@ -1396,9 +1386,7 @@ impl Vm {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 //  Public API
-// ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn compile_and_run(program: &Program, debug: bool) -> Result<Value, String> {
     let mut compiler = Compiler::new();

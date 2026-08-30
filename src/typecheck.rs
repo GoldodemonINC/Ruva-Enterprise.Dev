@@ -1,6 +1,6 @@
 use crate::ast::*;
 
-// ─── Type Classification Constants ─────────────────────────────────────────
+// Type Classification Constants
 
 /// All numeric primitive type names (signed, unsigned, float).
 const NUMERIC_TYPES: &[&str] = &[
@@ -16,7 +16,7 @@ const PRIMITIVE_TYPES: &[&str] = &[
     "f32", "f64", "bool", "char",
 ];
 
-// ─── Structured Type Representation ────────────────────────────────────────
+// Structured Type Representation
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ty {
@@ -37,7 +37,7 @@ pub enum Ty {
 
 type TypeVar = usize;
 
-// ─── Structured Type Checker ───────────────────────────────────────────────
+// Structured Type Checker
 
 struct Scope {
     /// Maps variable name → (type, has been used).
@@ -131,7 +131,7 @@ impl TypeChecker {
         std::mem::take(&mut self.diagnostics)
     }
 
-    // ─── Registration Pass ─────────────────────────────────────────────
+    // Registration Pass
 
     fn register_item(&mut self, item: &Item) {
         match item {
@@ -286,7 +286,7 @@ impl TypeChecker {
         }
     }
 
-    // ─── Checking Pass ─────────────────────────────────────────────────
+    // Checking Pass
 
     fn check_item(&mut self, item: &Item) {
         match item {
@@ -925,7 +925,7 @@ impl TypeChecker {
         }
     }
 
-    // ─── Type Inference ────────────────────────────────────────────────
+    // Type Inference
 
     fn infer_type(&self, expr: &Expr) -> Ty {
         match expr {
@@ -1135,7 +1135,7 @@ impl TypeChecker {
         }
     }
 
-    // ─── Type Utility Methods ──────────────────────────────────────────
+    // Type Utility Methods
 
     fn ast_type_to_ty(&self, ast_ty: &Type) -> Ty {
         match ast_ty {
@@ -1285,7 +1285,7 @@ impl TypeChecker {
         matches!(ty, Ty::RawPointer(_, _))
     }
 
-    // ─── Scope Management ──────────────────────────────────────────────
+    // Scope Management
 
     fn push_scope(&mut self) {
         self.scopes.push(Scope {
@@ -1333,7 +1333,7 @@ impl TypeChecker {
         || self.scopes.iter().any(|s| s.bindings.contains_key(name))
     }
 
-    // ─── Unused Variable Reporting ────────────────────────────────────
+    // Unused Variable Reporting
 
     fn report_unused(&mut self) {
         let unused: Vec<String> = self.scopes.first()

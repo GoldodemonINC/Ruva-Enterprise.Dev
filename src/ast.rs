@@ -1,6 +1,6 @@
 use std::fmt;
 
-// ─── Source Location ─────────────────────────────────────────────────────────
+// Source Location
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
@@ -8,7 +8,7 @@ pub struct Span {
     pub col: usize,
 }
 
-// ─── Tokens ──────────────────────────────────────────────────────────────────
+// Tokens
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -135,7 +135,7 @@ pub enum Token {
     Eof,
 }
 
-// ─── AST Nodes ───────────────────────────────────────────────────────────────
+// AST Nodes
 
 /// A complete Ruva source file
 #[derive(Debug, Clone)]
@@ -171,7 +171,7 @@ pub enum Item {
     ListComp(ListCompExpr),
 }
 
-// ─── Functions ───────────────────────────────────────────────────────────────
+// Functions
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -201,7 +201,7 @@ pub struct GenericParam {
     pub bounds: Vec<Type>,
 }
 
-// ─── Structs ─────────────────────────────────────────────────────────────────
+// Structs
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -221,7 +221,7 @@ pub struct FieldDef {
     pub ty: Type,
 }
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
+// Enums
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -239,7 +239,7 @@ pub struct EnumVariant {
     pub fields: Vec<Type>,
 }
 
-// ─── Classes ─────────────────────────────────────────────────────────────────
+// Classes
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -262,7 +262,7 @@ pub struct ClassField {
     pub ty: Type,
 }
 
-// ─── Impl Blocks ─────────────────────────────────────────────────────────────
+// Impl Blocks
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -274,7 +274,7 @@ pub struct ImplBlock {
     pub span: Span,
 }
 
-// ─── Traits ──────────────────────────────────────────────────────────────────
+// Traits
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -294,7 +294,7 @@ pub struct TraitMethod {
     pub default_body: Option<Block>,
 }
 
-// ─── Type Alias ──────────────────────────────────────────────────────────────
+// Type Alias
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -305,7 +305,7 @@ pub struct TypeAliasDef {
     pub ty: Type,
 }
 
-// ─── Legacy Imports ──────────────────────────────────────────────────────────
+// Legacy Imports
 
 /// Old-style `import ruva::foo` (kept for backward compat)
 #[derive(Debug, Clone)]
@@ -316,7 +316,7 @@ pub struct ImportDef {
     pub items: Option<Vec<String>>,
 }
 
-// ─── Use Declarations ─────────────────────────────────────────────────────
+// Use Declarations
 
 /// `use path::to::Item` or `use path::to::{A, B, C}` or `use path as alias`
 #[derive(Debug, Clone)]
@@ -338,7 +338,7 @@ pub struct UseItem {
     pub alias: Option<String>,
 }
 
-// ─── Module ──────────────────────────────────────────────────────────────────
+// Module
 
 /// `mod name;` loads from file, `mod name { ... }` is inline
 #[derive(Debug, Clone)]
@@ -349,7 +349,7 @@ pub struct ModDef {
     pub body: Option<Vec<Item>>,
 }
 
-// ─── Attributes ──────────────────────────────────────────────────────────────
+// Attributes
 
 #[derive(Debug, Clone)]
 pub struct Attribute {
@@ -358,7 +358,7 @@ pub struct Attribute {
     pub item: Box<Item>,
 }
 
-// ─── Extern Blocks ─────────────────────────────────────────────────────────
+// Extern Blocks
 
 /// `extern "C" { fn name(...) -> ...; ... }` or `extern "C" { static NAME: type; }`
 #[derive(Debug, Clone)]
@@ -394,7 +394,7 @@ pub enum ExternItem {
     },
 }
 
-// ─── Java Features ─────────────────────────────────────────────────────────
+// Java Features
 
 /// Interface definition (Java-style)
 #[derive(Debug, Clone)]
@@ -445,7 +445,7 @@ pub struct PackageDef {
     pub path: Vec<String>,
 }
 
-// ─── Zig Features ──────────────────────────────────────────────────────────
+// Zig Features
 
 /// Comptime block (Zig-style) — evaluated at compile time
 #[derive(Debug, Clone)]
@@ -453,7 +453,7 @@ pub struct ComptimeBlock {
     pub body: Block,
 }
 
-// ─── Python Features ───────────────────────────────────────────────────────
+// Python Features
 
 /// Decorated definition (Python-style @decorator)
 #[derive(Debug, Clone)]
@@ -471,7 +471,7 @@ pub struct ListCompExpr {
     pub condition: Option<Box<Expr>>,
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// Types
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -517,7 +517,7 @@ pub enum Type {
     },
 }
 
-// ─── Statements ──────────────────────────────────────────────────────────────
+// Statements
 
 #[derive(Debug, Clone)]
 pub enum Stmt {
@@ -584,7 +584,7 @@ pub enum ElseKind {
     Else(Block),
 }
 
-// ─── Expressions ─────────────────────────────────────────────────────────────
+// Expressions
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -808,7 +808,7 @@ impl MatchArm {
     }
 }
 
-// ─── Patterns ────────────────────────────────────────────────────────────────
+// Patterns
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -845,7 +845,7 @@ pub enum Pattern {
     Mut(String),
 }
 
-// ─── Binary Operators ────────────────────────────────────────────────────────
+// Binary Operators
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BinOp {
@@ -902,7 +902,7 @@ pub enum UnaryOp {
     Deref,
 }
 
-// ─── Block ───────────────────────────────────────────────────────────────────
+// Block
 
 #[derive(Debug, Clone)]
 pub struct Block {

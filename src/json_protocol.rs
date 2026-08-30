@@ -1,4 +1,4 @@
-// ─── Simple JSON Implementation ─────────────────────────────────────────────
+// Simple JSON Implementation
 // Zero-dependency JSON parser and serializer for the LSP wire protocol.
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,7 +57,7 @@ impl JsonValue {
     }
 }
 
-// ─── JSON Parser ────────────────────────────────────────────────────────────
+// JSON Parser
 
 pub struct JsonParser {
     chars: Vec<char>,
@@ -270,7 +270,7 @@ pub fn json_parse(input: &str) -> Option<JsonValue> {
     JsonParser::new(input).parse_value()
 }
 
-// ─── JSON Serializer ────────────────────────────────────────────────────────
+// JSON Serializer
 
 pub fn json_stringify(value: &JsonValue) -> String {
     match value {

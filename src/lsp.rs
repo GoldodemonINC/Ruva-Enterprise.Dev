@@ -1,4 +1,4 @@
-// ─── Ruva LSP Server ────────────────────────────────────────────────────────
+// Ruva LSP Server
 // Language Server Protocol implementation for the Ruva language.
 // Provides: text document sync, hover info, go-to-definition, completion.
 
@@ -9,7 +9,7 @@ use crate::typecheck::TypeChecker;
 use std::collections::HashMap;
 use std::io::{self, BufRead, Read, Write};
 
-// ─── LSP Types ──────────────────────────────────────────────────────────────
+// LSP Types
 
 #[derive(Debug, Clone)]
 pub struct Position {
@@ -88,7 +88,7 @@ pub struct FunctionSig {
     pub return_type: Option<String>,
 }
 
-// ─── Symbol Index ─────────────────────────────────────────────────────────
+// Symbol Index
 
 #[derive(Debug, Clone)]
 pub struct SymbolLocation {
@@ -114,7 +114,7 @@ pub struct SymbolIndex {
     pub usages: HashMap<String, Vec<SymbolLocation>>,
 }
 
-// ─── Document Store ─────────────────────────────────────────────────────────
+// Document Store
 
 pub struct DocumentStore {
     documents: HashMap<String, String>,
@@ -884,7 +884,7 @@ impl DocumentStore {
     }
 }
 
-// ─── LSP Server ─────────────────────────────────────────────────────────────
+// LSP Server
 
 pub struct LspServer {
     store: DocumentStore,
@@ -1035,7 +1035,7 @@ impl LspServer {
         self.send_response(&notification);
     }
 
-    // ─── Initialize ─────────────────────────────────────────────────
+    // Initialize
 
     fn handle_initialize(&mut self, params: JsonValue) -> Option<JsonValue> {
         self.root_uri = params
@@ -1084,7 +1084,7 @@ impl LspServer {
         ]))
     }
 
-    // ─── Text Document Sync ─────────────────────────────────────────
+    // Text Document Sync
 
     fn handle_did_open(&mut self, params: JsonValue) {
         let text_doc = match params.get("textDocument") {
@@ -1166,7 +1166,7 @@ impl LspServer {
         self.store.close(&uri);
     }
 
-    // ─── Hover ──────────────────────────────────────────────────────
+    // Hover
 
     fn handle_hover(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1342,7 +1342,7 @@ impl LspServer {
         }
     }
 
-    // ─── Go to Definition ───────────────────────────────────────────
+    // Go to Definition
 
     fn handle_definition(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1484,7 +1484,7 @@ impl LspServer {
         None
     }
 
-    // ─── Completion ─────────────────────────────────────────────────
+    // Completion
 
     fn handle_completion(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1660,7 +1660,7 @@ impl LspServer {
         chars[start..character].iter().collect()
     }
 
-    // ─── Document Symbols ───────────────────────────────────────────
+    // Document Symbols
 
     fn handle_document_symbol(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1704,7 +1704,7 @@ impl LspServer {
         Some(JsonValue::Array(items))
     }
 
-    // ─── Diagnostics ────────────────────────────────────────────────
+    // Diagnostics
 
     fn handle_diagnostics(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1801,7 +1801,7 @@ impl LspServer {
         diagnostics
     }
 
-    // ─── Find References ─────────────────────────────────────────────
+    // Find References
 
     fn handle_references(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1837,7 +1837,7 @@ impl LspServer {
         Some(JsonValue::Array(locations))
     }
 
-    // ─── Rename ──────────────────────────────────────────────────────
+    // Rename
 
     fn handle_rename(&mut self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1885,7 +1885,7 @@ impl LspServer {
         ]))
     }
 
-    // ─── Prepare Rename (check if rename is valid at position) ───────
+    // Prepare Rename (check if rename is valid at position)
 
     fn handle_prepare_rename(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -1921,7 +1921,7 @@ impl LspServer {
         ]))
     }
 
-    // ─── Signature Help ─────────────────────────────────────────────
+    // Signature Help
 
     fn handle_signature_help(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -2064,7 +2064,7 @@ impl LspServer {
         }
     }
 
-    // ─── Code Actions ───────────────────────────────────────────────
+    // Code Actions
 
     fn handle_code_action(&self, params: JsonValue) -> Option<JsonValue> {
         let text_doc = params.get("textDocument")?;
@@ -2152,7 +2152,7 @@ impl LspServer {
         Some(JsonValue::Array(actions))
     }
 
-    // ─── Workspace Symbols ──────────────────────────────────────────
+    // Workspace Symbols
 
     fn handle_workspace_symbol(&self, params: JsonValue) -> Option<JsonValue> {
         let query = params.get("query")?.as_str().unwrap_or("");
@@ -2257,7 +2257,7 @@ impl LspServer {
     }
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// Helpers
 
 /// Fuzzy match: returns true if all characters in `query` appear in `name` in order.
 /// Case-insensitive. Empty query matches everything.
@@ -2373,13 +2373,13 @@ fn parse_error_location(msg: &str) -> (usize, usize) {
     (1, 1)
 }
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+// Tests
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // ─── Document Store Tests ───────────────────────────────────────
+    // Document Store Tests
 
     #[test]
     fn test_document_store_open() {
@@ -2460,7 +2460,7 @@ enum Color {
         assert!(symbols.iter().any(|(name, kind, _, _)| name == "Color" && kind == "enum"));
     }
 
-    // ─── LSP Server Tests ───────────────────────────────────────────
+    // LSP Server Tests
 
     #[test]
     fn test_lsp_server_initialize() {
@@ -2874,7 +2874,7 @@ class Calculator {
         assert_eq!(server.get_prefix_at_position(text, 1, 9), "x");
     }
 
-    // ─── References Tests ──────────────────────────────────────────
+    // References Tests
 
     #[test]
     fn test_references_basic() {
@@ -2957,7 +2957,7 @@ class Calculator {
         assert!(locations.len() >= 4, "Expected at least 4 references for 'helper', got {}", locations.len());
     }
 
-    // ─── Rename Tests ───────────────────────────────────────────────
+    // Rename Tests
 
     #[test]
     fn test_rename_basic() {
@@ -3042,7 +3042,7 @@ class Calculator {
         assert!(result.is_null());
     }
 
-    // ─── Symbol Index Tests ─────────────────────────────────────────
+    // Symbol Index Tests
 
     #[test]
     fn test_symbol_index_definitions() {
@@ -3119,7 +3119,7 @@ class Calculator {
         assert!(!new_text.contains("add"), "Should not contain old name 'add', got: {}", new_text);
     }
 
-    // ─── Signature Help Tests ─────────────────────────────────────
+    // Signature Help Tests
 
     #[test]
     fn test_signature_help_basic() {
@@ -3204,7 +3204,7 @@ class Calculator {
         assert!(label.contains("bark"), "Expected 'bark' in signature, got: {}", label);
     }
 
-    // ─── Code Action Tests ────────────────────────────────────────
+    // Code Action Tests
 
     #[test]
     fn test_code_action_undefined_var() {
@@ -3294,7 +3294,7 @@ class Calculator {
         assert!(params[1].get("label").unwrap().as_str().unwrap().contains("b"));
     }
 
-    // ─── Workspace Symbol Tests ────────────────────────────────────
+    // Workspace Symbol Tests
 
     #[test]
     fn test_workspace_symbol_empty_query() {
@@ -3498,7 +3498,7 @@ class Calculator {
         assert!(fuzzy_match("FunctionDef", "FD")); // case insensitive
     }
 
-    // ─── Incremental Sync Tests ─────────────────────────────────────
+    // Incremental Sync Tests
 
     #[test]
     fn test_incremental_insert() {

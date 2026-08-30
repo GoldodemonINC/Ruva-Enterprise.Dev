@@ -1,17 +1,14 @@
 # Ruva
 
-**Rust safety. Java familiarity. Zig precision. Python simplicity.**
+**Easy to learn. Fast. Secure.**
 
-A compiled language that blends the best of four languages, transpiles to 13 backends, **and runs directly on its own bytecode VM**.
+Ruva is its own language — modern syntax, memory safety, predictable performance, and a clean mental model. It transpiles to 13 backends **and runs directly on its own bytecode VM**.
 
 ```
-Rust (50%) + Java (20%) + Zig (15%) + Python (15%) = Ruva
-   ↓              ↓            ↓            ↓
-Memory-safe   Familiar    Explicit    Simple
- & fast        OOP        control     & clean
+Ruva = The Language
 ```
 
-> *"Write safe, fast code that feels familiar. Choose your backend."*
+> *"Write safe, fast code that feels natural. Run it anywhere you like."*
 
 ---
 
@@ -48,7 +45,7 @@ ruva lsp
 
 ## Language Features
 
-### From Rust (50%)
+### Core language
 
 ```ruva
 // Immutable by default, opt-in mutability
@@ -74,10 +71,10 @@ let add = |a: i32, b: i32| -> i32 { a + b }
 struct Stack<T> { items: Vec<T> }
 ```
 
-### From Java (20%)
+### Classes and objects
 
 ```ruva
-// Java-familiar classes with encapsulation
+// Classes with encapsulation
 class Person {
     pub let name: string,
     pub let mut age: u32,
@@ -98,7 +95,7 @@ interface Drawable {
 }
 ```
 
-### From Zig (15%)
+### Compile-time evaluation
 
 ```ruva
 // Compile-time evaluation
@@ -110,7 +107,7 @@ comptime {
 // Explicit error handling, no hidden control flow
 ```
 
-### From Python (15%)
+### Everyday conveniences
 
 ```ruva
 // Decorators
@@ -530,9 +527,9 @@ Ruva is designed for **safety-critical, performance-sensitive** applications:
 
 ## Design Philosophy
 
-1. **Multi-language DNA** — Take the best from Rust, Java, Zig, and Python. Don't reinvent what already works.
-2. **Safety first** — Memory safety is non-negotiable. Rust's ownership model prevents entire classes of bugs.
-3. **Familiarity** — If you know Java, Python, or Zig, you already know parts of Ruva.
+1. **One language** — Ruva stands on its own. It isn't a wrapper around another language.
+2. **Safety first** — Memory safety and panic-free behavior are non-negotiable.
+3. **Easy to learn** — A small, consistent feature set with no hidden control flow.
 4. **Zero-cost abstractions** — Classes compile to struct + impl. Decorators compile to attributes. No runtime overhead.
 5. **Explicit over implicit** — No hidden control flow, no hidden allocations, clear error handling.
 6. **Minimal dependencies** — Only `clap` and `anyhow`. Everything else is hand-rolled.

@@ -157,7 +157,7 @@ edition = "2021"
         }
     }
 
-    // ─── Items ───────────────────────────────────────────────────────────
+    // Items
 
     fn gen_item(&mut self, item: &Item) {
         match item {
@@ -183,7 +183,7 @@ edition = "2021"
         }
     }
 
-    // ─── Functions ───────────────────────────────────────────────────────
+    // Functions
 
     fn gen_function(&mut self, f: &FunctionDef) {
         if f.is_test {
@@ -234,7 +234,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Structs ─────────────────────────────────────────────────────────
+    // Structs
 
     fn gen_struct(&mut self, s: &StructDef) {
         let vis = if s.is_pub { "pub " } else { "" };
@@ -267,7 +267,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Enums ──────────────────────────────────────────────────────────────
+    // Enums
 
     fn gen_enum(&mut self, e: &EnumDef) {
         let vis = if e.is_pub { "pub " } else { "" };
@@ -294,7 +294,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Classes ─────────────────────────────────────────────────────────
+    // Classes
 
     fn gen_class(&mut self, c: &ClassDef) {
         let vis = if c.is_pub { "pub " } else { "" };
@@ -344,7 +344,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Impl Blocks ─────────────────────────────────────────────────────
+    // Impl Blocks
 
     fn gen_impl(&mut self, imp: &ImplBlock) {
         let generics = if imp.generics.is_empty() {
@@ -374,7 +374,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Traits ──────────────────────────────────────────────────────────
+    // Traits
 
     fn gen_trait(&mut self, t: &TraitDef) {
         let vis = if t.is_pub { "pub " } else { "" };
@@ -422,7 +422,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Type Alias ──────────────────────────────────────────────────────
+    // Type Alias
 
     fn gen_type_alias(&mut self, ta: &TypeAliasDef) {
         let vis = if ta.is_pub { "pub " } else { "" };
@@ -431,7 +431,7 @@ edition = "2021"
         self.writeln("");
     }
 
-    // ─── Imports ─────────────────────────────────────────────────────────
+    // Imports
 
     fn gen_import(&mut self, imp: &ImportDef) {
         // Map ruva:: imports to actual Rust crate imports
@@ -453,7 +453,7 @@ edition = "2021"
         }
     }
 
-    // ─── Attributes ──────────────────────────────────────────────────────
+    // Attributes
 
     fn gen_attribute(&mut self, attr: &Attribute) {
         if attr.args.is_empty() {
@@ -465,7 +465,7 @@ edition = "2021"
         self.gen_item(&attr.item);
     }
 
-    // ─── Use Declarations ─────────────────────────────────────────────
+    // Use Declarations
 
     fn gen_use(&mut self, u: &UseDef) {
         let path_str = u.path.join("::");
@@ -487,7 +487,7 @@ edition = "2021"
         }
     }
 
-    // ─── Module ──────────────────────────────────────────────────────────
+    // Module
 
     fn gen_module(&mut self, m: &ModDef) {
         let vis = if m.is_pub { "pub " } else { "" };
@@ -541,7 +541,7 @@ edition = "2021"
         self.writeln("}");
     }
 
-    // ─── Blocks ──────────────────────────────────────────────────────────
+    // Blocks
 
     fn gen_block(&mut self, block: &Block) {
         self.writeln("{");
@@ -561,7 +561,7 @@ edition = "2021"
         self.writeln("}");
     }
 
-    // ─── Statements ──────────────────────────────────────────────────────
+    // Statements
 
     fn gen_stmt(&mut self, stmt: &Stmt) {
         match stmt {
@@ -717,7 +717,7 @@ edition = "2021"
         }
     }
 
-    // ─── Expressions ─────────────────────────────────────────────────────
+    // Expressions
 
     fn gen_expr(&mut self, expr: &Expr) {
         match expr {
@@ -1101,7 +1101,7 @@ edition = "2021"
         }
     }
 
-    // ─── Patterns ────────────────────────────────────────────────────────
+    // Patterns
 
     fn pattern_str(&mut self, pat: &Pattern) -> String {
         match pat {
@@ -1157,7 +1157,7 @@ edition = "2021"
         }
     }
 
-    // ─── Types ───────────────────────────────────────────────────────────
+    // Types
 
     fn type_str(&mut self, ty: &Type) -> String {
         match ty {
@@ -1221,7 +1221,7 @@ edition = "2021"
         result
     }
 
-    // ─── Java Features (Rust codegen) ──────────────────────────────
+    // Java Features (Rust codegen)
 
     fn gen_interface(&mut self, iface: &InterfaceDef) {
         // Rust doesn't have interfaces — generate as a trait
@@ -1351,7 +1351,7 @@ edition = "2021"
         self.output.push_str(").collect::<Vec<_>>())");
     }
 
-    // ─── String Escaping (Security) ─────────────────────────────────────
+    // String Escaping (Security)
 
     /// Escape a string value for safe embedding in a Rust string literal.
     /// Re-escapes characters that were unescaped by the Ruva lexer.

@@ -91,7 +91,7 @@ fn input_path(name: &str) -> PathBuf {
     resolve_ruva_file(&project_root().join("tests/transpiler_golden"), name)
 }
 
-// ─── Error golden helpers ─────────────────────────────────────────────
+// Error golden helpers
 
 const ERROR_GOLDEN_CASES: &[&str] = &[
     "syntax_unterminated_string",
@@ -297,7 +297,7 @@ golden_test!(golden_macros, "macros");
 golden_test!(golden_extern_ffi, "extern_ffi");
 golden_test!(golden_closures_iter, "closures_iter");
 
-// ─── Error golden tests ──────────────────────────────────────────────
+// Error golden tests
 
 #[test]
 fn test_error_golden_files_exist() {
